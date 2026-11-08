@@ -22,6 +22,17 @@ jobs:
         with:
           cache-disabled: true
 
+      # El runner gratis tiene ~7 GB de RAM. Agregamos 10 GB de swap para que Gradle no sea matado (exit 143).
+      - name: Add swap
+        run: |
+          free -h
+          sudo swapoff -a || true
+          sudo fallocate -l 10G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -48,7 +59,15 @@ jobs:
           echo "Using persistent signing key from secret."
 
       - name: Build Full Release APKs
-        run: ./gradlew :androidApp:assembleFullRelease --console=plain --warning-mode summary --stacktrace
+        # Memoria bajada a lo que cabe en el runner (gradle.properties pide 12 GB + 8 GB, no caben).
+        # Kotlin corre dentro del mismo proceso de Gradle: un solo JVM, sin daemon.
+        run: >
+          ./gradlew :androidApp:assembleFullRelease
+          --no-daemon --max-workers=2
+          -Dorg.gradle.jvmargs="-Xmx4608m -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
+          -Pkotlin.compiler.execution.strategy=in-process
+          -Pkotlin.native.jvmArgs=-Xmx1g
+          --console=plain --warning-mode summary --stacktrace
 
       - name: Show APK signing fingerprint
         run: |
