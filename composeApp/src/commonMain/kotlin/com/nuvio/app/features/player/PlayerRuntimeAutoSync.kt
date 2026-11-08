@@ -18,7 +18,8 @@ private fun List<AddonSubtitle>.toAutoSyncCandidates(): List<AutoSyncSubtitleCan
     }
 
 private fun PlayerScreenRuntime.currentAutoSyncCandidates(): List<AutoSyncSubtitleCandidate> =
-    addonSubtitles.toAutoSyncCandidates()
+    // Paso 2: no buscar entre otros subtítulos; ir directo al reconocimiento de voz.
+    emptyList()
 
 internal fun PlayerScreenRuntime.configureAutoSyncController(
     controller: PlayerEngineController,
@@ -67,13 +68,9 @@ internal fun PlayerScreenRuntime.BindAutoSyncRuntimeEffects() {
     }
     LaunchedEffect(playerController, externalSubtitles) {
         val controller = playerController ?: return@LaunchedEffect
-        SubtitleRepository.addonSubtitles.collect { repositorySubtitles ->
-            controller.setAutoSyncSubtitleCandidates(
-                mergeStreamAndAddonSubtitles(
-                    repositorySubtitles,
-                    externalSubtitles,
-                ).toAutoSyncCandidates(),
-            )
+        SubtitleRepository.addonSubtitles.collect { _ ->
+            // Paso 2: no alimentar candidatos alternativos; el modelo de voz es el camino.
+            controller.setAutoSyncSubtitleCandidates(emptyList())
         }
     }
 }
