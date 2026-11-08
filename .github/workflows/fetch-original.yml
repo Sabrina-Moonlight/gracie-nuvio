@@ -1,0 +1,80 @@
+name: Fetch Original Nuvio
+
+# Baja el Nuvio oficial (NuvioMedia/NuvioMobile) directo de GitHub y lo deja en main.
+# Así no hay que subir el ZIP de 61 MB (la web de GitHub solo acepta 25 MB).
+# - Lanzar a mano: Actions > Fetch Original Nuvio > Run workflow.
+# - "ref" puede ser una rama (cmp-rewrite), una etiqueta (0.4.15) o un commit.
+# - Pisa los archivos que ya existan con la versión oficial.
+#   OJO: si ya subiste modificaciones por Drop-Files, vuelve a subirlas después de esto.
+# - NO toca: .github, Drop-Files, AGENTS.md ni llaves de firma (*.keystore, *.jks).
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Rama, etiqueta o commit del Nuvio oficial'
+        required: false
+        default: 'cmp-rewrite'
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unzip-main
+  cancel-in-progress: false
+
+jobs:
+  bajar:
+    name: Download official Nuvio into main
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bajar y descomprimir
+        env:
+          RAMA: ${{ github.ref_name }}
+          REF: ${{ inputs.ref }}
+        run: |
+          set -eu
+          REF="${REF:-cmp-rewrite}"
+          URL="https://github.com/NuvioMedia/NuvioMobile/archive/${REF}.zip"
+          echo "Bajando $URL"
+          if ! curl -fsSL --retry 3 -o /tmp/nuvio.zip "$URL"; then
+            echo "::error::No se pudo bajar $URL. Revisa que la rama, etiqueta o commit existan."
+            exit 1
+          fi
+          rm -rf /tmp/zipx && mkdir /tmp/zipx
+          if ! unzip -q -o /tmp/nuvio.zip -d /tmp/zipx; then
+            echo "::error::El ZIP bajado está dañado. Lánzalo otra vez."
+            exit 1
+          fi
+          # El ZIP de GitHub trae una sola carpeta envoltorio (NuvioMobile-<ref>/): usar lo de adentro.
+          raiz=/tmp/zipx
+          n_dirs=$(find /tmp/zipx -mindepth 1 -maxdepth 1 -type d | wc -l)
+          n_files=$(find /tmp/zipx -mindepth 1 -maxdepth 1 -type f | wc -l)
+          if [ "$n_dirs" -eq 1 ] && [ "$n_files" -eq 0 ]; then
+            raiz=$(find /tmp/zipx -mindepth 1 -maxdepth 1 -type d)
+          fi
+
+          tar -C "$raiz" --no-wildcards-match-slash \
+            --exclude='./.git' \
+            --exclude='./.github' \
+            --exclude='./Drop-Files' \
+            --exclude='./AGENTS.md' \
+            --exclude='*.keystore' \
+            --exclude='*.jks' \
+            --exclude='./*.zip' \
+            -cf - . | tar -xf -
+
+          [ -f gradlew ] && chmod +x gradlew
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "- El Nuvio oficial (${REF}) no traía cambios respecto a main." >> "$GITHUB_STEP_SUMMARY"
+          else
+            git commit -m "chore: bajar Nuvio oficial (${REF})"
+            git push origin "HEAD:refs/heads/$RAMA"
+            echo "- Nuvio oficial (\`${REF}\`) descomprimido en main." >> "$GITHUB_STEP_SUMMARY"
+          fi
