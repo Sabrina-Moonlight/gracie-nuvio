@@ -49,7 +49,7 @@ jobs:
             rm -rf /tmp/zipx/__MACOSX
             find /tmp/zipx -name '.DS_Store' -delete
 
-            # Si el ZIP trae una sola carpeta envoltorio (ej. gracie-music-main/), usar lo de adentro.
+            # Si el ZIP trae una sola carpeta envoltorio (ej. NuvioMobile-cmp-rewrite/), usar lo de adentro.
             # No se quita si esa carpeta ya existe en main (ej. "app"), porque entonces es parte del proyecto.
             raiz=/tmp/zipx
             n_dirs=$(find /tmp/zipx -mindepth 1 -maxdepth 1 -type d | wc -l)
@@ -82,7 +82,6 @@ jobs:
             echo "- El ZIP no traía cambios respecto a main." >> /tmp/informe.md
           else
             git commit -m "chore: descomprimir ZIP subido en main"
-            git pull --rebase --autostash origin "$RAMA"
             git push origin "HEAD:refs/heads/$RAMA"
           fi
 
