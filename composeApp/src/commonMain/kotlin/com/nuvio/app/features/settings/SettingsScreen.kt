@@ -644,6 +644,7 @@ private fun MobileSettingsScreen(
                 SettingsPage.Account -> accountSettingsContent(
                     isTablet = false,
                 )
+                SettingsPage.NuvioReshaped -> nuvioReshapedSettingsContent(isTablet = false) // Nuvio RS hook
                 SettingsPage.SupportersContributors -> {
                     if (AppFeaturePolicy.supportersContributorsPageEnabled) {
                         supportersContributorsContent(isTablet = false)
@@ -1045,6 +1046,7 @@ private fun TabletSettingsScreen(
                     SettingsPage.Account -> accountSettingsContent(
                         isTablet = true,
                     )
+                    SettingsPage.NuvioReshaped -> nuvioReshapedSettingsContent(isTablet = true) // Nuvio RS hook
                     SettingsPage.SupportersContributors -> {
                         if (AppFeaturePolicy.supportersContributorsPageEnabled) {
                             supportersContributorsContent(isTablet = true)

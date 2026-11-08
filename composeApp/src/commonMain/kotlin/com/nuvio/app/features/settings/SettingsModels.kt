@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.VideoSettings
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import nuvio.composeapp.generated.resources.*
@@ -83,6 +84,11 @@ internal enum class SettingsPage(
     ),
     Playback(
         titleRes = Res.string.compose_settings_page_playback,
+        category = SettingsCategory.Watch,
+        parentPage = Root,
+    ),
+    NuvioReshaped(
+        titleRes = Res.string.settings_nuvio_reshaped,
         category = SettingsCategory.Watch,
         parentPage = Root,
     ),
@@ -247,6 +253,7 @@ internal val SettingsPage.icon: ImageVector
         SettingsPage.SupportersContributors -> Icons.Default.Favorite
         SettingsPage.LicensesAttributions -> Icons.Default.Info
         SettingsPage.Playback -> Icons.Rounded.PlayArrow
+        SettingsPage.NuvioReshaped -> Icons.Rounded.AutoAwesome
         SettingsPage.Appearance -> Icons.Default.Palette
         SettingsPage.Layout -> Icons.Default.GridView
         SettingsPage.About -> Icons.Default.Info
