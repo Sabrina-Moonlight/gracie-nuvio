@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AutoSync messages shown in the glass bubble. Format: "Auto Sync • headline • detail". -->
+<resources>
+    <string name="autosync_toast_analyzing">Auto Sync • Analyzing…</string>
+    <string name="autosync_toast_synced">Auto Sync • Subtitles synced</string>
+    <string name="autosync_toast_in_sync">Auto Sync • Subtitles already in sync</string>
+    <string name="autosync_toast_failed">Auto Sync • Sync failed • subtitle timing not changed</string>
+    <string name="autosync_toast_failed_audio_fallback">Auto Sync • No match found • syncing to the audio instead…</string>
+</resources>
