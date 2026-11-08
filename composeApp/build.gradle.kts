@@ -338,6 +338,25 @@ tasks.withType<KotlinCompilationTask<*>>().configureEach {
     dependsOn(generateRuntimeConfigs)
 }
 
+    fun sha256(file: File): String = MessageDigest.getInstance("SHA-256")
+        .digest(file.readBytes()).joinToString("") { "%02x".format(it) }
+
+// On-device speech recognition for audio subtitle sync (sherpa-onnx, Apache-2.0). The AAR is
+// ~50 MB, so it is downloaded once into libs/ (git-ignored) and verified instead of committed.
+val sherpaOnnxVersion = "1.13.8"
+val sherpaOnnxSha256 = "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
+val sherpaOnnxAar: File = project.file("libs/sherpa-onnx-$sherpaOnnxVersion.aar").also { aar ->
+    fun sha256(file: File): String = MessageDigest.getInstance("SHA-256")
+        .digest(file.readBytes()).joinToString("") { "%02x".format(it) }
+    if (aar.isFile && sha256(aar) == sherpaOnnxSha256) return@also
+    val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$sherpaOnnxVersion/sherpa-onnx-$sherpaOnnxVersion.aar"
+    logger.lifecycle("Downloading $url")
+    val partial = File(aar.path + ".part")
+    URI(url).toURL().openStream().use { input -> partial.outputStream().use { input.copyTo(it) } }
+    check(sha256(partial) == sherpaOnnxSha256) { "Checksum mismatch for $url" }
+    partial.renameTo(aar)
+}
+
 kotlin {
     android {
         namespace = "com.nuvio.app"
@@ -439,6 +458,8 @@ kotlin {
             }
 
             dependencies {
+                implementation(files(sherpaOnnxAar)) // ASR for AutoSync
+
                 implementation(libs.compose.uiToolingPreview)
                 implementation(libs.androidx.appcompat)
                 implementation(libs.androidx.activity.compose)

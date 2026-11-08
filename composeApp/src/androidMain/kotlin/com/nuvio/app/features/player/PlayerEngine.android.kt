@@ -666,6 +666,7 @@ private fun ExoPlayerSurface(
         externalSubtitles = externalSubtitles,
         useLibass = useLibass,
         preferredSubtitleLanguage = playerSettings.preferredSubtitleLanguage,
+        secondaryPreferredSubtitleLanguage = playerSettings.secondaryPreferredSubtitleLanguage,
         onMimeTypeSelected = { selectedExternalSubtitleMimeType = it },
         onSubtitleDelayChanged = { subtitleDelayMs = it },
     )

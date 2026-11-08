@@ -20,6 +20,7 @@ data class StreamBadgeSettingsUiState(
     val rules: StreamBadgeRules = StreamBadgeRules(),
     val showFileSizeBadges: Boolean = true,
     val showAddonLogo: Boolean = false,
+    val preferConnectionFit: Boolean = true,
     val showInPlayer: Boolean = false,
     val playerBadgeSource: String = "",
     val badgePlacement: StreamBadgePlacement = StreamBadgePlacement.BOTTOM,
@@ -50,6 +51,7 @@ object StreamBadgeSettingsRepository {
     private var streamBadgeRules = StreamBadgeRules()
     private var showFileSizeBadges = true
     private var showAddonLogo = false
+    private var preferConnectionFit = true
     private var showInPlayer = false
     private var playerBadgeSource = ""
     private var badgePlacement = StreamBadgePlacement.BOTTOM
@@ -69,6 +71,7 @@ object StreamBadgeSettingsRepository {
         streamBadgeRules = StreamBadgeRules()
         showFileSizeBadges = true
         showAddonLogo = false
+        preferConnectionFit = true
         showInPlayer = false
         playerBadgeSource = ""
         badgePlacement = StreamBadgePlacement.BOTTOM
@@ -84,6 +87,11 @@ object StreamBadgeSettingsRepository {
     fun showFileSizeBadgesSnapshot(): Boolean {
         ensureLoaded()
         return _uiState.value.showFileSizeBadges
+    }
+
+    fun preferConnectionFitSnapshot(): Boolean {
+        ensureLoaded()
+        return _uiState.value.preferConnectionFit
     }
 
     fun badgePlacementSnapshot(): StreamBadgePlacement {
@@ -162,6 +170,14 @@ object StreamBadgeSettingsRepository {
         StreamBadgeSettingsStorage.saveShowAddonLogo(enabled)
     }
 
+    fun setPreferConnectionFit(enabled: Boolean) {
+        ensureLoaded()
+        if (preferConnectionFit == enabled) return
+        preferConnectionFit = enabled
+        publish()
+        StreamBadgeSettingsStorage.savePreferConnectionFit(enabled)
+    }
+
     fun setShowInPlayer(enabled: Boolean) {
         ensureLoaded()
         if (showInPlayer == enabled) return
@@ -205,6 +221,7 @@ object StreamBadgeSettingsRepository {
         streamBadgeRules = storedRules ?: legacyRules ?: StreamBadgeRules()
         showFileSizeBadges = StreamBadgeSettingsStorage.loadShowFileSizeBadges() ?: true
         showAddonLogo = StreamBadgeSettingsStorage.loadShowAddonLogo() ?: false
+        preferConnectionFit = StreamBadgeSettingsStorage.loadPreferConnectionFit() ?: true
         showInPlayer = StreamBadgeSettingsStorage.loadShowInPlayer() ?: false
         playerBadgeSource = StreamBadgeSettingsStorage.loadPlayerBadgeSource().orEmpty()
         backgroundMode = StreamBadgeSettingsStorage.loadStreamBackgroundMode()
@@ -229,6 +246,7 @@ object StreamBadgeSettingsRepository {
             rules = streamBadgeRules,
             showFileSizeBadges = showFileSizeBadges,
             showAddonLogo = showAddonLogo,
+            preferConnectionFit = preferConnectionFit,
             showInPlayer = showInPlayer,
             playerBadgeSource = playerBadgeSource,
             badgePlacement = badgePlacement,
