@@ -58,6 +58,12 @@ internal class MdbListProgressProjection(snapshot: MdbListSyncSnapshot) {
     fun isHidden(contentId: String, season: Int? = null): Boolean =
         droppedById[contentId]?.any { it == null || (season != null && it == season) } == true
 
+    /** The TMDB id MDBList reported for the show [contentId] refers to, or null when it has none. */
+    fun tmdbShowId(contentId: String): Long? =
+        showIdSiblings[contentId]?.firstNotNullOfOrNull { alias ->
+            alias.takeIf { it.startsWith("tmdb:") }?.removePrefix("tmdb:")?.toLongOrNull()
+        }
+
     fun canonicalContentId(contentId: String): String? =
         runCatching {
             val ids = com.nuvio.app.features.tracking.parseTrackingExternalIds(contentId).toMdbListIds() ?: return null

@@ -43,6 +43,8 @@ internal interface AutoSyncPlayerController {
     fun setAutoSyncSubtitleCandidates(candidates: List<AutoSyncSubtitleCandidate>)
     /** The title being played (e.g. "movie", "tt0103064"), so references can be looked up for it. */
     fun setAutoSyncContent(type: String, videoId: String) {}
+    /** Stops any AutoSync run when the user sets the subtitle delay by hand. */
+    fun cancelForManualSubtitleDelay() {}
     fun setSubtitleUriWithAutoSync(url: String)
     fun setSubtitleUriWithSelectedAutoSync(url: String)
     fun setAutoSyncAppliedListener(

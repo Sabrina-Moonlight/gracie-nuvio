@@ -182,7 +182,6 @@ internal fun PillNavigationBar(
     val tabs = listOfNotNull(
         PillTab(AppScreenTab.Home, stringResource(Res.string.compose_nav_home)),
         PillTab(AppScreenTab.Search, stringResource(Res.string.compose_nav_search)),
-        if (liveTvEnabled) PillTab(AppScreenTab.LiveTv, stringResource(Res.string.live_tv_title)) else null,
         PillTab(AppScreenTab.Library, stringResource(Res.string.compose_nav_library)),
     )
     // Settings follows the visible text tabs; the profile picture is never highlighted.
