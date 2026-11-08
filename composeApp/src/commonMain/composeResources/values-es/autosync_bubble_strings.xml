@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mensajes de AutoSync que salen en la burbuja. Formato: "Auto Sync • título • detalle". -->
+<resources>
+    <string name="autosync_toast_analyzing">Auto Sync • Analizando…</string>
+    <string name="autosync_toast_synced">Auto Sync • Subtítulos sincronizados</string>
+    <string name="autosync_toast_in_sync">Auto Sync • Los subtítulos ya estaban sincronizados</string>
+    <string name="autosync_toast_failed">Auto Sync • No se pudo sincronizar • no se cambió el tiempo de los subtítulos</string>
+    <string name="autosync_toast_failed_audio_fallback">Auto Sync • No se encontró coincidencia • sincronizando con el audio…</string>
+</resources>

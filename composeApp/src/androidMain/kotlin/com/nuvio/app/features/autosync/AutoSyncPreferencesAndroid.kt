@@ -2,6 +2,8 @@ package com.nuvio.app.features.autosync
 
 import android.content.Context
 import com.nuvio.app.core.storage.ProfileScopedKey
+import com.nuvio.app.features.autosync.bubble.AutoSyncBubbleToastsAndroid
+import com.nuvio.app.features.player.audiosync.AudioSyncFallback
 
 internal object AutoSyncPreferencesAndroid {
     private const val preferencesName = "nuvio_autosync_settings"
@@ -12,6 +14,8 @@ internal object AutoSyncPreferencesAndroid {
 
     fun initialize(context: Context) {
         val preferences = context.getSharedPreferences(preferencesName, Context.MODE_PRIVATE)
+        AudioSyncFallback.initialize(context) // audio sync hook
+        AutoSyncBubbleToastsAndroid.initialize(context) // bubble hook
         AutoSyncPreferencesRepository.installPersistence(
             load = {
                 val key = ProfileScopedKey.of(preferredSubtitleAutoSyncOnStartKey)
