@@ -13,6 +13,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.TestExecutable
 import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.util.Properties
+import java.net.URI
+import java.security.MessageDigest
 
 abstract class GenerateRuntimeConfigsTask : DefaultTask() {
     @get:OutputDirectory
@@ -337,9 +339,6 @@ val generateRuntimeConfigs = tasks.register<GenerateRuntimeConfigsTask>("generat
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
     dependsOn(generateRuntimeConfigs)
 }
-
-    fun sha256(file: File): String = MessageDigest.getInstance("SHA-256")
-        .digest(file.readBytes()).joinToString("") { "%02x".format(it) }
 
 // On-device speech recognition for audio subtitle sync (sherpa-onnx, Apache-2.0). The AAR is
 // ~50 MB, so it is downloaded once into libs/ (git-ignored) and verified instead of committed.
