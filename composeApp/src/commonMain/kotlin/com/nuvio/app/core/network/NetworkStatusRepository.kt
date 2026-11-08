@@ -136,6 +136,9 @@ object NetworkStatusRepository {
             return NetworkCondition.NoInternet
         }
 
+        // Paso 3: no marcar "sin internet" solo porque el backend de Nuvio (api.nuvio.tv /
+        // Supabase) no responda. Con internet público basta para que los addons de subtítulos
+        // de terceros y MDBlist funcionen.
         val supabaseReachable = SupabaseEndpointConfig.restEndpointUrls().any { url ->
             probeReachable(
                 url = url,
@@ -143,7 +146,8 @@ object NetworkStatusRepository {
             )
         }
         if (!supabaseReachable) {
-            return NetworkCondition.ServersUnreachable
+            // Internet público OK → Online. Antes era ServersUnreachable y bloqueaba subtítulos.
+            return NetworkCondition.Online
         }
 
         return NetworkCondition.Online
