@@ -113,7 +113,7 @@ private const val SUCCESS_HOLD_MS = 1_600L
 private const val FAILURE_HOLD_MS = 7_000L
 
 /**
- * AutoSync's glass bubble, on the right side of the player. Draws nothing, and runs no
+ * AutoSync's glass bubble, at the bottom centre of the player. Draws nothing, and runs no
  * animation, unless the setting is on and AutoSync has something to say. It only takes touches
  * while its failure card is open, so it never gets in the way of the player's own gestures.
  */
@@ -127,14 +127,17 @@ internal fun BoxScope.AutoSyncBubbleToastHost(controlsVisible: Boolean) {
     val message by AutoSyncBubbleToasts.current.collectAsState()
     val current = message
     if (!enabled || current == null) return
-    // hook: right side, vertically centred, so it never covers the subtitles (bottom centre)
-    // nor the top bar and bottom seek bar of the controls. It stays put when controls show.
+    // Rise above the player's seek bar and buttons while the controls are showing.
+    val lift = animateDpAsState(
+        targetValue = if (controlsVisible) 128.dp else 20.dp,
+        animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessLow),
+    )
     key(current.session) {
         AutoSyncBubble(
             message = current,
             modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(end = 16.dp),
+                .align(Alignment.BottomCenter)
+                .offset { IntOffset(0, -lift.value.roundToPx()) },
         )
     }
 }

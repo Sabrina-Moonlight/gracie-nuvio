@@ -87,18 +87,6 @@ data class MdbListPlayback(
 )
 
 @Serializable
-data class MdbListRatingRecord(
-    val type: MdbListItemType,
-    val media: MdbListMedia,
-    val rating: Double,
-    val ratedAt: String,
-    val season: Int? = null,
-    val episode: Int? = null,
-    val episodeTmdbId: Long? = null,
-    val episodeTvdbId: Long? = null
-)
-
-@Serializable
 data class MdbListDroppedRecord(val ids: MdbListIds, val season: Int? = null)
 
 @Serializable
@@ -109,9 +97,6 @@ data class MdbListActivities(val values: Map<String, String?>, val serverTime: S
 
     fun playbackChanged(previous: MdbListActivities): Boolean = changed(previous) { it.contains("paused") }
     fun droppedChanged(previous: MdbListActivities): Boolean = changed(previous) { it.contains("dropped") }
-    fun ratingsChanged(previous: MdbListActivities): Boolean = changed(previous) {
-        it == "rated_at" || it == "journal_at"
-    }
 
     private fun changed(previous: MdbListActivities, includes: (String) -> Boolean): Boolean =
         (values.keys + previous.values.keys).filter(includes).any { values[it] != previous.values[it] }
@@ -148,11 +133,10 @@ data class MdbListSyncSnapshot(
     val checkedAtEpochMs: Long? = null,
     val isInitialized: Boolean = false,
     val invalidatedBuckets: Set<MdbListSyncBucket> = emptySet(),
-    val library: MdbListLibrarySnapshot? = null,
-    val ratings: List<MdbListRatingRecord>? = null
+    val library: MdbListLibrarySnapshot? = null
 )
 
 @Serializable
-enum class MdbListSyncBucket { WATCHED, PLAYBACK, DROPPED, RATINGS }
+enum class MdbListSyncBucket { WATCHED, PLAYBACK, DROPPED }
 
 class MdbListDecodingException : Exception("MDBList returned an incomplete response")
