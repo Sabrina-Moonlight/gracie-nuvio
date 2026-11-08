@@ -41,6 +41,8 @@ jobs:
       - name: Prepare signing key
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+          NUVIO_SUPABASE_URL: ${{ secrets.NUVIO_SUPABASE_URL }}
+          NUVIO_SUPABASE_ANON_KEY: ${{ secrets.NUVIO_SUPABASE_ANON_KEY }}
         run: |
           if [ -z "$DEBUG_KEYSTORE_BASE64" ]; then
             echo "::error::Falta el secret DEBUG_KEYSTORE_BASE64 (o esta vacio). Sin el, el APK no se puede instalar como actualizacion. Revisa Settings > Secrets and variables > Actions > Repository secrets."
@@ -56,6 +58,16 @@ jobs:
             echo "NUVIO_RELEASE_KEY_ALIAS=androiddebugkey"
             echo "NUVIO_RELEASE_KEY_PASSWORD=android"
           } > local.properties
+          # Opcional: servidor de cuentas (Supabase). Solo se agrega si existen los secrets.
+          if [ -n "$NUVIO_SUPABASE_URL" ] && [ -n "$NUVIO_SUPABASE_ANON_KEY" ]; then
+            {
+              echo "NUVIO_SUPABASE_URL=$NUVIO_SUPABASE_URL"
+              echo "NUVIO_SUPABASE_ANON_KEY=$NUVIO_SUPABASE_ANON_KEY"
+            } >> local.properties
+            echo "Supabase configurado."
+          else
+            echo "Sin Supabase: el login con cuenta no va a funcionar (usar Continue Without Account)."
+          fi
           echo "Using persistent signing key from secret."
 
       - name: Build Full Release APKs
@@ -72,7 +84,7 @@ jobs:
       - name: Show APK signing fingerprint
         run: |
           APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | sort -V | tail -n 1)
-          for f in androidApp/build/outputs/apk/full/release/*.apk; do
+          for f in androidApp/build/outputs/apk/full/release/*arm64-v8a*.apk; do
             "$APKSIGNER" verify --print-certs "$f" | grep -i "SHA-256" | tee -a "$GITHUB_STEP_SUMMARY"
           done || true
 
@@ -80,5 +92,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nuvio-release
-          path: androidApp/build/outputs/apk/full/release/*.apk
+          path: androidApp/build/outputs/apk/full/release/*arm64-v8a*.apk
           if-no-files-found: error
