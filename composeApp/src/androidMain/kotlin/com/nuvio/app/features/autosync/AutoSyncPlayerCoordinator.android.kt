@@ -9,6 +9,7 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
 import com.nuvio.app.features.autosync.bubble.AutoSyncBubbleKind
 import com.nuvio.app.features.autosync.bubble.showAutoSyncMessage
+import com.nuvio.app.features.player.AudioSyncSettings
 import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.player.PlayerSubtitleUtils
 import com.nuvio.app.features.player.SidecarSubtitleController
@@ -26,6 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.autosync_toast_analyzing
+import nuvio.composeapp.generated.resources.autosync_toast_audio_direct
 import nuvio.composeapp.generated.resources.autosync_toast_failed
 import nuvio.composeapp.generated.resources.autosync_toast_failed_audio_fallback
 import nuvio.composeapp.generated.resources.autosync_toast_in_sync
@@ -195,6 +197,15 @@ internal class AutoSyncPlayerCoordinator(
 
         job = scope.launch {
             try {
+                // hook: audio first. With the audio sync on, skip the search over other subtitles
+                // (it rarely pays off) and sync the chosen subtitle straight to the audio.
+                if (AudioSyncSettings.fallbackEnabled.value &&
+                    sidecar.activeSidecarSubtitleKey == url &&
+                    audioFallback.takeOver(url)
+                ) {
+                    showMessage(token, AutoSyncBubbleKind.Working, Res.string.autosync_toast_audio_direct)
+                    return@launch
+                }
                 var outcome: AutoSyncAnalysisOutcome? = null
                 val resolved = AutomaticSubtitleSync.findTimelineRetime(
                     sourceKey = sourceUrl,

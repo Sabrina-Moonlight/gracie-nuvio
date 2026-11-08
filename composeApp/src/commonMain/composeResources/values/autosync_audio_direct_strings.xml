@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="autosync_toast_audio_direct">Auto Sync • Syncing to the audio…</string>
+</resources>
