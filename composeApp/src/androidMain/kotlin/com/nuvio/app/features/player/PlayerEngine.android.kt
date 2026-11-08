@@ -80,7 +80,6 @@ import com.nuvio.app.features.autosync.AutoSyncPreferencesRepository
 import com.nuvio.app.features.autosync.LIBMPV_AUTOSYNC_FILE_PREFIX
 import com.nuvio.app.features.autosync.rememberAutoSyncCoordinator
 import com.nuvio.app.features.autosync.rememberLibmpvAutoSyncCoordinator
-import com.nuvio.app.features.player.audiosync.AudioSyncTaps
 import com.nuvio.app.R
 import com.nuvio.app.features.streams.normalizeStreamType
 import `is`.xyz.mpv.MPV
@@ -325,24 +324,6 @@ private fun ExoPlayerSurface(
                     AutoSyncExtractorsFactory(factory, sourceUrl)
                 } else factory
             }
-    }
-    // AutoSync hook: the network side on its own, so the audio sync reads past every disk cache.
-    val networkDataSourceFactory = remember(
-        context,
-        sourceUrl,
-        sanitizedSourceHeaders,
-        sanitizedSourceResponseHeaders,
-        useYoutubeChunkedPlayback,
-        externalSubtitles,
-    ) {
-        PlatformPlaybackDataSourceFactory.create(
-            context = context,
-            defaultRequestHeaders = sanitizedSourceHeaders,
-            defaultResponseHeaders = sanitizedSourceResponseHeaders,
-            useYoutubeChunkedPlayback = useYoutubeChunkedPlayback,
-            useLongReadTimeout = isLoopbackPlaybackSource(sourceUrl),
-            externalSubtitles = externalSubtitles,
-        )
     }
     val dataSourceFactory = remember(
         context,
@@ -687,8 +668,6 @@ private fun ExoPlayerSurface(
         preferredSubtitleLanguage = playerSettings.preferredSubtitleLanguage,
         onMimeTypeSelected = { selectedExternalSubtitleMimeType = it },
         onSubtitleDelayChanged = { subtitleDelayMs = it },
-        sourceAudioUrl = sourceAudioUrl,
-        dataSourceFactory = networkDataSourceFactory,
     )
 
     fun syncPlayerViewKeepScreenOn() {
@@ -2878,7 +2857,6 @@ private class SubtitleOffsetRenderersFactory(
             .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
             .setAudioProcessors(arrayOf(GainAudioProcessor(audioAmplificationDbProvider)))
             .build()
-            .let(AudioSyncTaps::wrapAudioSink) // AutoSync hook: audio sync fallback hears the playing audio
     }
 
     override fun buildAudioRenderers(

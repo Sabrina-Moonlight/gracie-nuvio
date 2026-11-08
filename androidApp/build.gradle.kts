@@ -66,7 +66,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.gracie.nuvio"
+        applicationId = "com.nuvio.app"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = releaseAppVersionCode
@@ -97,8 +97,6 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            // sherpa-onnx's JNI library only needs libonnxruntime; its C/C++ API libraries are unused.
-            excludes += listOf("lib/*/libsherpa-onnx-c-api.so", "lib/*/libsherpa-onnx-cxx-api.so")
             pickFirsts += listOf(
                 "lib/*/libc++_shared.so",
                 "lib/*/libavcodec.so",

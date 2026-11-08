@@ -18,19 +18,15 @@ import androidx.media3.extractor.SniffFailure
 import androidx.media3.extractor.TrackOutput
 import androidx.media3.extractor.text.CueDecoder
 import com.nuvio.app.features.player.RewrappableExtractor
-import com.nuvio.app.features.player.audiosync.AudioSyncTaps
 import com.nuvio.app.features.player.SubtitleSyncCue
 import java.io.EOFException
 import kotlin.math.max
 
 /** Observes embedded text timestamps while forwarding the extractor output unchanged to Media3. */
 internal class AutoSyncExtractorsFactory(
-    delegate: ExtractorsFactory,
+    private val delegate: ExtractorsFactory,
     private val sourceKey: String,
 ) : ExtractorsFactory {
-    // Audio is copied too, for the audio sync fallback (idle unless it is listening).
-    private val delegate: ExtractorsFactory = AudioSyncTaps.wrapExtractors(delegate, sourceKey)
-
     init {
         EmbeddedSubtitleCueStore.reset(sourceKey)
     }

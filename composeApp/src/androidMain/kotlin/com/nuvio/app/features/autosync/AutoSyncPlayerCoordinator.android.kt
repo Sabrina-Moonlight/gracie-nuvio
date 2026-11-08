@@ -3,18 +3,14 @@
 package com.nuvio.app.features.autosync
 
 import android.content.Context
+import android.widget.Toast
 import androidx.media3.common.C
 import androidx.media3.common.MimeTypes
-import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
-import com.nuvio.app.features.autosync.bubble.AutoSyncBubbleKind
-import com.nuvio.app.features.autosync.bubble.showAutoSyncMessage
-import com.nuvio.app.features.player.AudioSyncSettings
 import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.player.PlayerSubtitleUtils
 import com.nuvio.app.features.player.SidecarSubtitleController
 import com.nuvio.app.features.player.addonSubtitleTrackId
-import com.nuvio.app.features.player.audiosync.AudioSyncFallback
 import com.nuvio.app.features.player.getAssHandlerCompat
 import com.nuvio.tv.libass.media.AssHandler
 import kotlinx.coroutines.CancellationException
@@ -26,13 +22,7 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nuvio.composeapp.generated.resources.Res
-import nuvio.composeapp.generated.resources.autosync_toast_analyzing
-import nuvio.composeapp.generated.resources.autosync_toast_audio_direct
-import nuvio.composeapp.generated.resources.autosync_toast_failed
-import nuvio.composeapp.generated.resources.autosync_toast_failed_audio_fallback
-import nuvio.composeapp.generated.resources.autosync_toast_in_sync
 import nuvio.composeapp.generated.resources.autosync_toast_no_fit
-import nuvio.composeapp.generated.resources.autosync_toast_synced
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 
@@ -49,8 +39,6 @@ internal class AutoSyncPlayerCoordinator(
     private val getPreferredLanguage: () -> String?,
     private val onMimeTypeSelected: (String) -> Unit,
     private val onSubtitleDelayChanged: (Int) -> Unit,
-    sourceAudioUrl: String? = null,
-    dataSourceFactory: DataSource.Factory? = null,
 ) {
     private var job: Job? = null
     private var selectedBodyJob: Job? = null
@@ -58,29 +46,11 @@ internal class AutoSyncPlayerCoordinator(
     private var candidates: List<AutoSyncSubtitleCandidate> = emptyList()
     private var appliedListener: ((subtitleUrl: String, delayMs: Int) -> Unit)? = null
 
-    /** Syncs to the audio when AutoSync keeps a subtitle's original timing. */
-    private val audioFallback = AudioSyncFallback(
-        context = context,
-        scope = scope,
-        player = player,
-        sidecar = sidecar,
-        sourceUrl = sourceUrl,
-        sourceAudioUrl = sourceAudioUrl,
-        dataSourceFactory = dataSourceFactory,
-        getSubtitleHeaders = getSubtitleHeaders,
-        onSubtitleReplaced = { url ->
-            onMimeTypeSelected(PlayerSubtitleUtils.mimeTypeFromUrl(url))
-            onSubtitleDelayChanged(0)
-            appliedListener?.invoke(url, 0)
-        },
-    )
-
     fun wrap(controller: PlayerEngineController): PlayerEngineController =
         AutoSyncPlayerEngineController(controller, this)
 
     fun setCandidates(value: List<AutoSyncSubtitleCandidate>) {
         candidates = value.distinctBy { it.url }
-        audioFallback.setCandidates(candidates.map { Triple(it.url, it.language, it.name) })
     }
 
     fun setAppliedListener(listener: ((subtitleUrl: String, delayMs: Int) -> Unit)?) {
@@ -89,7 +59,6 @@ internal class AutoSyncPlayerCoordinator(
 
     fun cancel() {
         operationToken++
-        audioFallback.stop()
         job?.cancel()
         job = null
         selectedBodyJob?.cancel()
@@ -99,7 +68,6 @@ internal class AutoSyncPlayerCoordinator(
     fun dispose() {
         cancel()
         forgetLibassCopies()
-        audioFallback.release()
         appliedListener = null
     }
 
@@ -121,16 +89,12 @@ internal class AutoSyncPlayerCoordinator(
         }
     }
 
-    /** Shows a message in the glass bubble (or as a plain toast when the bubble is off). */
-    private fun showMessage(token: Long, kind: AutoSyncBubbleKind, resource: StringResource) {
+    private fun showFailure(token: Long, resource: StringResource) {
         scope.launch {
             val text = getString(resource)
-            if (operationToken == token) showAutoSyncMessage(context, kind, text)
+            if (operationToken == token) Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
         }
     }
-
-    private fun showFailure(token: Long, resource: StringResource) =
-        showMessage(token, AutoSyncBubbleKind.Failure, resource)
 
     fun start(url: String, candidateScope: AutoSyncCandidateScope, fallbackAttach: (String) -> Unit) {
         cancel()
@@ -172,8 +136,6 @@ internal class AutoSyncPlayerCoordinator(
             return
         }
         onMimeTypeSelected(PlayerSubtitleUtils.mimeTypeFromUrl(url))
-        audioFallback.arm() // listen to the audio meanwhile, so a takeover starts with audio ready
-        showMessage(token, AutoSyncBubbleKind.Working, Res.string.autosync_toast_analyzing)
         player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
             .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
             .build()
@@ -197,15 +159,6 @@ internal class AutoSyncPlayerCoordinator(
 
         job = scope.launch {
             try {
-                // hook: audio first. With the audio sync on, skip the search over other subtitles
-                // (it rarely pays off) and sync the chosen subtitle straight to the audio.
-                if (AudioSyncSettings.fallbackEnabled.value &&
-                    sidecar.activeSidecarSubtitleKey == url &&
-                    audioFallback.takeOver(url)
-                ) {
-                    showMessage(token, AutoSyncBubbleKind.Working, Res.string.autosync_toast_audio_direct)
-                    return@launch
-                }
                 var outcome: AutoSyncAnalysisOutcome? = null
                 val resolved = AutomaticSubtitleSync.findTimelineRetime(
                     sourceKey = sourceUrl,
@@ -224,24 +177,7 @@ internal class AutoSyncPlayerCoordinator(
                 if (token != operationToken) return@launch
                 if (resolved == null) {
                     restoreOriginalIfRelevant()
-                    // Original timing kept: sync it to the audio instead, when AutoSync found nothing
-                    // to align to or only a weak match (not when the subtitle itself failed to load).
-                    val audioTakesOver = outcome != AutoSyncAnalysisOutcome.SUBTITLE_UNAVAILABLE &&
-                        sidecar.activeSidecarSubtitleKey == url &&
-                        audioFallback.takeOver(url)
-                    if (audioTakesOver) {
-                        showMessage(token, AutoSyncBubbleKind.Working, Res.string.autosync_toast_failed_audio_fallback)
-                    } else {
-                        audioFallback.disarm()
-                        showFailure(
-                            token,
-                            if (outcome == AutoSyncAnalysisOutcome.NO_FIT) {
-                                Res.string.autosync_toast_no_fit
-                            } else {
-                                Res.string.autosync_toast_failed
-                            },
-                        )
-                    }
+                    showNoFit(token, outcome)
                     return@launch
                 }
 
@@ -270,28 +206,19 @@ internal class AutoSyncPlayerCoordinator(
                 }
                 currentCoroutineContext().ensureActive()
                 if (token != operationToken) return@launch
-                audioFallback.disarm() // AutoSync decided on its own: nothing is left for the audio
                 if (!applied) {
                     restoreOriginalIfRelevant()
-                    showFailure(token, Res.string.autosync_toast_failed)
                     return@launch
                 }
                 onMimeTypeSelected(PlayerSubtitleUtils.mimeTypeFromUrl(chosenUrl))
                 onSubtitleDelayChanged(0)
                 appliedListener?.invoke(chosenUrl, 0)
                 AutoSyncSyncedSubtitle.mark(chosenUrl)
-                showMessage(
-                    token,
-                    AutoSyncBubbleKind.Success,
-                    if (withinTolerance) Res.string.autosync_toast_in_sync else Res.string.autosync_toast_synced,
-                )
             } catch (cancel: CancellationException) {
                 throw cancel
             } catch (_: Exception) {
                 if (token != operationToken) return@launch
-                audioFallback.disarm()
                 restoreOriginalIfRelevant()
-                showFailure(token, Res.string.autosync_toast_failed)
             }
         }
     }
