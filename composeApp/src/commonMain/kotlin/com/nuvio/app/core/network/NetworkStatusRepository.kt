@@ -136,7 +136,12 @@ object NetworkStatusRepository {
             return NetworkCondition.NoInternet
         }
 
-        val supabaseReachable = SupabaseEndpointConfig.restEndpointUrls().any { url ->
+        // gracie: sin servidor de cuentas configurado (build sin Supabase) no hay nada que sondear;
+        // antes esto se marcaba "ServersUnreachable" y la app dejaba de pedir subtitulos de addons.
+        val restEndpoints = SupabaseEndpointConfig.restEndpointUrls()
+        if (restEndpoints.isEmpty()) return NetworkCondition.Online
+
+        val supabaseReachable = restEndpoints.any { url ->
             probeReachable(
                 url = url,
                 headers = mapOf("apikey" to ServerConfigurationRepository.active.value.publishableKey),
