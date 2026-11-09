@@ -97,6 +97,18 @@ private val BubbleCorner = 23.dp
 private const val BubblePivotX = 0.5f
 private const val BubblePivotY = 0.6f
 private val OrbSize = 30.dp
+/** Lift used until the player has shown its time text once and the real position is known. */
+private val BubbleBottomLift = 14.dp
+/** Padding the bubble adds around its orb, top plus bottom (the glass fills the padded box). */
+private val BubbleVerticalPadding = 16.dp
+
+/**
+ * Where the player's "22:35 / 33:41" text ends, in window pixels. The player writes it whenever the controls
+ * are laid out, so the bubble can sit exactly midway between that text and the bottom edge.
+ */
+internal object AutoSyncBubbleAnchor {
+    var timeBottomWindowY by mutableFloatStateOf(Float.NaN)
+}
 /** How far to the right of its resting spot the bubble starts before sliding in. */
 private val AppearSlide = 72.dp
 /** How much video around the bubble is copied, so the edges have something to bend in. */
@@ -125,10 +137,24 @@ internal fun BoxScope.AutoSyncBubbleToastHost(controlsVisible: Boolean) {
         AutoSyncBubbleToasts.attachHost()
         onDispose { AutoSyncBubbleToasts.detachHost() }
     }
+    var hostBottom by remember { mutableFloatStateOf(Float.NaN) }
+    Spacer(Modifier.matchParentSize().onGloballyPositioned { hostBottom = it.boundsInWindow().bottom })
     val enabled by AutoSyncBubbleToasts.enabled.collectAsState()
     val message by AutoSyncBubbleToasts.current.collectAsState()
     val current = message
     if (!enabled || current == null) return
+    val timeBottom = AutoSyncBubbleAnchor.timeBottomWindowY
+    val density = LocalDensity.current
+    // Midway between the time text and the bottom edge: equal gap above and below the bubble.
+    val lift = if (hostBottom.isNaN() || timeBottom.isNaN()) {
+        BubbleBottomLift
+    } else {
+        with(density) {
+            val spaceDp = (hostBottom - timeBottom).toDp().value
+            val bubbleDp = (OrbSize + BubbleVerticalPadding).value
+            ((spaceDp - bubbleDp) / 2f).coerceAtLeast(0f).dp
+        }
+    }
     // hook: right side, vertically centred, so it never covers the subtitles (bottom centre)
     // nor the top bar and bottom seek bar of the controls. It stays put when controls show.
     key(current.session) {
@@ -136,7 +162,7 @@ internal fun BoxScope.AutoSyncBubbleToastHost(controlsVisible: Boolean) {
             message = current,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp),
+                .padding(end = 16.dp, bottom = lift),
         )
     }
 }
@@ -396,7 +422,7 @@ private fun BubbleContent(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+        modifier = modifier.padding(horizontal = 8.dp, vertical = BubbleVerticalPadding / 2),
     ) {
         Canvas(Modifier.size(OrbSize), onDraw = droplet)
         AnimatedVisibility(

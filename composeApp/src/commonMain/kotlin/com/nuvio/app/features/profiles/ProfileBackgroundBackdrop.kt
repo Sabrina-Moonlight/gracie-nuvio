@@ -19,6 +19,12 @@ import com.nuvio.app.features.membership.ProfileBackgroundRepository
 import com.nuvio.app.features.membership.ProfileBackgroundSelection
 import com.nuvio.app.features.membership.resolveProfileBackground
 
+/**
+ * Backdrop colour while no profile is loaded yet (app launch). The mesh darkens its base colour a lot,
+ * so this light mint is the base that renders as #2D473D at the top-left of the screen.
+ */
+private val LaunchBackdropGreen = Color(0xFF87D6B8)
+
 @Composable
 fun ProfileBackgroundBackdrop(
     profile: NuvioProfile?,
@@ -30,7 +36,7 @@ fun ProfileBackgroundBackdrop(
     }.collectAsStateWithLifecycle()
     val backgroundCatalog by ProfileBackgroundRepository.catalog.collectAsStateWithLifecycle()
     val profileColor = remember(profile?.avatarColorHex) {
-        profile?.avatarColorHex?.let(::parseHexColor) ?: Color(0xFF1E88E5)
+        profile?.avatarColorHex?.let(::parseHexColor) ?: LaunchBackdropGreen
     }
     val backgroundSelection = remember(
         profile?.profileBackgroundId,

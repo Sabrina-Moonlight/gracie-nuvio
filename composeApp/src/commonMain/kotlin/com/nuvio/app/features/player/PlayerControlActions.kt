@@ -32,6 +32,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import com.nuvio.app.features.autosync.bubble.AutoSyncBubbleAnchor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -199,6 +202,9 @@ internal fun PlayerControlActions(
                     style = MaterialTheme.nuvioTypeScale.bodyMd.copy(fontSize = (metrics.timeSize.value + 2).sp),
                     color = Color.White.copy(alpha = 0.9f),
                     maxLines = 1,
+                    modifier = Modifier.onGloballyPositioned {
+                        AutoSyncBubbleAnchor.timeBottomWindowY = it.boundsInWindow().bottom
+                    },
                 )
             }
         }
