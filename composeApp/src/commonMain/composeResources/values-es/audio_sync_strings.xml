@@ -8,4 +8,6 @@
     <string name="player_audio_sync_synced">Sincronización de subtítulos confirmada (%1$s)</string>
     <string name="player_audio_sync_synced_rate">Sincronización de subtítulos confirmada (%1$s, velocidad de fotogramas corregida)</string>
     <string name="player_audio_sync_adjusted">Cambió el tiempo de los subtítulos; se volvió a sincronizar (%1$s)</string>
+    <string name="settings_playback_audio_sync_mobile_data">Muestrear toda la película con datos móviles</string>
+    <string name="settings_playback_audio_sync_mobile_data_description">Sincroniza mucho más rápido leyendo unas pocas partes cortas de la película antes de reproducirlas. Usa hasta 150 MB por película</string>
 </resources>

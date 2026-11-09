@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_color_title">Color del perfil</string>
+    <string name="profile_color_description">Elige un color para este perfil. Tiñe el fondo del perfil.</string>
+</resources>

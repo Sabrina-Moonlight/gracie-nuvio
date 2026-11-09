@@ -85,6 +85,14 @@ internal class AudioSyncFallback(
     private var ticker: Job? = null
     private var takeOverJob: Job? = null
 
+    // The audio sync starts together with AutoSync, but silently: it shows nothing and changes no
+    // subtitle until AutoSync gives up and [takeOver] hands it the subtitle.
+    private var earlyJob: Job? = null
+    @Volatile private var earlyKey: String? = null
+    @Volatile private var visible = false
+    @Volatile private var heldStatus: AudioSyncStatus? = null
+    @Volatile private var pendingSwitch: String? = null
+
     private val trackListener = object : Player.Listener {
         override fun onTracksChanged(tracks: Tracks) {
             controller.onAudioTrackSelected(tracks.selectedAudioFormat())
@@ -111,7 +119,7 @@ internal class AudioSyncFallback(
         AudioSyncTaps.attach(controller)
         // Turned off in Settings mid-playback: the subtitle goes back to AutoSync's (original) timing.
         scope.launch {
-            AudioSyncSettings.fallbackEnabled.collect { enabled -> if (!enabled && target.get() != null) stop() }
+            AudioSyncSettings.fallbackEnabled.collect { enabled -> if (!enabled && (target.get() != null || earlyKey != null)) stop() }
         }
     }
 
@@ -135,7 +143,7 @@ internal class AudioSyncFallback(
     }
 
     /** AutoSync started analysing a subtitle: listen meanwhile, so a takeover starts with audio. */
-    fun arm() {
+    fun arm(url: String) {
         stop()
         if (!AudioSyncSettings.fallbackEnabled.value) return
         controller.enabled = true
@@ -147,6 +155,24 @@ internal class AudioSyncFallback(
             controller.setReferenceSubtitles(candidates)
         }
         startTicker()
+        startEarly(url)
+    }
+
+    /** Begins syncing [url] to the audio right away, without showing or changing anything yet. */
+    private fun startEarly(url: String) {
+        earlyJob = scope.launch {
+            var waitedMs = 0L
+            while (sidecar.activeSidecarSubtitleKey != url || sidecar.sidecarTimedCues.isEmpty()) {
+                if (waitedMs >= EARLY_CUES_WAIT_MS) return@launch
+                delay(CUES_POLL_MS)
+                waitedMs += CUES_POLL_MS
+            }
+            val cues = sidecar.sidecarTimedCues
+            if (!controller.enabled || cues.isEmpty()) return@launch
+            earlyKey = url
+            SyncLog.i("starting the audio sync of $url together with AutoSync")
+            controller.startSession(url, cues)
+        }
     }
 
     /** AutoSync applied its own result: nothing is left for the audio to do. */
@@ -165,6 +191,10 @@ internal class AudioSyncFallback(
             return false
         }
         takeOverJob?.cancel()
+        if (earlyKey != url) {
+            earlyJob?.cancel()
+            earlyJob = null
+        }
         takeOverJob = scope.launch {
             var waitedMs = 0L
             while (sidecar.activeSidecarSubtitleKey == url && sidecar.sidecarTimedCues.isEmpty() && waitedMs < CUES_WAIT_MS) {
@@ -177,8 +207,15 @@ internal class AudioSyncFallback(
             target.set(Target(url, cues, generation))
             appliedModel = null
             startTicker()
-            SyncLog.i("AutoSync kept the original timing of $url; syncing it to the audio")
-            controller.startSession(url, cues)
+            visible = true
+            if (earlyKey == url) {
+                SyncLog.i("AutoSync kept the original timing of $url; the audio sync already running takes over")
+                heldStatus?.let { held -> heldStatus = null; onStatus(held) }
+                pendingSwitch?.let { held -> pendingSwitch = null; replaceSubtitle(held) }
+            } else {
+                SyncLog.i("AutoSync kept the original timing of $url; syncing it to the audio")
+                controller.startSession(url, cues)
+            }
         }
         return true
     }
@@ -187,6 +224,12 @@ internal class AudioSyncFallback(
     fun stop() {
         takeOverJob?.cancel()
         takeOverJob = null
+        earlyJob?.cancel()
+        earlyJob = null
+        earlyKey = null
+        visible = false
+        heldStatus = null
+        pendingSwitch = null
         ticker?.cancel()
         ticker = null
         target.getAndSet(null)?.let { previous ->
@@ -244,6 +287,11 @@ internal class AudioSyncFallback(
 
     /** Automatic switch to another subtitle that fits the audio, as AutoSync replaces a subtitle. */
     private fun replaceSubtitle(url: String) {
+        if (!visible) {
+            // Found while AutoSync still decides: kept until the audio takes over.
+            if (earlyKey != null) pendingSwitch = url
+            return
+        }
         scope.launch {
             val current = target.get() ?: return@launch
             val cues = withContext(Dispatchers.IO) {
@@ -271,6 +319,11 @@ internal class AudioSyncFallback(
 
     /** Keeps the subtitle list's "Auto synced" chip in step with the audio sync's result. */
     private fun onStatus(status: AudioSyncStatus) {
+        if (!visible) {
+            // AutoSync still decides: nothing is shown or marked until the audio takes over.
+            if (earlyKey != null) heldStatus = status
+            return
+        }
         when (status) {
             is AudioSyncStatus.Synced, is AudioSyncStatus.Adjusted ->
                 target.get()?.let { AutoSyncSyncedSubtitle.mark(it.url) }
@@ -290,6 +343,7 @@ internal class AudioSyncFallback(
     companion object {
         private const val TICK_MS = 250L
         private const val CUES_WAIT_MS = 5_000L
+        private const val EARLY_CUES_WAIT_MS = 20_000L
         private const val CUES_POLL_MS = 50L
 
         /** Registers settings persistence, the speech model and the log. Call once at app start. */

@@ -5,8 +5,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.features.autosync.AutoSyncPreferencesRepository
+import com.nuvio.app.features.player.AudioSyncSettings
 import com.nuvio.app.features.player.SubtitleLanguageOption
+import com.nuvio.app.isIos
 import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.settings_playback_audio_sync_mobile_data
+import nuvio.composeapp.generated.resources.settings_playback_audio_sync_mobile_data_description
 import nuvio.composeapp.generated.resources.settings_playback_auto_sync_mode_aggressive
 import nuvio.composeapp.generated.resources.settings_playback_auto_sync_mode_aggressive_description
 import nuvio.composeapp.generated.resources.settings_playback_auto_sync_mode_passive
@@ -37,6 +41,8 @@ internal fun AutoSyncPlaybackSettingsRows(
         AutoSyncPreferencesRepository.ensureLoaded()
         AutoSyncPreferencesRepository.syncToleranceMs
     }.collectAsStateWithLifecycle()
+
+    val samplingOnMobileData by AudioSyncSettings.samplingOnMobileData.collectAsStateWithLifecycle()
 
     val preferredLanguageAvailable =
         preferredSubtitleLanguage.isNotBlank() &&
@@ -95,5 +101,15 @@ internal fun AutoSyncPlaybackSettingsRows(
             val next = options[(options.indexOf(syncToleranceMs) + 1) % options.size]
             AutoSyncPreferencesRepository.setSyncToleranceMs(next)
         },
+    )
+    if (isIos) return
+    SettingsGroupDivider(isTablet = isTablet)
+    SettingsSwitchRow(
+        title = stringResource(Res.string.settings_playback_audio_sync_mobile_data),
+        description = stringResource(Res.string.settings_playback_audio_sync_mobile_data_description),
+        checked = samplingOnMobileData,
+        enabled = enabled,
+        isTablet = isTablet,
+        onCheckedChange = AudioSyncSettings::setSamplingOnMobileData,
     )
 }

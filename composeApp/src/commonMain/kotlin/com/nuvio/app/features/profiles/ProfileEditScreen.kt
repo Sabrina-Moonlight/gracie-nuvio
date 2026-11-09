@@ -2,6 +2,7 @@ package com.nuvio.app.features.profiles
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,6 +74,7 @@ fun ProfileEditScreen(
     val fallbackColorHex = currentProfile?.avatarColorHex ?: PROFILE_COLORS.first()
 
     var name by rememberSaveable { mutableStateOf(currentProfile?.name ?: "") }
+    var selectedColorHex by rememberSaveable { mutableStateOf(fallbackColorHex) }
     var selectedAvatarId by rememberSaveable { mutableStateOf(currentProfile?.avatarId) }
     var avatarUrl by rememberSaveable { mutableStateOf(currentProfile?.avatarUrl.orEmpty()) }
     var selectedBackgroundId by rememberSaveable { mutableStateOf(currentProfile?.profileBackgroundId) }
@@ -108,8 +110,8 @@ fun ProfileEditScreen(
         selectedAvatarId?.let { id -> avatars.find { it.id == id } }
     }
     val visibleAvatarItem = if (customAvatarUrl == null) selectedAvatarItem else null
-    val previewAccent = remember(visibleAvatarItem, fallbackColorHex) {
-        parseHexColor(visibleAvatarItem?.bgColor ?: fallbackColorHex)
+    val previewAccent = remember(visibleAvatarItem, selectedColorHex) {
+        parseHexColor(visibleAvatarItem?.bgColor ?: selectedColorHex)
     }
 
     NuvioScreen(modifier = modifier) {
@@ -168,6 +170,47 @@ fun ProfileEditScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
+                    }
+                }
+            }
+        }
+
+        if (visibleAvatarItem == null) {
+            item {
+                NuvioSurfaceCard {
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Text(
+                            text = stringResource(Res.string.profile_color_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = stringResource(Res.string.profile_color_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        PROFILE_COLORS.chunked(4).forEach { rowColors ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            ) {
+                                rowColors.forEach { hex ->
+                                    val chosen = hex.equals(selectedColorHex, ignoreCase = true)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(48.dp)
+                                            .clip(CircleShape)
+                                            .background(parseHexColor(hex))
+                                            .border(
+                                                width = if (chosen) 3.dp else 1.dp,
+                                                color = if (chosen) Color.White else Color.White.copy(alpha = 0.2f),
+                                                shape = CircleShape,
+                                            )
+                                            .clickable { selectedColorHex = hex },
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -282,7 +325,7 @@ fun ProfileEditScreen(
                 onClick = {
                     isSaving = true
                     scope.launch {
-                        val avatarColorHex = visibleAvatarItem?.bgColor ?: fallbackColorHex
+                        val avatarColorHex = visibleAvatarItem?.bgColor ?: selectedColorHex
                         if (isNew) {
                             ProfileRepository.createProfile(
                                 name = name,

@@ -8,4 +8,6 @@
     <string name="player_audio_sync_synced">Subtitle sync confirmed (%1$s)</string>
     <string name="player_audio_sync_synced_rate">Subtitle sync confirmed (%1$s, frame rate corrected)</string>
     <string name="player_audio_sync_adjusted">Subtitle timing changed, re-synced (%1$s)</string>
+    <string name="settings_playback_audio_sync_mobile_data">Sample across the film on mobile data</string>
+    <string name="settings_playback_audio_sync_mobile_data_description">Syncs much faster by reading a few short parts of the film ahead of playback. Uses up to 150 MB per film</string>
 </resources>

@@ -474,13 +474,16 @@ internal class AutoSyncPlayerCoordinator(
         }
 
         onMimeTypeSelected(PlayerSubtitleUtils.mimeTypeFromUrl(url))
-        audioFallback.arm()
+        audioFallback.arm(url)
         player.trackSelectionParameters = player.trackSelectionParameters
             .buildUpon()
             .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)
             .build()
 
         job = scope.launch {
+            // Gracie: subtitles are synced to the audio only; AutoSync's own analysis is skipped.
+            if (!audioFallback.takeOver(url)) restoreOriginalSubtitleIfSidecarFailed()
+            if (true) return@launch
             var analysisOutcome: AutoSyncAnalysisOutcome? = null
             var searchLanguage = getPreferredLanguage()
             var resolved = AutomaticSubtitleSync.findTimelineRetime(
