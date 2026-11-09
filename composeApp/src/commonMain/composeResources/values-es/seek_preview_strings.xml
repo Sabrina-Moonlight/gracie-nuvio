@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Seek-preview (Seekr) strings, kept apart from strings.xml so upstream merges stay clean. -->
+<resources>
+    <string name="player_seek_preview_sync">Sincronizar vista previa</string>
+    <string name="player_seek_preview_sync_hint">Ajusta hasta que la miniatura coincida con el fotograma que se reproduce detrás de este panel.</string>
+    <string name="player_seek_preview_sync_suggested">Sugerido: %1$s (diferencia de duración vs. la fuente de vista previa)</string>
+    <string name="player_seek_preview_sync_use_suggested">Usar sugerido</string>
+    <string name="player_seek_preview_sync_reset">Restablecer</string>
+    <string name="cd_seek_preview_sync">Sincronizar vista previa</string>
+    <string name="settings_seek_preview_local">Generar vistas previas en el dispositivo</string>
+    <string name="settings_seek_preview_local_description">Crea miniaturas a partir de lo que ya descargó la reproducción, así siempre coinciden y no consumen datos extra. Seekr completa las partes que aún no has visto.</string>
+</resources>

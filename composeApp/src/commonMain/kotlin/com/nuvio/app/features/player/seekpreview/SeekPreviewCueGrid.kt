@@ -65,6 +65,102 @@ internal data class SeekPreviewCue(
 }
 
 /**
+ * Grid-locked scrubbing: turns a free-form seek delta into a move of whole preview cues.
+ *
+ * ### Why
+ * The scrubber can address every millisecond, but previews exist only once per cue. Scrubbing
+ * freely therefore lands the user on positions that no thumbnail describes, and the frame they
+ * were shown can be several seconds away from where they end up — worst of all across a shot
+ * boundary, where "a few seconds out" reads as "the wrong scene". Rather than approximating
+ * the missing frames, this narrows the claim: every position the user can stop on is a
+ * position we hold a real frame for, so preview and playback always agree.
+ *
+ * ### How
+ * The cue window resolved for the frame currently on screen (see [SeekPreviewCue]) is the only
+ * input needed — no global cue table, which the SDK does not expose. Stepping forward one cue
+ * is "seek to this cue's end", which is exactly the next cue's start; larger steps extrapolate
+ * from the cue's own length. Extrapolation only ever picks the *candidate* position: once the
+ * thumbnail for it resolves, the true cue start comes back and [alignedTargetMs] snaps the
+ * pending position onto it, so a non-uniform cue grid self-corrects within one frame and can
+ * never drift or stall.
+ */
+internal object SeekPreviewCueStepper {
+
+    /**
+     * The position to scrub to when the user asks to move by [deltaMs] from [fromMs].
+     *
+     * Steps are measured from the cue the preview is *showing* (see [SeekPreviewCue.represents]),
+     * not the one containing [fromMs], so one press always advances the filmstrip by exactly one
+     * frame. From 18:29 — where the centre frame is 18:30 — forward lands on 18:40 and back on
+     * 18:20, rather than nudging a single second onto the frame already on screen.
+     *
+     * Falls back to plain [fromMs] + [deltaMs] whenever grid-locking cannot be justified —
+     * no cue resolved yet, a degenerate cue, or a cue that does not describe [fromMs]
+     * (which happens at the very ends of the track, where the SDK clamps its lookup). Keeping
+     * the free-form path for those cases preserves the user's ability to reach 0 and
+     * [durationMs] exactly.
+     */
+    fun targetMs(
+        cue: SeekPreviewCue?,
+        fromMs: Long,
+        deltaMs: Long,
+        durationMs: Long
+    ): Long {
+        val maxMs = if (durationMs > 0L) durationMs else Long.MAX_VALUE
+        val free = { (fromMs + deltaMs).coerceIn(0L, maxMs) }
+        if (cue == null || !cue.isValid || !cue.represents(fromMs) || deltaMs == 0L) return free()
+
+        val cueMs = cue.durationMs
+        val steps = (abs(deltaMs).toDouble() / cueMs).roundToLong().coerceAtLeast(1L)
+        val target = if (deltaMs > 0L) {
+            // The cue's end *is* the next cue's start, so a single step is exact.
+            cue.endMs + (steps - 1L) * cueMs
+        } else {
+            cue.startMs - steps * cueMs
+        }
+        return target.coerceIn(0L, maxMs)
+    }
+
+    /**
+     * The position [pendingMs] should be corrected to now that [cue] has resolved, or `null`
+     * to leave it untouched.
+     *
+     * Snapping the pending position onto the resolved cue's start is what makes the displayed
+     * time describe the frame on screen rather than an arbitrary point near it. It is a no-op
+     * once aligned, so it converges immediately and does not fight the user.
+     *
+     * It is deliberately skipped at the media boundaries. A cue window is expressed in the
+     * playback timebase, so a non-zero preview sync offset routinely pushes the first cue's
+     * start below `0` or the last cue's end past [durationMs]; snapping inside such a cue
+     * would drag the pending position out of the seekable range, or pull it a full cue back
+     * from an end the user had just reached — making 0 and [durationMs] unreachable and
+     * leaving the committed seek disagreeing with the time on screen.
+     *
+     * [snap] may move the cue's start onto a nearby keyframe of the playing file (see
+     * [SEEK_PREVIEW_KEYFRAME_SNAP_MS]); it must stay well inside half a cue, so the snapped
+     * position is still represented by the same cue and the alignment stays settled.
+     */
+    fun alignedTargetMs(
+        cue: SeekPreviewCue?,
+        pendingMs: Long?,
+        durationMs: Long,
+        snap: (Long) -> Long = { it },
+    ): Long? {
+        if (cue == null || !cue.isValid || pendingMs == null) return null
+        if (!cue.represents(pendingMs)) return null
+        // The ends of the media are destinations in their own right.
+        if (pendingMs <= 0L) return null
+        if (durationMs > 0L && pendingMs >= durationMs) return null
+
+        val target = snap(cue.startMs)
+        if (target < 0L) return null
+        if (durationMs > 0L && target > durationMs) return null
+        if (target == pendingMs) return null
+        return target
+    }
+}
+
+/**
  * How far a scrub target may move to land on a keyframe of the playing file. A keyframe is the
  * one position a player can seek to exactly without decoding forward, so this makes the seek
  * both precise and as fast as it gets. Seekr frames are themselves only within about 3 s of

@@ -107,6 +107,13 @@ object StreamsRepository {
         val playerSettings = PlayerSettingsRepository.uiState.value
         val debridSettings = DebridSettingsRepository.snapshot()
         val streamBadgeRules = StreamBadgeSettingsRepository.snapshot()
+        val connectionFit = StreamConnectionFit.capture(
+            type = type,
+            videoId = videoId,
+            parentMetaId = parentMetaId,
+            season = season,
+            episode = episode,
+        )
         val autoPlayMode = playerSettings.streamAutoPlayMode
         val isAutoPlayEnabled = !manualSelection && autoPlayMode != StreamAutoPlayMode.MANUAL &&
             !(autoPlayMode == StreamAutoPlayMode.REGEX_MATCH &&
@@ -151,10 +158,11 @@ object StreamsRepository {
                 streams = embeddedStreams,
                 isLoading = false,
             )
-            val presentedGroup = StreamBadgePresentation.apply(
+            val badgeGroup = StreamBadgePresentation.apply(
                 groups = listOf(group),
                 rules = streamBadgeRules,
             ).firstOrNull() ?: group
+            val presentedGroup = connectionFit?.apply(badgeGroup) ?: badgeGroup
             _uiState.value = StreamsUiState(
                 requestToken = requestToken,
                 groups = listOf(presentedGroup),
@@ -362,10 +370,11 @@ object StreamsRepository {
                     groups = listOf(group),
                     rules = streamBadgeRules,
                 ).firstOrNull() ?: group
-                return DebridStreamPresentation.apply(
+                val presentedGroup = DebridStreamPresentation.apply(
                     groups = listOf(badgeGroup),
                     settings = debridSettings,
                 ).firstOrNull() ?: badgeGroup
+                return connectionFit?.apply(presentedGroup) ?: presentedGroup
             }
 
             fun publishAddonGroup(group: AddonStreamGroup) {
@@ -578,6 +587,7 @@ object StreamsRepository {
                                             group.streams
                                         } else {
                                             (group.streams + completion.streams).sortedForGroupedDisplay()
+                                                .let { streams -> connectionFit?.apply(streams) ?: streams }
                                         }
                                         val stillLoading = remaining > 0
                                         val finalError = if (mergedStreams.isEmpty() && !stillLoading) {

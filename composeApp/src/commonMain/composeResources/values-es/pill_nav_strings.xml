@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_pill_nav_section">Navegación</string>
+    <string name="settings_pill_nav_title">Menú píldora</string>
+    <string name="settings_pill_nav_description">Un menú de texto flotante en la parte superior de la pantalla con un resaltado deslizante. Sustituye la barra de navegación.</string>
+</resources>

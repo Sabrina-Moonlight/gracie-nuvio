@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="library_calendar_empty_message">Las películas y episodios guardados con fechas exactas aparecerán aquí.</string>
+    <string name="library_calendar_empty_title">No hay fechas en el calendario</string>
+    <string name="library_calendar_exact_dates_only">Muestra títulos guardados y estrenos de episodios con fechas exactas.</string>
+    <string name="library_calendar_loading">Cargando estrenos guardados...</string>
+    <string name="library_calendar_agenda">Agenda de estrenos</string>
+    <string name="library_calendar_available">Disponible ahora</string>
+    <string name="library_calendar_month_events">Este mes</string>
+    <string name="library_calendar_next_month">Mes siguiente</string>
+    <string name="library_calendar_no_day_events_message">Elige una fecha marcada para ver qué llega.</string>
+    <string name="library_calendar_no_day_events_title">Nada programado este día</string>
+    <string name="library_calendar_no_month_events">No hay estrenos en este mes.</string>
+    <string name="library_calendar_open">Abrir calendario</string>
+    <string name="library_calendar_previous_month">Mes anterior</string>
+    <string name="library_calendar_release_count">%1$d estrenos</string>
+    <string name="library_calendar_release_count_single">1 estreno</string>
+    <string name="library_calendar_selected_day">Estrenos del %1$s</string>
+    <string name="library_calendar_today">Hoy</string>
+    <string name="library_calendar_title">Calendario</string>
+    <string name="library_calendar_upcoming">Próximamente</string>
+    <string name="library_calendar_weekday_fri">Vie</string>
+    <string name="library_calendar_weekday_mon">Lun</string>
+    <string name="library_calendar_weekday_sat">Sáb</string>
+    <string name="library_calendar_weekday_sun">Dom</string>
+    <string name="library_calendar_weekday_thu">Jue</string>
+    <string name="library_calendar_weekday_tue">Mar</string>
+    <string name="library_calendar_weekday_wed">Mié</string>
+</resources>

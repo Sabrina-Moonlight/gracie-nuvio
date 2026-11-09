@@ -6,8 +6,15 @@
     <string name="settings_playback_auto_sync_mode_aggressive_description">Compara otros subtítulos y pistas integradas para encontrar una coincidencia más precisa antes de sincronizar. Solo aplica coincidencias fiables.</string>
     <string name="settings_playback_auto_sync_mode_passive">Búsqueda de sincronización automática: rápida</string>
     <string name="settings_playback_auto_sync_mode_passive_description">Usa antes la primera coincidencia clara. Al igual que en el modo exhaustivo, solo aplica coincidencias fiables.</string>
+    <string name="settings_playback_auto_sync_debug_logs">Registros de depuración de Auto Sync</string>
+    <string name="settings_playback_auto_sync_debug_logs_description">Conserva registros detallados de Auto Sync y copia el informe al portapapeles tras cada ejecución.</string>
     <string name="settings_playback_auto_sync_tolerance">Tolerancia de sincronización automática: %1$s</string>
     <string name="settings_playback_auto_sync_tolerance_description">Mantiene la temporización original si la sincronización no la desplaza más que este valor. Toca para cambiarlo.</string>
     <string name="settings_playback_auto_sync_tolerance_off">Desactivada</string>
     <string name="settings_playback_auto_sync_tolerance_value">%1$d ms</string>
+    <string name="autosync_retry_action">¿AutoSync desactivado? Probar otra referencia</string>
+    <string name="autosync_retry_trying">Probando otra referencia…</string>
+    <string name="autosync_retry_updated">AutoSync actualizado. Vuelve a intentarlo si el ritmo sigue fallando.</string>
+    <string name="autosync_retry_exhausted">No hay más referencias adecuadas. Se mantiene la temporización actual.</string>
+    <string name="autosync_retry_failed">No se pudo probar otra referencia. Se mantiene la temporización actual.</string>
 </resources>

@@ -80,6 +80,10 @@ import com.nuvio.app.features.autosync.AutoSyncPreferencesRepository
 import com.nuvio.app.features.autosync.LIBMPV_AUTOSYNC_FILE_PREFIX
 import com.nuvio.app.features.autosync.rememberAutoSyncCoordinator
 import com.nuvio.app.features.autosync.rememberLibmpvAutoSyncCoordinator
+import com.nuvio.app.features.player.volumeboost.ExoVolumeBoostEffect
+import com.nuvio.app.features.streams.PlaybackThroughputSampler
+import com.nuvio.app.features.player.volumeboost.VolumeBoost
+import com.nuvio.app.features.player.volumeboost.mpvVolumeForGains
 import com.nuvio.app.R
 import com.nuvio.app.features.streams.normalizeStreamType
 import `is`.xyz.mpv.MPV
@@ -325,6 +329,7 @@ private fun ExoPlayerSurface(
                 } else factory
             }
     }
+    val networkBytesCounter = remember { AtomicLong() }
     val dataSourceFactory = remember(
         context,
         sourceUrl,
@@ -345,7 +350,7 @@ private fun ExoPlayerSurface(
             useYoutubeChunkedPlayback = useYoutubeChunkedPlayback,
             useLongReadTimeout = loopbackSource,
             externalSubtitles = externalSubtitles,
-        )
+        ).countingNetworkBytes(networkBytesCounter)
         val mimeType = playbackMediaItemFromUrl(
             url = sourceUrl,
             responseHeaders = sanitizedSourceResponseHeaders,
@@ -382,6 +387,10 @@ private fun ExoPlayerSurface(
             media = media,
             subtitles = subtitleDataSourceFactory(context, externalSubtitles),
         )
+    }
+    val throughputSampler = remember(sourceUrl) { PlaybackThroughputSampler(sourceUrl) }
+    DisposableEffect(throughputSampler) {
+        onDispose { throughputSampler.finish() }
     }
 
     fun ExoPlayer.setPlaybackMediaItem(videoMediaItem: MediaItem, startPositionMs: Long? = null) {
@@ -596,6 +605,7 @@ private fun ExoPlayerSurface(
     DisposableEffect(nowPlayingController) {
         onDispose { nowPlayingController.release() }
     }
+    ExoVolumeBoostEffect(exoPlayer) // Nuvio RS: volume boost
 
     val audioFocus = remember(context, exoPlayer) {
         PlayerAudioFocus(
@@ -1260,6 +1270,18 @@ private fun ExoPlayerSurface(
         }
     }
 
+    LaunchedEffect(exoPlayer, throughputSampler) {
+        networkBytesCounter.set(0L)
+        while (isActive) {
+            throughputSampler.onBytesTick(
+                bytes = networkBytesCounter.getAndSet(0L),
+                isFetching = !exoPlayer.isCurrentMediaItemLive && exoPlayer.duration != C.TIME_UNSET &&
+                    exoPlayer.isLoading,
+            )
+            delay(THROUGHPUT_TICK_MS)
+        }
+    }
+
     Box(modifier = modifier) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
@@ -1541,6 +1563,29 @@ private fun LibmpvPlayerSurface(
         }
     }
 
+    LaunchedEffect(playerViewRef) { // Nuvio RS: volume boost
+        val view = playerViewRef ?: return@LaunchedEffect
+        VolumeBoost.gainDb.collect { view.applyVolumeBoostDb(it) }
+    }
+
+    val throughputSampler = remember(sourceUrl) { PlaybackThroughputSampler(sourceUrl) }
+    DisposableEffect(throughputSampler) {
+        onDispose { throughputSampler.finish() }
+    }
+
+    LaunchedEffect(playerViewRef, throughputSampler) {
+        val view = playerViewRef ?: return@LaunchedEffect
+        while (isActive) {
+            view.networkActivity()?.let { activity ->
+                throughputSampler.onRateTick(
+                    bytesPerSecond = activity.bytesPerSecond,
+                    isFetching = activity.isFetching,
+                )
+            }
+            delay(THROUGHPUT_TICK_MS)
+        }
+    }
+
     DisposableEffect(playerViewRef) {
         val view = playerViewRef ?: return@DisposableEffect onDispose {}
         PlayerPictureInPictureManager.registerPausePlaybackCallback {
@@ -1669,6 +1714,8 @@ private class NuvioLibmpvView(
     private val hardwareDecodingEnabled: Boolean,
     private val yuv420pEnabled: Boolean,
 ) : MpvSurfaceView(context, videoOutput.mpvValue) {
+    private var reshapedBoostDb = 0f
+    private var playerAmplificationDb = 0
     private var currentSourceUrl: String? = null
     private var currentSourceAudioUrl: String? = null
     private var currentRequestHeaders: Map<String, String> = emptyMap()
@@ -1809,6 +1856,24 @@ private class NuvioLibmpvView(
     fun seekToMs(positionMs: Long) {
         executeMpv {
             mpv.command("seek", (positionMs.coerceAtLeast(0L) / 1000.0).toString(), "absolute")
+        }
+    }
+
+    /** mpv stops reading once its cache is full, so the rate only reflects the network while it is fetching. */
+    suspend fun networkActivity(): MpvNetworkActivity? {
+        if (released.get()) return null
+        return withContext(mpvDispatcher) {
+            if (released.get()) {
+                null
+            } else {
+                runCatching {
+                    MpvNetworkActivity(
+                        bytesPerSecond = mpv.getPropertyDouble("cache-speed")?.toLong() ?: 0L,
+                        isFetching = mpv.getPropertyBoolean("demuxer-cache-idle") == false &&
+                            (mpv.getPropertyDouble("duration") ?: 0.0) > 0.0,
+                    )
+                }.getOrNull()
+            }
         }
     }
 
@@ -2093,7 +2158,8 @@ private class NuvioLibmpvView(
 
             override fun setAudioAmplificationDb(db: Int) {
                 executeMpv {
-                    mpv.setPropertyDouble("volume", 100.0 * audioAmplificationGain(db))
+                    playerAmplificationDb = db
+                    applyCombinedVolume()
                 }
             }
         }
@@ -2140,6 +2206,17 @@ private class NuvioLibmpvView(
 
     private fun setPausedNow(paused: Boolean) {
         runCatching { mpv.setPropertyBoolean("pause", paused) }
+    }
+
+    fun applyVolumeBoostDb(gainDb: Float) { // Nuvio RS: volume boost
+        executeMpv {
+            reshapedBoostDb = gainDb
+            applyCombinedVolume()
+        }
+    }
+
+    private fun applyCombinedVolume() {
+        mpv.setPropertyDouble("volume", mpvVolumeForGains(reshapedBoostDb, playerAmplificationDb))
     }
 
     private fun applyRequestHeadersNow(headers: Map<String, String>) {
@@ -3204,5 +3281,36 @@ private fun Format.exoBitDepth(): Int? {
         c.startsWith("dav1") -> 10 // DV profile 10: 10-bit AV1
         // dvav/dva1 (DV profile 9) is 8-bit AVC — no fallback needed
         else -> null
+    }
+}
+
+private const val THROUGHPUT_TICK_MS = 250L
+
+private class MpvNetworkActivity(
+    val bytesPerSecond: Long,
+    val isFetching: Boolean,
+)
+
+/** Counts bytes received over the network (not from local files) by every data source the factory creates. */
+@androidx.annotation.OptIn(UnstableApi::class)
+private fun DataSource.Factory.countingNetworkBytes(counter: AtomicLong): DataSource.Factory {
+    val listener = object : TransferListener {
+        override fun onTransferInitializing(source: DataSource, dataSpec: DataSpec, isNetwork: Boolean) = Unit
+
+        override fun onTransferStart(source: DataSource, dataSpec: DataSpec, isNetwork: Boolean) = Unit
+
+        override fun onBytesTransferred(
+            source: DataSource,
+            dataSpec: DataSpec,
+            isNetwork: Boolean,
+            bytesTransferred: Int,
+        ) {
+            if (isNetwork) counter.addAndGet(bytesTransferred.toLong())
+        }
+
+        override fun onTransferEnd(source: DataSource, dataSpec: DataSpec, isNetwork: Boolean) = Unit
+    }
+    return DataSource.Factory {
+        createDataSource().apply { addTransferListener(listener) }
     }
 }

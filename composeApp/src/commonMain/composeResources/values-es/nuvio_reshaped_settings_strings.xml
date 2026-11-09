@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_library_calendar">Calendario de biblioteca</string>
+    <string name="settings_library_calendar_description">Muestra un botón de calendario de estrenos en Biblioteca para películas y series guardadas.</string>
+</resources>

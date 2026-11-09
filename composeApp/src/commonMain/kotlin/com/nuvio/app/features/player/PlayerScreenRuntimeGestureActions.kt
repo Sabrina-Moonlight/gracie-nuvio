@@ -9,6 +9,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import nuvio.composeapp.generated.resources.*
+import com.nuvio.app.features.player.volumeboost.VolumeBoost
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -47,6 +48,7 @@ internal fun PlayerScreenRuntime.showGestureMessage(message: String) {
 
 internal fun PlayerScreenRuntime.clearLiveGestureFeedback() {
     liveGestureFeedback = null
+    seekPreview.gesturePositionMs = null
 }
 
 internal fun PlayerScreenRuntime.revealLockedOverlay() {
@@ -103,7 +105,8 @@ internal fun PlayerScreenRuntime.showSeekFeedback(direction: PlayerSeekDirection
     )
 }
 
-internal fun PlayerScreenRuntime.showHorizontalSeekPreview(previewPositionMs: Long, baselinePositionMs: Long) {
+internal fun PlayerScreenRuntime.showHorizontalSeekPreview(rawPreviewPositionMs: Long, baselinePositionMs: Long) {
+    val previewPositionMs = rawPreviewPositionMs.also { seekPreview.gesturePositionMs = it }
     val deltaMs = previewPositionMs - baselinePositionMs
     val direction = if (deltaMs < 0L) PlayerSeekDirection.Backward else PlayerSeekDirection.Forward
     liveGestureFeedback = GestureFeedbackState(
@@ -140,7 +143,8 @@ internal fun PlayerScreenRuntime.showBrightnessFeedback(level: Float) {
 }
 
 internal fun PlayerScreenRuntime.showVolumeFeedback(level: PlayerAudioLevel) {
-    val percentage = (level.fraction.coerceIn(0f, 1f) * 100f).roundToInt()
+    val maxLevel = VolumeBoost.maxLevel // Nuvio RS: volume boost
+    val percentage = (level.fraction.coerceIn(0f, maxLevel) * 100f).roundToInt()
     showGestureFeedback(
         GestureFeedbackState(
             messageRes = if (level.isMuted) {
@@ -151,7 +155,7 @@ internal fun PlayerScreenRuntime.showVolumeFeedback(level: PlayerAudioLevel) {
             messageArgs = if (level.isMuted) emptyList() else listOf("$percentage%"),
             icon = if (level.isMuted) GestureFeedbackIcon.VolumeMuted else GestureFeedbackIcon.Volume,
             isDanger = level.isMuted,
-            level = if (level.isMuted) 0f else level.fraction.coerceIn(0f, 1f),
+            level = if (level.isMuted) 0f else level.fraction.coerceIn(0f, maxLevel),
         ),
     )
 }
@@ -355,7 +359,8 @@ internal fun PlayerScreenRuntime.rememberSurfaceGestureCallbacks(): PlayerSurfac
         playerControlsLocked = rememberUpdatedState(playerControlsLocked),
         currentPositionMs = rememberUpdatedState(playbackSnapshot.positionMs.coerceAtLeast(0L)),
         currentDurationMs = rememberUpdatedState(playbackSnapshot.durationMs),
-        commitHorizontalSeek = rememberUpdatedState { requestedPositionMs: Long ->
+        commitHorizontalSeek = rememberUpdatedState { rawTargetPositionMs: Long ->
+            val requestedPositionMs = seekPreviewAligned(rawTargetPositionMs)
             val targetPositionMs = if (isPartyControlLocked) {
                 ownSeekTarget(requestedPositionMs) ?: return@rememberUpdatedState
             } else {

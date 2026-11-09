@@ -119,6 +119,7 @@ internal fun PlayerTimeline(
     val isPressed by interactionSource.collectIsPressedAsState()
     val isDragged by interactionSource.collectIsDraggedAsState()
     val isInteracting = enabled && durationMs > 0L && (isPressed || isDragged)
+    val cueIntervalMs = seekPreviewCueIntervalMs()
     val trackThickness by animateDpAsState(
         targetValue = if (isInteracting) 10.dp else 6.dp,
         animationSpec = tween(durationMillis = if (isInteracting) 140 else 180),
@@ -129,6 +130,7 @@ internal fun PlayerTimeline(
     sliderState.value = displayedPositionMs.coerceIn(0L, durationMs).toFloat()
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        SeekPreviewAboveTimeline(displayedPositionMs, durationMs, active = isInteracting)
         Slider(
             state = sliderState,
             onValueChange = { value ->
@@ -182,6 +184,7 @@ internal fun PlayerTimeline(
                                     )
                                 }
                             }
+                            drawSeekPreviewCueTicks(cueIntervalMs, durationMs, trackOrigin.y, trackHeight)
                         },
                 )
             },

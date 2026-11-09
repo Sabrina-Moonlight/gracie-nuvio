@@ -474,7 +474,7 @@ internal class AutoSyncPlayerCoordinator(
         }
 
         onMimeTypeSelected(PlayerSubtitleUtils.mimeTypeFromUrl(url))
-        audioFallback.arm(url)
+        audioFallback.arm()
         player.trackSelectionParameters = player.trackSelectionParameters
             .buildUpon()
             .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, true)

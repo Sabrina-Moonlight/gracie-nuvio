@@ -8,8 +8,21 @@
     <string name="player_audio_sync_synced">Sincronización de subtítulos confirmada (%1$s)</string>
     <string name="player_audio_sync_synced_rate">Sincronización de subtítulos confirmada (%1$s, velocidad de fotogramas corregida)</string>
     <string name="player_audio_sync_adjusted">Cambió el tiempo de los subtítulos; se volvió a sincronizar (%1$s)</string>
+    <string name="settings_playback_audio_sync_fallback">Sincronizar con el audio cuando AutoSync no pueda</string>
+    <string name="settings_playback_audio_sync_fallback_description">Cuando no hay subtítulos integrados o la coincidencia es demasiado débil, alinea el subtítulo con el diálogo escuchando el audio</string>
+    <string name="settings_playback_speech_model">Modelo de reconocimiento de voz (%1$s MB)</string>
+    <string name="settings_playback_speech_model_missing">No descargado. Toca para descargarlo y sincronizar con más rapidez y precisión el contenido con audio en inglés</string>
+    <string name="settings_playback_speech_model_downloading">Descargando… %1$s%%</string>
+    <string name="settings_playback_speech_model_ready">Descargado y listo. Toca para eliminarlo</string>
+    <string name="settings_playback_speech_model_failed">Error al descargar (%1$s). Toca para reintentar</string>
     <string name="settings_playback_audio_sync_mobile_data">Muestrear toda la película con datos móviles</string>
-    <string name="settings_playback_audio_sync_mobile_data_description">Sincroniza mucho más rápido leyendo unas pocas partes cortas de la película antes de reproducirlas. Usa hasta 150 MB por película</string>
     <string name="settings_playback_audio_sync_show_statistics">Mostrar estadísticas de AudioSync</string>
     <string name="settings_playback_audio_sync_show_statistics_description">Muestra qué está haciendo la sincronización por audio en la esquina superior izquierda del reproductor mientras trabaja</string>
+    <string name="settings_playback_audio_sync_mobile_data_description">Sincroniza mucho más rápido leyendo unas pocas partes cortas de la película antes de reproducirlas. Usa hasta 150 MB por película</string>
+    <string name="settings_playback_audio_sync_share_log">Compartir registro de sincronización por audio</string>
+    <string name="settings_playback_audio_sync_share_log_description">Tiempos y decisiones de sincronizaciones recientes, para reportar un problema. Los enlaces se acortan y no se incluye texto de audio ni de subtítulos</string>
+    <string name="audio_sync_speech_model_offer_title">¿Descargar el modelo de voz?</string>
+    <string name="audio_sync_speech_model_offer_body">Cuando un stream no tiene subtítulos integrados o la coincidencia de AutoSync es demasiado débil, los subtítulos aún pueden sincronizarse escuchando el diálogo. Reconocer las palabras habladas lo hace mucho más rápido y preciso. El modelo pesa %1$s MB y se descarga una sola vez; es mejor con Wi-Fi.</string>
+    <string name="audio_sync_speech_model_offer_later">Ahora no</string>
+    <string name="audio_sync_speech_model_offer_download">Descargar</string>
 </resources>

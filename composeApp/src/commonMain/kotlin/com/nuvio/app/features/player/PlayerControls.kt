@@ -794,9 +794,12 @@ internal fun PlayerSeekBar(
 ) {
     val seekDurationMs = durationMs.coerceAtLeast(1L)
     val seekDescription = stringResource(Res.string.player_seek_position)
+    val interactionSource = remember { MutableInteractionSource() }
+    val isDragged by interactionSource.collectIsDraggedAsState()
     val seekState = remember(seekDurationMs) { SliderState(trackRange = 0f..seekDurationMs.toFloat()) }
     seekState.value = displayedPositionMs.coerceIn(0L, seekDurationMs).toFloat()
     Column(modifier = modifier) {
+        SeekPreviewAboveTimeline(displayedPositionMs, durationMs, active = isDragged)
         Slider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -807,6 +810,7 @@ internal fun PlayerSeekBar(
             onValueChange = { value -> onScrubChange(value.toLong()) },
             onValueChangeFinished = { onScrubFinished(displayedPositionMs.coerceIn(0L, seekDurationMs)) },
             enabled = durationMs > 0L,
+            interactionSource = interactionSource,
             track = { sliderState -> PlayerProgressTrack(sliderState, chapters, durationMs) },
         )
         Row(

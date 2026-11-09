@@ -23,6 +23,7 @@ import com.nuvio.app.features.watchprogress.WatchProgressUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.time.TimeMark
+import com.nuvio.app.features.player.seekpreview.SeekPreviewSession
 
 /**
  * Audio/subtitle selection captured right before the playback engine changes, together with the
@@ -160,6 +161,7 @@ internal class PlayerScreenRuntime(
     var errorMessage by mutableStateOf<String?>(null)
     var isScrubbingTimeline by mutableStateOf(false)
     var scrubbingPositionMs by mutableStateOf<Long?>(null)
+    val seekPreview = SeekPreviewSession()
     var pausedOverlayVisible by mutableStateOf(false)
     var gestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
     var liveGestureFeedback by mutableStateOf<GestureFeedbackState?>(null)
@@ -233,7 +235,8 @@ internal class PlayerScreenRuntime(
     var showPartyChat by mutableStateOf(false)
     val isPanelOpen: Boolean
         get() = showAudioModal || showSubtitleModal || showVideoSettingsModal || showStreamInfo ||
-            showPartyPanel || showSourcesPanel || showEpisodesPanel || showSubmitIntroModal
+            showPartyPanel || showSourcesPanel || showEpisodesPanel || showSubmitIntroModal ||
+            seekPreview.showSyncPanel
     var partyBehind by mutableStateOf(false)
     var partyBehindMs by mutableStateOf<Long?>(null)
     var partyRateNudge: Float? = null
