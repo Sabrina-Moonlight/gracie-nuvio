@@ -119,8 +119,6 @@ private fun buildAddonHttpClient(cache: Cache? = null): OkHttpClient =
         }
         .build()
 
-private val jsonMediaType = "application/json; charset=utf-8".toMediaType()
-
 private data class LimitedReadResult(
     val bytes: ByteArray,
     val truncated: Boolean,

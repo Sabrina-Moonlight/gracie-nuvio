@@ -8,21 +8,4 @@
     <string name="player_audio_sync_synced">Sincronización de subtítulos confirmada (%1$s)</string>
     <string name="player_audio_sync_synced_rate">Sincronización de subtítulos confirmada (%1$s, velocidad de fotogramas corregida)</string>
     <string name="player_audio_sync_adjusted">Cambió el tiempo de los subtítulos; se volvió a sincronizar (%1$s)</string>
-    <string name="settings_playback_audio_sync_fallback">Sincronizar con el audio cuando AutoSync no pueda</string>
-    <string name="settings_playback_audio_sync_fallback_description">Si no hay subtítulos incrustados o la coincidencia es débil, alinea el subtítulo con el diálogo escuchando el audio</string>
-    <string name="settings_playback_speech_model">Modelo de reconocimiento de voz (%1$s MB)</string>
-    <string name="settings_playback_speech_model_missing">No descargado. Toca para descargarlo y sincronizar mucho más rápido y con más precisión contenido con audio en inglés</string>
-    <string name="settings_playback_speech_model_downloading">Descargando… %1$s%%</string>
-    <string name="settings_playback_speech_model_ready">Descargado y listo. Toca para borrarlo</string>
-    <string name="settings_playback_speech_model_failed">Falló la descarga (%1$s). Toca para reintentar</string>
-    <string name="settings_playback_audio_sync_mobile_data">Muestrear toda la película con datos móviles</string>
-    <string name="settings_playback_audio_sync_show_statistics">Mostrar estadísticas de AudioSync</string>
-    <string name="settings_playback_audio_sync_show_statistics_description">Muestra en la esquina superior izquierda del reproductor lo que hace la sincronización con audio mientras funciona</string>
-    <string name="settings_playback_audio_sync_mobile_data_description">Sincroniza mucho más rápido leyendo unos pocos trozos cortos de la película antes de reproducirla. Usa hasta 150 MB por película</string>
-    <string name="settings_playback_audio_sync_share_log">Compartir registro de la sincronización con audio</string>
-    <string name="settings_playback_audio_sync_share_log_description">Tiempos y decisiones de las últimas sincronizaciones, para reportar un problema. Los enlaces se acortan y no incluye audio ni texto de subtítulos</string>
-    <string name="audio_sync_speech_model_offer_title">¿Descargar el modelo de voz?</string>
-    <string name="audio_sync_speech_model_offer_body">Cuando una transmisión no tiene subtítulos incrustados o la coincidencia de AutoSync es débil, aún se pueden sincronizar los subtítulos escuchando el diálogo. Reconocer las palabras habladas lo hace mucho más rápido y preciso. El modelo pesa %1$s MB y se descarga una sola vez; lo mejor es usar Wi-Fi.</string>
-    <string name="audio_sync_speech_model_offer_later">Ahora no</string>
-    <string name="audio_sync_speech_model_offer_download">Descargar</string>
 </resources>

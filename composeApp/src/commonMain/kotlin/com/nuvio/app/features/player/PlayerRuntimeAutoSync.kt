@@ -8,15 +8,6 @@ import com.nuvio.app.features.autosync.AutoSyncPreferencesRepository
 import com.nuvio.app.features.autosync.AutoSyncSubtitleCandidate
 import kotlinx.coroutines.flow.collect
 
-private fun List<AddonSubtitle>.toAutoSyncCandidates(): List<AutoSyncSubtitleCandidate> =
-    map { subtitle ->
-        AutoSyncSubtitleCandidate(
-            url = subtitle.url,
-            language = subtitle.language,
-            name = subtitle.display,
-        )
-    }
-
 private fun PlayerScreenRuntime.currentAutoSyncCandidates(): List<AutoSyncSubtitleCandidate> =
     // Paso 2: no buscar entre otros subtítulos; ir directo al reconocimiento de voz.
     emptyList()

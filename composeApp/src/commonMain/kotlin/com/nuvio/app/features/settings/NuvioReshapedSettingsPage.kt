@@ -13,7 +13,6 @@ import com.nuvio.app.features.autosync.bubble.AutoSyncBubbleToasts
 import com.nuvio.app.features.library.LibraryDisplaySettingsRepository
 import com.nuvio.app.features.player.PlayerSettingsRepository
 import com.nuvio.app.features.player.rememberSubtitleFontPicker
-import com.nuvio.app.features.reshaped.livetv.LiveTvTabSettings
 import com.nuvio.app.features.streams.ConnectionSpeedEstimator
 import com.nuvio.app.features.streams.StreamBadgeSettingsRepository
 import com.nuvio.app.isIos
@@ -28,8 +27,6 @@ import nuvio.composeapp.generated.resources.settings_library_calendar_descriptio
 import nuvio.composeapp.generated.resources.settings_nuvio_reshaped
 import nuvio.composeapp.generated.resources.settings_nuvio_reshaped_autosync_section
 import nuvio.composeapp.generated.resources.settings_nuvio_reshaped_description
-import nuvio.composeapp.generated.resources.live_tv_title
-import nuvio.composeapp.generated.resources.settings_reshaped_live_tv_description
 import nuvio.composeapp.generated.resources.settings_nuvio_reshaped_subtitle_section
 import nuvio.composeapp.generated.resources.settings_playback_subtitle_font
 import nuvio.composeapp.generated.resources.settings_playback_subtitle_font_default
@@ -64,26 +61,6 @@ internal fun LazyListScope.nuvioReshapedRootSection(isTablet: Boolean, onClick: 
 internal fun LazyListScope.nuvioReshapedSettingsContent(isTablet: Boolean) {
     item {
         ReshapedSyncSettingsSection(isTablet = isTablet)
-    }
-    item {
-        val liveTvEnabled by remember {
-            LiveTvTabSettings.ensureLoaded()
-            LiveTvTabSettings.enabled
-        }.collectAsStateWithLifecycle()
-        SettingsSection(
-            title = stringResource(Res.string.live_tv_title),
-            isTablet = isTablet,
-        ) {
-            SettingsGroup(isTablet = isTablet) {
-                SettingsSwitchRow(
-                    title = stringResource(Res.string.live_tv_title),
-                    description = stringResource(Res.string.settings_reshaped_live_tv_description),
-                    checked = liveTvEnabled,
-                    isTablet = isTablet,
-                    onCheckedChange = LiveTvTabSettings::setEnabled,
-                )
-            }
-        }
     }
     item {
         val librarySettings by remember {

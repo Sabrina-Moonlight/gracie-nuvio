@@ -29,16 +29,3 @@ internal object LocalSeekPreviewSettings {
         persist(value)
     }
 }
-
-/** Names a title and release for the thumbnail cache; the duration tells releases apart. */
-internal fun localSeekPreviewCacheKey(
-    contentId: String?,
-    season: Int?,
-    episode: Int?,
-    durationMs: Long,
-): String = listOf(
-    contentId.orEmpty(),
-    season?.toString().orEmpty(),
-    episode?.toString().orEmpty(),
-    (durationMs / 1000L).toString(),
-).joinToString("|")
