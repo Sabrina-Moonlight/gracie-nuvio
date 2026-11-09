@@ -10,4 +10,6 @@
     <string name="player_audio_sync_adjusted">Cambió el tiempo de los subtítulos; se volvió a sincronizar (%1$s)</string>
     <string name="settings_playback_audio_sync_mobile_data">Muestrear toda la película con datos móviles</string>
     <string name="settings_playback_audio_sync_mobile_data_description">Sincroniza mucho más rápido leyendo unas pocas partes cortas de la película antes de reproducirlas. Usa hasta 150 MB por película</string>
+    <string name="settings_playback_audio_sync_show_statistics">Mostrar estadísticas de AudioSync</string>
+    <string name="settings_playback_audio_sync_show_statistics_description">Muestra qué está haciendo la sincronización por audio en la esquina superior izquierda del reproductor mientras trabaja</string>
 </resources>

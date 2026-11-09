@@ -281,6 +281,7 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi(
             folded = fold != null,
             modifier = panelModifier,
         )
+        Box(modifier = videoModifier) { SubtitleSyncStatusPanel(horizontalSafePadding) }
         Box(modifier = videoModifier) { if (!isInPip) AutoSyncBubbleToastHost(controlsVisible) }
         Box(modifier = videoModifier) {
             RenderPlaybackOverlays(

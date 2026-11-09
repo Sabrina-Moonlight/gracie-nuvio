@@ -11,6 +11,8 @@ import com.nuvio.app.isIos
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.settings_playback_audio_sync_mobile_data
 import nuvio.composeapp.generated.resources.settings_playback_audio_sync_mobile_data_description
+import nuvio.composeapp.generated.resources.settings_playback_audio_sync_show_statistics
+import nuvio.composeapp.generated.resources.settings_playback_audio_sync_show_statistics_description
 import nuvio.composeapp.generated.resources.settings_playback_auto_sync_mode_aggressive
 import nuvio.composeapp.generated.resources.settings_playback_auto_sync_mode_aggressive_description
 import nuvio.composeapp.generated.resources.settings_playback_auto_sync_mode_passive
@@ -43,6 +45,7 @@ internal fun AutoSyncPlaybackSettingsRows(
     }.collectAsStateWithLifecycle()
 
     val samplingOnMobileData by AudioSyncSettings.samplingOnMobileData.collectAsStateWithLifecycle()
+    val showStatistics by AudioSyncSettings.showStatistics.collectAsStateWithLifecycle()
 
     val preferredLanguageAvailable =
         preferredSubtitleLanguage.isNotBlank() &&
@@ -111,5 +114,14 @@ internal fun AutoSyncPlaybackSettingsRows(
         enabled = enabled,
         isTablet = isTablet,
         onCheckedChange = AudioSyncSettings::setSamplingOnMobileData,
+    )
+    SettingsGroupDivider(isTablet = isTablet)
+    SettingsSwitchRow(
+        title = stringResource(Res.string.settings_playback_audio_sync_show_statistics),
+        description = stringResource(Res.string.settings_playback_audio_sync_show_statistics_description),
+        checked = showStatistics,
+        enabled = enabled,
+        isTablet = isTablet,
+        onCheckedChange = AudioSyncSettings::setShowStatistics,
     )
 }
