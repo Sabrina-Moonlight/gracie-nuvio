@@ -97,6 +97,8 @@ private val BubbleCorner = 23.dp
 private const val BubblePivotX = 0.5f
 private const val BubblePivotY = 0.6f
 private val OrbSize = 30.dp
+/** How far to the right of its resting spot the bubble starts before sliding in. */
+private val AppearSlide = 72.dp
 /** How much video around the bubble is copied, so the edges have something to bend in. */
 private val BackdropMargin = 12.dp
 private val BackdropBlur = 5.dp
@@ -249,8 +251,10 @@ private fun AutoSyncBubble(message: AutoSyncBubbleMessage, modifier: Modifier) {
         layer.scaleY = scale * (1f - squash)
         // While it works, the whole bubble drifts a little, as if floating.
         val wobble = sin(shake.value * PI.toFloat() * 3f) * (1f - shake.value) * 2.dp.toPx()
-        layer.translationX = sin(t * 1.1f) * 0.8.dp.toPx() * liquid + wobble
-        layer.translationY = (1f - a) * 20.dp.toPx() + (l + m * 0.5f) * 10.dp.toPx() +
+        // Enters sliding in horizontally from the right edge (no vertical rise).
+        layer.translationX = (1f - a) * AppearSlide.toPx() +
+            sin(t * 1.1f) * 0.8.dp.toPx() * liquid + wobble
+        layer.translationY = (l + m * 0.5f) * 10.dp.toPx() +
             sin(t * 1.6f + 0.8f) * 0.6.dp.toPx() * liquid
         return layer
     }
