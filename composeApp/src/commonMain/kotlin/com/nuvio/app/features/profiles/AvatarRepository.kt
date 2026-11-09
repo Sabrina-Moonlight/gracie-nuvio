@@ -65,6 +65,9 @@ object AvatarRepository {
     private val _avatars = MutableStateFlow<List<AvatarCatalogItem>>(emptyList())
     val avatars: StateFlow<List<AvatarCatalogItem>> = _avatars.asStateFlow()
 
+    private val _catalogLoadFailed = MutableStateFlow(false)
+    val catalogLoadFailed: StateFlow<Boolean> = _catalogLoadFailed.asStateFlow()
+
     private var standardCatalog = emptyList<AvatarCatalogItem>()
     private var memberCatalog = emptyList<AvatarCatalogItem>()
     private var memberCatalogMetadata = emptyList<MemberAvatarCatalogItem>()
@@ -163,6 +166,7 @@ object AvatarRepository {
     private suspend fun fetchStandardCatalog() {
         if (standardFetchInFlight) return
         standardFetchInFlight = true
+        _catalogLoadFailed.value = false
         try {
             val result = SupabaseProvider.client.postgrest.rpc("get_avatar_catalog")
             val items = result.decodeList<AvatarCatalogItem>()
@@ -177,6 +181,7 @@ object AvatarRepository {
             throw error
         } catch (error: Exception) {
             log.e(error) { "Failed to fetch avatar catalog" }
+            if (standardCatalog.isEmpty()) _catalogLoadFailed.value = true
         } finally {
             standardFetchInFlight = false
         }

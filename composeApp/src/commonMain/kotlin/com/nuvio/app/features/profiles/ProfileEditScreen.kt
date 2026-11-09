@@ -5,9 +5,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -92,6 +94,7 @@ fun ProfileEditScreen(
     val canChooseBackground = !isNew && memberAccess.entitlements.includes(CosmeticEntitlement.PROFILE_BACKGROUNDS)
 
     val avatars by AvatarRepository.avatars.collectAsStateWithLifecycle()
+    val avatarsLoadFailed by AvatarRepository.catalogLoadFailed.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
         AvatarRepository.refreshAvatars()
     }
@@ -189,25 +192,38 @@ fun ProfileEditScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        PROFILE_COLORS.chunked(4).forEach { rowColors ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                            ) {
-                                rowColors.forEach { hex ->
-                                    val chosen = hex.equals(selectedColorHex, ignoreCase = true)
-                                    Box(
-                                        modifier = Modifier
-                                            .size(48.dp)
-                                            .clip(CircleShape)
-                                            .background(parseHexColor(hex))
-                                            .border(
-                                                width = if (chosen) 3.dp else 1.dp,
-                                                color = if (chosen) Color.White else Color.White.copy(alpha = 0.2f),
-                                                shape = CircleShape,
+                        val colorSpacing = 14.dp
+                        val minColorSize = 48.dp
+                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                            val columns = ((maxWidth + colorSpacing) / (minColorSize + colorSpacing))
+                                .toInt()
+                                .coerceAtLeast(1)
+                            Column(verticalArrangement = Arrangement.spacedBy(colorSpacing)) {
+                                PROFILE_COLORS.chunked(columns).forEach { rowColors ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(colorSpacing),
+                                    ) {
+                                        rowColors.forEach { hex ->
+                                            val chosen = hex.equals(selectedColorHex, ignoreCase = true)
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .aspectRatio(1f)
+                                                    .clip(CircleShape)
+                                                    .background(parseHexColor(hex))
+                                                    .border(
+                                                        width = if (chosen) 3.dp else 1.dp,
+                                                        color = if (chosen) Color.White else Color.White.copy(alpha = 0.2f),
+                                                        shape = CircleShape,
+                                                    )
+                                                    .clickable { selectedColorHex = hex },
                                             )
-                                            .clickable { selectedColorHex = hex },
-                                    )
+                                        }
+                                        repeat(columns - rowColors.size) {
+                                            Spacer(modifier = Modifier.weight(1f))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -257,13 +273,26 @@ fun ProfileEditScreen(
                     Text(
                         text = selectedAvatarItem?.displayName
                             ?: if (avatars.isEmpty()) {
-                                stringResource(Res.string.profile_loading_avatars)
+                                if (avatarsLoadFailed) {
+                                    stringResource(Res.string.profile_avatars_load_failed)
+                                } else {
+                                    stringResource(Res.string.profile_loading_avatars)
+                                }
                             } else {
                                 stringResource(Res.string.profile_select_avatar)
                             },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+
+                    if (avatars.isEmpty() && avatarsLoadFailed) {
+                        NuvioPrimaryButton(
+                            text = stringResource(Res.string.action_retry),
+                            onClick = {
+                                scope.launch { AvatarRepository.refreshAvatars(force = true) }
+                            },
+                        )
+                    }
 
                     AvatarPicker(
                         avatars = avatars,

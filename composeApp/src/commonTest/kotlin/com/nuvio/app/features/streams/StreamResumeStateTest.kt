@@ -56,6 +56,21 @@ class StreamResumeStateTest {
             resolve(progress(0L).copy(durationMs = 0L, progressPercent = 20f), initialPosition = 60_000L))
     }
 
+    @Test
+    fun cloudSyncedPercentageWithKnownRuntimeResumesImmediatelyWithoutWaitingForTheNewFilesDuration() {
+        // Mirrors a MDBList/Trakt-synced entry: percent plus an estimated runtime
+        // (not the real file's duration). Picking a different file than last time
+        // must not force the player to wait on that new file's own duration before
+        // it can seek, or resume silently fails to apply.
+        val runtimeMs = 2_580_000L // 43 minute episode runtime from the tracker
+        val entry = progress(0L).copy(
+            durationMs = runtimeMs,
+            lastPositionMs = (runtimeMs * 0.57).toLong(),
+            progressPercent = 57f,
+        )
+        assertEquals(StreamResumeState(positionMs = (runtimeMs * 0.57).toLong()), resolve(entry))
+    }
+
     private fun resolve(
         progress: WatchProgressEntry?,
         initialPosition: Long? = null,

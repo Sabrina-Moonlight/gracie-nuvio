@@ -496,10 +496,19 @@ internal fun resolveStreamResumeState(
     startFromBeginning: Boolean,
 ): StreamResumeState {
     if (startFromBeginning || progress?.isResumable == false) return StreamResumeState()
-    val fraction = (if (progress != null) progress.progressPercent?.div(100f) else initialProgressFraction)
-        ?.takeIf { it > 0f }?.coerceIn(0f, 1f)
-    val position = if (fraction != null) null
-        else (progress?.lastPositionMs ?: initialPositionMs)?.takeIf { it > 0L }
+    if (progress != null) {
+        // Prefer an immediate ms position (exact if it came from local playback,
+        // or estimated from the episode's known runtime if it came from a cloud
+        // tracker like MDBList/Trakt) over a bare percentage. A percentage alone
+        // forces the player to wait for the newly picked file to report its own
+        // duration before it can seek, which some files never do in time.
+        val resolvedMs = progress.resolveResumePosition(progress.durationMs).takeIf { it > 0L }
+        if (resolvedMs != null) return StreamResumeState(positionMs = resolvedMs)
+        val fraction = progress.progressPercent?.div(100f)?.takeIf { it > 0f }?.coerceIn(0f, 1f)
+        return StreamResumeState(progressFraction = fraction)
+    }
+    val fraction = initialProgressFraction?.takeIf { it > 0f }?.coerceIn(0f, 1f)
+    val position = if (fraction != null) null else initialPositionMs?.takeIf { it > 0L }
     return StreamResumeState(positionMs = position, progressFraction = fraction)
 }
 

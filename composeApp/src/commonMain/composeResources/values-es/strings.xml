@@ -1586,6 +1586,7 @@
     <string name="profile_enter_new_pin">Introducir PIN nuevo</string>
     <string name="profile_label_number">Perfil %1$d</string>
     <string name="profile_loading_avatars">Cargando avatares...</string>
+    <string name="profile_avatars_load_failed">No se pudieron cargar los avatares. Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="profile_manage_profiles">Gestionar perfiles</string>
     <string name="profile_name_placeholder">Nombre del perfil</string>
     <string name="profile_new">Perfil nuevo</string>
