@@ -641,6 +641,20 @@ internal class AudioSubtitleSyncController(
         englishCandidates().take(PREFETCH_REFERENCES).forEach { fetchReference(it, onReady = null) }
         // Subtitles listed after the pick join the running search.
         session?.let { current -> if (model == null || estimated) startPool(current) }
+        retryReferences()
+    }
+
+    /** The sync can start before the subtitle list or the English lookup is ready: retry then. */
+    private fun retryReferences() {
+        val current = session ?: return
+        val engine = asr ?: return
+        if (!enabled || !noUsableReference || referenceStatus != "none available") return
+        if (englishCandidates().isEmpty()) return
+        try {
+            aligner.execute { if (session === current) bridgeReferences(current, engine) }
+        } catch (_: Exception) {
+            // Released.
+        }
     }
 
     /**
@@ -795,6 +809,7 @@ internal class AudioSubtitleSyncController(
                 found.take(PREFETCH_REFERENCES).forEach { fetchReference(it, onReady = null) }
                 fallbackListeners.forEach { runCatching(it) }
                 fallbackListeners.clear()
+                retryReferences()
             }
         } catch (_: Exception) {
             fallbackState = FallbackState.Done
