@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.core.ui.NuvioStatusModal
+import com.nuvio.app.features.autosync.bubble.AutoSyncBubbleToastHost
 import com.nuvio.app.features.details.MetaDetailsRepository
 import com.nuvio.app.core.ui.LocalFold
 import com.nuvio.app.features.p2p.P2pStreamingState
@@ -280,6 +281,7 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi(
             folded = fold != null,
             modifier = panelModifier,
         )
+        Box(modifier = videoModifier) { if (!isInPip) AutoSyncBubbleToastHost(controlsVisible) }
         Box(modifier = videoModifier) {
             RenderPlaybackOverlays(
                 runtime = runtime,
