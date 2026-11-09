@@ -43,6 +43,7 @@ jobs:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
           NUVIO_SUPABASE_URL: ${{ secrets.NUVIO_SUPABASE_URL }}
           NUVIO_SUPABASE_ANON_KEY: ${{ secrets.NUVIO_SUPABASE_ANON_KEY }}
+          MDBLIST_CLIENT_ID: ${{ secrets.MDBLIST_CLIENT_ID }}
         run: |
           if [ -z "$DEBUG_KEYSTORE_BASE64" ]; then
             echo "::error::Falta el secret DEBUG_KEYSTORE_BASE64 (o esta vacio). Sin el, el APK no se puede instalar como actualizacion. Revisa Settings > Secrets and variables > Actions > Repository secrets."
@@ -67,6 +68,13 @@ jobs:
             echo "Supabase configurado."
           else
             echo "Sin Supabase: el login con cuenta no va a funcionar (usar Continue Without Account)."
+          fi
+          # MDBList: sin este client id la app muestra "MDBList connection is unavailable in this build".
+          if [ -n "$MDBLIST_CLIENT_ID" ]; then
+            printf '\nMDBLIST_CLIENT_ID=%s\n' "$MDBLIST_CLIENT_ID" >> local.properties
+            echo "MDBList configurado."
+          else
+            echo "::warning::Falta el secret MDBLIST_CLIENT_ID: MDBList no va a funcionar en este build."
           fi
           echo "Using persistent signing key from secret."
 
