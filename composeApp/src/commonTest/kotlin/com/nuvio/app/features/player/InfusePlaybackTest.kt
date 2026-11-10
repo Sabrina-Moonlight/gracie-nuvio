@@ -55,12 +55,12 @@ class InfusePlaybackTest {
     }
 
     @Test
-    fun knownDurationUsesExistingCompletionThreshold() {
+    fun leavingNearTheEndKeepsProgressWithoutMarkingWatched() {
         val callbacks = callbacks()
         val launch = Url(callbacks.prepare(request))
         callbacks.handleUrl(success(launch, "3300"))
         val result = assertNotNull(callbacks.results.value?.playbackResult())
-        assertTrue(isProgressComplete(result.positionMs, result.durationMs!!, !result.endedByUser))
+        assertFalse(isProgressComplete(result.positionMs, result.durationMs!!, !result.endedByUser))
     }
 
     @Test
