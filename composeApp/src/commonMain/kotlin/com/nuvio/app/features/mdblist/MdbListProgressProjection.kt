@@ -100,7 +100,11 @@ internal class MdbListProgressProjection(snapshot: MdbListSyncSnapshot) {
         runtime: Int?,
         source: String,
     ): WatchProgressEntry {
-        val duration = (runtime ?: media.runtimeMinutes ?: 0).toLong() * 60_000L
+        // MDBList only knows the show's runtime, not this episode's. Episodes stay percent-only
+        // (duration 0) so the card shows no wrong "min left" and the player resumes at the
+        // percent of the real duration instead of a position past the end.
+        val duration = if (type == MdbListItemType.EPISODE) 0L
+        else (runtime ?: media.runtimeMinutes ?: 0).toLong() * 60_000L
         return WatchProgressEntry(
             contentType = type.contentType,
             parentMetaId = media.ids.contentId,
