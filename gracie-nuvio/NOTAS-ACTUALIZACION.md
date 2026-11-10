@@ -1,6 +1,6 @@
 # NOTAS-ACTUALIZACION.md — Para la IA que haga la próxima actualización de Nuvio
 
-Léelo junto con `claude.md` y `ambos.md`. Aquí está lo aprendido en la actualización 0.6.10 → 0.6.11-beta. Si algo de aquí ya no sirve, cámbialo y entrega este archivo en el ZIP.
+Léelo junto con `claude.md`. Aquí está lo aprendido en la actualización 0.6.10 → 0.6.11-beta. Si algo de aquí ya no sirve, cámbialo y entrega este archivo en el ZIP.
 
 ## Método (el único que se usa)
 - Workflow **Update Nuvio** (`.github/workflows/update-nuvio.yml`): compara 3 versiones (Nuvio viejo, Gracie actual, Nuvio nuevo) y mezcla archivo por archivo en una rama aparte `actualizacion-<version>`. `main` no cambia hasta que ella fusione.
