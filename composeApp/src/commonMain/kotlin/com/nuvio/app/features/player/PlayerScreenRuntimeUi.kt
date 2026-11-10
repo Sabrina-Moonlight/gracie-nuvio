@@ -166,7 +166,6 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi(
                 currentPositionMsState = gestureCallbacks.currentPositionMs,
                 currentDurationMsState = gestureCallbacks.currentDurationMs,
                 deactivateHoldToSpeedState = gestureCallbacks.deactivateHoldToSpeed,
-                showHorizontalSeekPreviewState = gestureCallbacks.showHorizontalSeekPreview,
                 showBrightnessFeedbackState = gestureCallbacks.showBrightnessFeedback,
                 showVolumeFeedbackState = gestureCallbacks.showVolumeFeedback,
                 clearLiveGestureFeedbackState = gestureCallbacks.clearLiveGestureFeedback,

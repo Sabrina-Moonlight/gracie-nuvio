@@ -70,7 +70,6 @@ class PlayerGestureOverlayTest {
                             currentPositionMsState = callbacks.currentPositionMs,
                             currentDurationMsState = callbacks.currentDurationMs,
                             deactivateHoldToSpeedState = callbacks.deactivateHoldToSpeed,
-                            showHorizontalSeekPreviewState = callbacks.showHorizontalSeekPreview,
                             showBrightnessFeedbackState = callbacks.showBrightnessFeedback,
                             showVolumeFeedbackState = callbacks.showVolumeFeedback,
                             clearLiveGestureFeedbackState = callbacks.clearLiveGestureFeedback,

@@ -65,17 +65,17 @@ class WatchProgressRulesTest {
     fun `content at the minimum duration still stores and completes normally`() {
         assertTrue(shouldStoreWatchProgress(positionMs = 1_000L, durationMs = 121_000L))
         assertFalse(isWatchProgressComplete(positionMs = 108_899L, durationMs = 121_000L, isEnded = false))
-        assertTrue(isWatchProgressComplete(positionMs = 108_900L, durationMs = 121_000L, isEnded = false))
+        assertFalse(isWatchProgressComplete(positionMs = 108_900L, durationMs = 121_000L, isEnded = false))
         assertTrue(isWatchProgressComplete(positionMs = 121_000L, durationMs = 121_000L, isEnded = true))
     }
 
     @Test
-    fun `completion detects watched threshold remaining time and ended state`() {
-        assertTrue(isWatchProgressComplete(positionMs = 920_000L, durationMs = 1_000_000L, isEnded = false))
-        assertTrue(isWatchProgressComplete(positionMs = 900_000L, durationMs = 1_000_000L, isEnded = false))
-        assertFalse(isWatchProgressComplete(positionMs = 899_999L, durationMs = 1_000_000L, isEnded = false))
-        assertTrue(isWatchProgressComplete(positionMs = 1L, durationMs = 0L, isEnded = true))
+    fun `completion only happens when playback really ends`() {
+        assertFalse(isWatchProgressComplete(positionMs = 920_000L, durationMs = 1_000_000L, isEnded = false))
+        assertFalse(isWatchProgressComplete(positionMs = 990_000L, durationMs = 1_000_000L, isEnded = false))
         assertFalse(isWatchProgressComplete(positionMs = 200_000L, durationMs = 1_000_000L, isEnded = false))
+        assertTrue(isWatchProgressComplete(positionMs = 1L, durationMs = 0L, isEnded = true))
+        assertTrue(isWatchProgressComplete(positionMs = 1_000_000L, durationMs = 1_000_000L, isEnded = true))
     }
 
     @Test

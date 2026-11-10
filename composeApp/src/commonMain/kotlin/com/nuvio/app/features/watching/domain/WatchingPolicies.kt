@@ -6,7 +6,6 @@ import com.nuvio.app.core.time.isEpisodeReleaseAired
 import com.nuvio.app.core.time.isoEpochDay as coreIsoEpochDay
 import com.nuvio.app.core.time.parseEpisodeReleaseLocalDate
 
-private const val CompletionThresholdFraction = 0.90
 private const val ProgressStoreThresholdMs = 1_000L
 private const val UpcomingNextSeasonWindowDays = 7
 
@@ -34,11 +33,9 @@ fun isProgressComplete(
     isEnded: Boolean,
 ): Boolean {
     if (isShortPlaceholderDuration(durationMs)) return false
-    if (isEnded) return true
-    if (durationMs <= 0L) return false
-
-    val watchedFraction = positionMs.toDouble() / durationMs.toDouble()
-    return watchedFraction >= CompletionThresholdFraction
+    // Gracie: solo cuenta como visto si el video termina de verdad.
+    // Si te sales con pocos minutos por delante, se guarda la posición.
+    return isEnded
 }
 
 /**

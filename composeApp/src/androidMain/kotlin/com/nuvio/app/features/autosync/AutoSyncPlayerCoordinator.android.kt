@@ -479,15 +479,16 @@ internal class AutoSyncPlayerCoordinator(
         job = scope.launch {
             var analysisOutcome: AutoSyncAnalysisOutcome? = null
             var searchLanguage = getPreferredLanguage()
-            var resolved = AutomaticSubtitleSync.findTimelineRetime(
+            var searchScope = candidateScope
+            suspend fun searchSelected() = AutomaticSubtitleSync.findTimelineRetime(
                 sourceKey = sourceUrl,
                 sourceHeaders = sourceHeaders,
                 selectedSubtitleUrl = url,
                 selectedSubtitleHeaders = subtitleHeaders,
                 selectedSubtitleBodyDeferred = selectedSubtitleBodyDeferred,
                 preferredLanguage = searchLanguage,
-                alternativeSubtitles = candidateScope.alternativeCandidates(candidates),
-                alternativeSubtitlesProvider = if (candidateScope.usesAlternativeProvider) {
+                alternativeSubtitles = searchScope.alternativeCandidates(candidates),
+                alternativeSubtitlesProvider = if (searchScope.usesAlternativeProvider) {
                     { candidates }
                 } else {
                     null
@@ -495,8 +496,14 @@ internal class AutoSyncPlayerCoordinator(
                 onReferenceReady = {},
                 onAnalysisOutcome = { outcome -> analysisOutcome = outcome },
             )
+            var resolved = searchSelected()
             AutoSyncDebugLog.info {
                 "candidateScope=${candidateScope.name}"
+            }
+            // The restored subtitle does not fit: look for another one that does.
+            if (resolved == null && candidateScope.searchAfterSelectedFailed(analysisOutcome)) {
+                searchScope = AutoSyncCandidateScope.STARTUP_SEARCH
+                resolved = searchSelected()
             }
 
             // No match in the first language: search the secondary subtitle language before the
@@ -505,7 +512,7 @@ internal class AutoSyncPlayerCoordinator(
             val secondarySeed =
                 if (
                     resolved == null &&
-                    candidateScope == AutoSyncCandidateScope.STARTUP_SEARCH &&
+                    searchScope == AutoSyncCandidateScope.STARTUP_SEARCH &&
                     (
                         analysisOutcome == null ||
                             analysisOutcome == AutoSyncAnalysisOutcome.SUBTITLE_UNAVAILABLE ||
@@ -728,6 +735,7 @@ internal class AutoSyncPlayerCoordinator(
         job = scope.launch {
             try {
                 var outcome: AutoSyncAnalysisOutcome? = null
+                var searchScope = candidateScope
                 suspend fun search(ass: Boolean): AutoSyncResolvedTimeline? {
                     val pool = { candidates.filter { isAss(it.url) == ass } }
                     return AutomaticSubtitleSync.findTimelineRetime(
@@ -736,15 +744,23 @@ internal class AutoSyncPlayerCoordinator(
                         selectedSubtitleUrl = url,
                         selectedSubtitleHeaders = subtitleHeaders,
                         preferredLanguage = subtitleLanguage,
-                        alternativeSubtitles = candidateScope.alternativeCandidates(pool()),
-                        alternativeSubtitlesProvider = if (candidateScope.usesAlternativeProvider) pool else null,
+                        alternativeSubtitles = searchScope.alternativeCandidates(pool()),
+                        alternativeSubtitlesProvider = if (searchScope.usesAlternativeProvider) pool else null,
                         onAnalysisOutcome = { outcome = it },
                     )
                 }
                 var resolved = search(ass = true)
+                // The restored subtitle does not fit: look for another one that does.
+                if (
+                    resolved == null && token == libassOperationToken &&
+                    candidateScope.searchAfterSelectedFailed(outcome)
+                ) {
+                    searchScope = AutoSyncCandidateScope.STARTUP_SEARCH
+                    resolved = search(ass = true)
+                }
                 // No ASS/SSA fits: try the other formats, unless the video has nothing to compare with.
                 if (
-                    resolved == null && candidateScope.usesAlternativeProvider &&
+                    resolved == null && searchScope.usesAlternativeProvider &&
                     token == libassOperationToken &&
                     outcome != AutoSyncAnalysisOutcome.NO_SUBTITLE_TRACKS &&
                     outcome != AutoSyncAnalysisOutcome.NO_USABLE_REFERENCE &&

@@ -10,7 +10,7 @@ import com.nuvio.app.features.tracking.WatchProgressSource
 import com.nuvio.app.features.watching.domain.WatchingContentRef
 import kotlinx.serialization.Serializable
 
-internal const val WatchProgressCompletionPercentThreshold = 90f
+internal const val WatchProgressCompletionPercentThreshold = 100f
 internal const val WatchProgressSourceLocal = "local"
 internal const val WatchProgressSourceTraktPlayback = "trakt_playback"
 internal const val WatchProgressSourceTraktHistory = "trakt_history"

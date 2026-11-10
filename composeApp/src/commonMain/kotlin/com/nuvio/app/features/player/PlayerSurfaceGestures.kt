@@ -55,7 +55,6 @@ internal fun Modifier.playerSurfaceDragGestures(
     currentPositionMsState: State<Long>,
     currentDurationMsState: State<Long>,
     deactivateHoldToSpeedState: State<() -> Unit>,
-    showHorizontalSeekPreviewState: State<(Long, Long) -> Unit>,
     showBrightnessFeedbackState: State<(Float) -> Unit>,
     showVolumeFeedbackState: State<(PlayerAudioLevel) -> Unit>,
     clearLiveGestureFeedbackState: State<() -> Unit>,
@@ -191,10 +190,6 @@ internal fun Modifier.playerSurfaceDragGestures(
                                 unclampedPreviewMs.coerceIn(0L, durationMs)
                             }
                             ?: unclampedPreviewMs.coerceAtLeast(0L)
-                        showHorizontalSeekPreviewState.value(
-                            horizontalSeekPreviewMs,
-                            horizontalSeekBaselineMs,
-                        )
                     }
 
                     PlayerGestureMode.Brightness -> {

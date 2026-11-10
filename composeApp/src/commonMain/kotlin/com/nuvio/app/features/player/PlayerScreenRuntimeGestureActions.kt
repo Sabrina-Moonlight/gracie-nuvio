@@ -20,7 +20,6 @@ internal data class PlayerSurfaceGestureCallbacks(
     val onSurfaceDoubleTap: State<(Offset) -> Unit>,
     val activateHoldToSpeed: State<() -> Unit>,
     val deactivateHoldToSpeed: State<() -> Unit>,
-    val showHorizontalSeekPreview: State<(Long, Long) -> Unit>,
     val showBrightnessFeedback: State<(Float) -> Unit>,
     val showVolumeFeedback: State<(PlayerAudioLevel) -> Unit>,
     val clearLiveGestureFeedback: State<() -> Unit>,
@@ -101,31 +100,6 @@ internal fun PlayerScreenRuntime.showSeekFeedback(direction: PlayerSeekDirection
                 GestureFeedbackIcon.SeekBackward
             },
         ),
-    )
-}
-
-internal fun PlayerScreenRuntime.showHorizontalSeekPreview(rawPreviewPositionMs: Long, baselinePositionMs: Long) {
-    val previewPositionMs = rawPreviewPositionMs
-    val deltaMs = previewPositionMs - baselinePositionMs
-    val direction = if (deltaMs < 0L) PlayerSeekDirection.Backward else PlayerSeekDirection.Forward
-    liveGestureFeedback = GestureFeedbackState(
-        message = formatPlaybackTime(previewPositionMs),
-        icon = if (direction == PlayerSeekDirection.Forward) {
-            GestureFeedbackIcon.SeekForward
-        } else {
-            GestureFeedbackIcon.SeekBackward
-        },
-        secondaryMessageRes = if (deltaMs >= 0L) {
-            Res.string.compose_player_seek_delta_forward
-        } else {
-            Res.string.compose_player_seek_delta_backward
-        },
-        secondaryMessageArgs = listOf((abs(deltaMs) / 1000f).roundToInt()),
-        secondaryMessageColor = if (direction == PlayerSeekDirection.Forward) {
-            Color(0xFF6EE7A8)
-        } else {
-            Color(0xFFFF9A76)
-        },
     )
 }
 
@@ -348,7 +322,6 @@ internal fun PlayerScreenRuntime.rememberSurfaceGestureCallbacks(): PlayerSurfac
         onSurfaceDoubleTap = onSurfaceDoubleTap,
         activateHoldToSpeed = rememberUpdatedState(::activateHoldToSpeed),
         deactivateHoldToSpeed = rememberUpdatedState(::deactivateHoldToSpeed),
-        showHorizontalSeekPreview = rememberUpdatedState(::showHorizontalSeekPreview),
         showBrightnessFeedback = rememberUpdatedState(::showBrightnessFeedback),
         showVolumeFeedback = rememberUpdatedState(::showVolumeFeedback),
         clearLiveGestureFeedback = rememberUpdatedState(::clearLiveGestureFeedback),
