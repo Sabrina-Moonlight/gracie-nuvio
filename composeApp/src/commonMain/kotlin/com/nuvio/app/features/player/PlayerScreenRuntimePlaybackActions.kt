@@ -173,6 +173,7 @@ internal fun PlayerScreenRuntime.resetIdentityStateIfNeeded() {
         scrobbleStartRequestGeneration = 0L
         pendingSeekScrobbleRestart = false
         hasSentCompletionScrobbleForCurrentItem = false
+        lastGoodPlaybackPercent = 0f
         currentTrackingMedia = null
     }
 }
@@ -286,7 +287,15 @@ private fun PlayerScreenRuntime.emitTrackingScrobbleTerminal(
     val provided = progressPercent
     if (!hasRequestedScrobbleStartForCurrentItem && (provided ?: 0f) < 80f) return
 
-    val percent = provided ?: currentPlaybackProgressPercent()
+    // Gracie: si el video no terminó, nunca se avisa >= 80 % (MDBList/Trakt lo marcarían como visto).
+    // Gracie: al salir, el reproductor a veces ya está vacío (duración 0 o posición 0).
+    // Entonces no se manda "0 %" al servidor (borraba el avance); se usa el último avance bueno.
+    val reliable = hasReliablePlaybackSnapshot()
+    val percent = capUnfinishedScrobblePercent(
+        provided ?: if (reliable) currentPlaybackProgressPercent() else lastGoodPlaybackPercent,
+        isEnded = playbackSnapshot.isEnded,
+    )
+    if (!reliable && percent <= 0f) return
     val mediaSnapshot = currentTrackingMedia
     val inputsSnapshot = snapshotTrackingScrobbleItemInputs()
     scope.launch(NonCancellable) {
@@ -306,20 +315,27 @@ private fun PlayerScreenRuntime.emitTrackingScrobbleTerminal(
 
 internal fun PlayerScreenRuntime.emitStopScrobbleForCurrentProgress() {
     if (isShortPlaceholderDuration(playbackSnapshot.durationMs)) return
-    val progressPercent = currentPlaybackProgressPercent()
+    val progressPercent = if (hasReliablePlaybackSnapshot()) currentPlaybackProgressPercent() else lastGoodPlaybackPercent
     if (!shouldSendStopScrobble(hasRequestedScrobbleStartForCurrentItem, progressPercent)) {
         return
     }
-    if (progressPercent < 80f) {
+    if (progressPercent < 80f || !playbackSnapshot.isEnded) {
         emitTrackingScrobbleStop(progressPercent)
         return
     }
 
-    if (progressPercent >= 80f && !hasSentCompletionScrobbleForCurrentItem) {
+    if (!hasSentCompletionScrobbleForCurrentItem) {
         hasSentCompletionScrobbleForCurrentItem = true
         emitTrackingScrobbleStop(progressPercent)
     }
 }
+
+internal const val UnfinishedScrobbleMaxPercent = 79f
+
+internal fun capUnfinishedScrobblePercent(
+    progressPercent: Float,
+    isEnded: Boolean,
+): Float = if (isEnded) progressPercent else progressPercent.coerceAtMost(UnfinishedScrobbleMaxPercent)
 
 internal fun shouldSendStopScrobble(
     hasActiveScrobble: Boolean,
@@ -442,7 +458,13 @@ internal fun PlayerScreenRuntime.scheduleProgressSyncAfterSeek() {
     }
 }
 
+internal fun PlayerScreenRuntime.hasReliablePlaybackSnapshot(): Boolean =
+    playbackSnapshot.durationMs > 0L && (playbackSnapshot.isEnded || playbackSnapshot.positionMs >= 1_000L)
+
 internal fun PlayerScreenRuntime.persistPlaybackProgressTick() {
+    if (hasReliablePlaybackSnapshot() && !playbackSnapshot.isEnded) {
+        lastGoodPlaybackPercent = currentPlaybackProgressPercent()
+    }
     val now = WatchProgressClock.nowEpochMs()
     if (now - lastProgressPersistEpochMs < PlaybackProgressPersistIntervalMs) return
     lastProgressPersistEpochMs = now
