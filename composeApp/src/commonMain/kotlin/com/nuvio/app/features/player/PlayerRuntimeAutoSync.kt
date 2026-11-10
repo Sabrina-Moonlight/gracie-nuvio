@@ -57,6 +57,13 @@ internal fun PlayerScreenRuntime.BindAutoSyncRuntimeEffects() {
         preferredSubtitleSelectionApplied = false
         refreshTracks()
     }
+    LaunchedEffect(playerController, activeAddonSubtitleType, activeVideoId) {
+        // Sin esto el sync no busca subtítulos en inglés de referencia y el español queda lento.
+        val controller = playerController as? AutoSyncPlayerController ?: return@LaunchedEffect
+        val type = activeAddonSubtitleType.takeIf { it.isNotBlank() } ?: return@LaunchedEffect
+        val videoId = activeVideoId?.takeIf { it.isNotBlank() } ?: return@LaunchedEffect
+        controller.setAutoSyncContent(type, videoId)
+    }
     LaunchedEffect(playerController, externalSubtitles) {
         val controller = playerController ?: return@LaunchedEffect
         SubtitleRepository.addonSubtitles.collect { _ ->
