@@ -7,10 +7,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.features.autosync.AutoSyncPreferencesRepository
+<<<<<<< GRACIE
 import com.nuvio.app.features.player.AudioSyncSettings
 import com.nuvio.app.features.player.SubtitleLanguageOption
 import com.nuvio.app.features.player.SubtitleSyncStatus
 import com.nuvio.app.isIos
+||||||| NUVIO-0.6.10-beta
+import com.nuvio.app.features.player.SubtitleLanguageOption
+=======
+>>>>>>> NUVIO-0.6.11-beta
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.settings_playback_audio_sync_fallback
 import nuvio.composeapp.generated.resources.settings_playback_audio_sync_fallback_description
@@ -43,7 +48,6 @@ import org.jetbrains.compose.resources.stringResource
 internal fun AutoSyncPlaybackSettingsRows(
     isTablet: Boolean,
     enabled: Boolean,
-    preferredSubtitleLanguage: String,
 ) {
     val preferredSubtitleAutoSyncOnStart by remember {
         AutoSyncPreferencesRepository.ensureLoaded()
@@ -65,18 +69,13 @@ internal fun AutoSyncPlaybackSettingsRows(
     var offerSpeechModel by remember { mutableStateOf(false) }
 
 
-    val preferredLanguageAvailable =
-        preferredSubtitleLanguage.isNotBlank() &&
-            preferredSubtitleLanguage != SubtitleLanguageOption.NONE &&
-            preferredSubtitleLanguage != SubtitleLanguageOption.FORCED
-
     SettingsSwitchRow(
         title = stringResource(Res.string.settings_playback_subtitle_auto_sync),
         description = stringResource(
             Res.string.settings_playback_subtitle_auto_sync_description,
         ),
         checked = preferredSubtitleAutoSyncOnStart,
-        enabled = enabled && preferredLanguageAvailable,
+        enabled = enabled,
         isTablet = isTablet,
         onCheckedChange = { on ->
             AutoSyncPreferencesRepository.setPreferredSubtitleAutoSyncOnStart(on)
