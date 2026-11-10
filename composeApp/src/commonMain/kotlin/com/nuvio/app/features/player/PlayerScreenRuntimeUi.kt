@@ -350,7 +350,7 @@ private fun PlayerScreenRuntime.RenderPlayerControls(
     }
     AnimatedVisibility(
         visible = (controlsVisible || folded || showParentalGuide) && !playerControlsLocked && !isInPip &&
-            !(folded && isPanelOpen) && !seekPreview.showSyncPanel,
+            !(folded && isPanelOpen),
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
@@ -474,7 +474,7 @@ private fun PlayerScreenRuntime.RenderPlayerControls(
                 scrubbingPositionMs = positionMs
             },
             onScrubFinished = { rawPositionMs ->
-                val positionMs = seekPreviewAligned(rawPositionMs)
+                val positionMs = rawPositionMs
                 val targetMs = if (isPartyControlLocked) ownSeekTarget(positionMs) else positionMs
                 if (targetMs == null) {
                     isScrubbingTimeline = false

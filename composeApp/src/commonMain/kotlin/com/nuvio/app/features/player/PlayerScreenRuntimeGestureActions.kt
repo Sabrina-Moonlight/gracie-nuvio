@@ -48,7 +48,6 @@ internal fun PlayerScreenRuntime.showGestureMessage(message: String) {
 
 internal fun PlayerScreenRuntime.clearLiveGestureFeedback() {
     liveGestureFeedback = null
-    seekPreview.gesturePositionMs = null
 }
 
 internal fun PlayerScreenRuntime.revealLockedOverlay() {
@@ -106,7 +105,7 @@ internal fun PlayerScreenRuntime.showSeekFeedback(direction: PlayerSeekDirection
 }
 
 internal fun PlayerScreenRuntime.showHorizontalSeekPreview(rawPreviewPositionMs: Long, baselinePositionMs: Long) {
-    val previewPositionMs = rawPreviewPositionMs.also { seekPreview.gesturePositionMs = it }
+    val previewPositionMs = rawPreviewPositionMs
     val deltaMs = previewPositionMs - baselinePositionMs
     val direction = if (deltaMs < 0L) PlayerSeekDirection.Backward else PlayerSeekDirection.Forward
     liveGestureFeedback = GestureFeedbackState(
@@ -360,7 +359,7 @@ internal fun PlayerScreenRuntime.rememberSurfaceGestureCallbacks(): PlayerSurfac
         currentPositionMs = rememberUpdatedState(playbackSnapshot.positionMs.coerceAtLeast(0L)),
         currentDurationMs = rememberUpdatedState(playbackSnapshot.durationMs),
         commitHorizontalSeek = rememberUpdatedState { rawTargetPositionMs: Long ->
-            val requestedPositionMs = seekPreviewAligned(rawTargetPositionMs)
+            val requestedPositionMs = rawTargetPositionMs
             val targetPositionMs = if (isPartyControlLocked) {
                 ownSeekTarget(requestedPositionMs) ?: return@rememberUpdatedState
             } else {

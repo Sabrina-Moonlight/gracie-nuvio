@@ -20,7 +20,6 @@ import androidx.compose.material.icons.automirrored.rounded.OpenInNew
 import androidx.compose.material.icons.automirrored.rounded.Toc
 import androidx.compose.material.icons.rounded.Build
 import androidx.compose.material.icons.rounded.Flag
-import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Groups
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
@@ -309,9 +308,6 @@ internal fun playerControlActions(
                 stringResource(Res.string.submit_intro_action), it,
                 icon = Icons.Rounded.Flag,
             )
-        },
-        seekPreviewSyncAction()?.let {
-            PlayerControlAction(stringResource(Res.string.cd_seek_preview_sync), it, icon = Icons.Rounded.Tune)
         },
     )
 

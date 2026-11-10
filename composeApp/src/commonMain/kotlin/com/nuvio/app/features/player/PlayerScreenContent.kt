@@ -191,12 +191,10 @@ internal fun PlayerScreenContent(args: PlayerScreenArgs) {
             videoSize = videoSize,
         )
         runtime.BindPlayerRuntimeEffects()
-        runtime.WithSeekPreview {
         runtime.RenderPlayerRuntimeUi(
             partyPanelWidth = partyPanelWidth,
             partyPanelInset = partyPanelInset,
             dockPartyPanel = dockPartyPanel,
         )
-        }
     }
 }

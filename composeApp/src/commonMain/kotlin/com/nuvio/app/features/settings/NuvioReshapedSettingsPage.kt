@@ -110,9 +110,6 @@ internal fun LazyListScope.nuvioReshapedSettingsContent(isTablet: Boolean) {
         PlaybackBufferSettingsSection(isTablet = isTablet)
     }
     item {
-        SeekPreviewSettingsSection(isTablet = isTablet)
-    }
-    item {
         PillNavSettingsSection(isTablet = isTablet)
     }
     item {
