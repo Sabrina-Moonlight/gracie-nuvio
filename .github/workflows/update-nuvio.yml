@@ -1,0 +1,253 @@
+name: Update Nuvio
+
+# Pasa tu Gracie de una versión de Nuvio a otra SIN tocar main.
+# Compara 3 versiones: Nuvio viejo, tu Gracie actual y Nuvio nuevo, y mezcla archivo por archivo:
+#  - solo cambió Nuvio        -> se actualiza solo
+#  - solo cambiaste tú        -> se queda
+#  - cambiaron los dos        -> se mezcla; si chocan, queda marcado con <<<<<<< y sale en el resumen
+#  - archivos solo tuyos      -> no se tocan
+#  - lo que tú quitaste (iPhone, escritorio, scripts, idiomas) -> no se vuelve a traer
+# Todo se guarda en la rama actualizacion-<version>. main no cambia hasta que tú la fusiones.
+# No toca: .github, Drop-Files, gracie-nuvio, claude.md, ambos.md, grok.md, AGENTS.md, LICENSE, llaves de firma.
+on:
+  workflow_dispatch:
+    inputs:
+      version_nueva:
+        description: 'Versión nueva de Nuvio (etiqueta), ej: 0.6.11-beta'
+        required: true
+        type: string
+      version_vieja:
+        description: 'Versión base actual, ej: 0.6.10-beta (si lo dejas vacío se lee BASE-NUVIO.txt)'
+        required: false
+        type: string
+      reiniciar:
+        description: 'Marcar solo si la rama ya existe y quieres borrarla y empezar de cero'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: unzip-main
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    name: Mezclar Nuvio en una rama aparte
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Preparar versiones y rama
+        env:
+          NUEVA: ${{ inputs.version_nueva }}
+          VIEJA: ${{ inputs.version_vieja }}
+          REINICIAR: ${{ inputs.reiniciar }}
+        run: |
+          set -eu
+          [ -d composeApp ] || { echo "::error::No veo la carpeta composeApp. Lanza el workflow desde la rama main de Gracie."; exit 1; }
+          if [ -z "${VIEJA:-}" ]; then
+            if [ -f BASE-NUVIO.txt ]; then VIEJA=$(head -n1 BASE-NUVIO.txt | tr -d '[:space:]'); else
+              echo "::error::Escribe version_vieja (ej. 0.6.10-beta): no existe BASE-NUVIO.txt."; exit 1; fi
+          fi
+          BR="actualizacion-${NUEVA%-beta}"
+          if git ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1 && [ "$REINICIAR" != "true" ]; then
+            echo "::error::La rama $BR ya existe. Si quieres empezar de cero, marca 'reiniciar'. Si no, no la pises: ahí puede haber trabajo tuyo."; exit 1
+          fi
+          echo "VIEJA=$VIEJA" >> "$GITHUB_ENV"
+          echo "BR=$BR" >> "$GITHUB_ENV"
+          echo "Base: $VIEJA  ->  Nueva: $NUEVA  ->  rama: $BR"
+
+      - name: Bajar las dos versiones de Nuvio
+        env:
+          NUEVA: ${{ inputs.version_nueva }}
+        run: |
+          set -eu
+          bajar() {  # $1=version  $2=carpeta destino
+            v="$1"; ok=0
+            for c in "$v" "${v}-beta" "v${v}"; do
+              if curl -fsSL --retry 3 -o /tmp/dl.zip "https://github.com/NuvioMedia/NuvioMobile/archive/${c}.zip"; then ok=1; echo "Bajada: $c"; break; fi
+            done
+            [ "$ok" = 1 ] || { echo "::error::No encontré la versión '$v' en NuvioMedia/NuvioMobile. Revisa el nombre de la etiqueta en Releases."; exit 1; }
+            rm -rf /tmp/zx && mkdir /tmp/zx
+            unzip -q -o /tmp/dl.zip -d /tmp/zx || { echo "::error::ZIP dañado ($v). Lánzalo otra vez."; exit 1; }
+            raiz=/tmp/zx
+            nd=$(find /tmp/zx -mindepth 1 -maxdepth 1 -type d | wc -l); nf=$(find /tmp/zx -mindepth 1 -maxdepth 1 -type f | wc -l)
+            if [ "$nd" -eq 1 ] && [ "$nf" -eq 0 ]; then raiz=$(find /tmp/zx -mindepth 1 -maxdepth 1 -type d); fi
+            rm -rf "$2"; mv "$raiz" "$2"
+          }
+          bajar "$VIEJA" /tmp/OLD
+          bajar "$NUEVA" /tmp/NEW
+
+      - name: Mezclar los 3 lados
+        env:
+          NUEVA: ${{ inputs.version_nueva }}
+        run: |
+          set -eu
+          git checkout -B "$BR"
+          cat > /tmp/merge3.py <<'PY'
+          import os, sys, hashlib, shutil, subprocess, collections, re
+
+          OLD = os.environ["OLD_DIR"]; NEW = os.environ["NEW_DIR"]; REPO = os.environ.get("REPO_DIR", ".")
+          OLDV = os.environ.get("OLD_VER", "?"); NEWV = os.environ.get("NEW_VER", "?")
+          SUMMARY = os.environ.get("SUMMARY_FILE", "/tmp/resumen.md")
+          STATE = os.environ.get("STATE_FILE", "/tmp/estado.txt")
+
+          SKIP_PREFIX = (".git/", ".github/", "Drop-Files/", "gracie-nuvio/")
+          SKIP_EXACT = {"AGENTS.md", "claude.md", "ambos.md", "grok.md", "BASE-NUVIO.txt", "LICENSE"}
+
+          def skip(rel):
+              if rel.startswith(SKIP_PREFIX) or rel in SKIP_EXACT: return True
+              if rel.endswith((".keystore", ".jks")): return True
+              if "/" not in rel and rel.endswith(".zip"): return True
+              return False
+
+          def walk(root):
+              d = {}
+              for dp, dn, fn in os.walk(root):
+                  dn[:] = [x for x in dn if x != ".git"]
+                  for f in fn:
+                      p = os.path.join(dp, f)
+                      if os.path.islink(p) or not os.path.isfile(p): continue
+                      rel = os.path.relpath(p, root).replace(os.sep, "/")
+                      if skip(rel): continue
+                      with open(p, "rb") as fh: d[rel] = hashlib.md5(fh.read()).hexdigest()
+              return d
+
+          def is_bin(p):
+              with open(p, "rb") as fh: return b"\0" in fh.read(8192)
+
+          def dirs_of(keys):
+              s = set()
+              for k in keys:
+                  parts = k.split("/")[:-1]
+                  for i in range(1, len(parts) + 1): s.add("/".join(parts[:i]))
+              return s
+
+          O, N, G = walk(OLD), walk(NEW), walk(REPO)
+          removed = dirs_of(O) - dirs_of(G)          # carpetas que Gracie quitó por completo
+          def in_removed(k):
+              parts = k.split("/")[:-1]
+              return any("/".join(parts[:i]) in removed for i in range(1, len(parts) + 1))
+
+          def put(k, src_root):
+              dst = os.path.join(REPO, k); os.makedirs(os.path.dirname(dst) or ".", exist_ok=True)
+              shutil.copy2(os.path.join(src_root, k), dst)
+
+          R = collections.defaultdict(list)
+          for k in sorted(set(O) | set(N) | set(G)):
+              o, n, g = O.get(k), N.get(k), G.get(k)
+              if n == g: continue
+              if o is None:
+                  if g is None:
+                      if in_removed(k): R["skip_nuevo"].append(k)
+                      else: put(k, NEW); R["G"].append(k)
+                  elif n is None: continue                      # solo de Gracie
+                  else: R["choque"].append((k, "añadido por los dos, distinto")); 
+                  continue
+              if g is None:                                     # Gracie lo quitó
+                  if n is not None and n != o: R["E"].append(k)
+                  continue
+              if n is None:                                     # Nuvio lo borró
+                  if g == o: os.remove(os.path.join(REPO, k)); R["borrado"].append(k)
+                  else: R["borrado_revisar"].append(k)
+                  continue
+              gc, nc = g != o, n != o
+              if nc and not gc: put(k, NEW); R["C"].append(k)
+              elif gc and not nc: R["B"].append(k)
+              else:                                             # cambiaron los dos
+                  gp, op, np_ = (os.path.join(REPO, k), os.path.join(OLD, k), os.path.join(NEW, k))
+                  if is_bin(gp) or is_bin(op) or is_bin(np_):
+                      R["choque"].append((k, "archivo binario, se dejó el de Gracie")); continue
+                  tmp = "/tmp/m3.tmp"; shutil.copy2(gp, tmp)
+                  rc = subprocess.run(["git", "merge-file", "--diff3", "-L", "GRACIE", "-L", "NUVIO-" + OLDV, "-L", "NUVIO-" + NEWV, tmp, op, np_]).returncode
+                  if rc == 0: shutil.copy2(tmp, gp); R["auto"].append(k)
+                  elif 0 < rc <= 127: shutil.copy2(tmp, gp); R["choque"].append((k, f"{rc} choque(s) marcados con <<<<<<<"))
+                  else: R["choque"].append((k, "error al mezclar, se dejó el de Gracie"))
+
+          # --- riesgos: archivos de Gracie que usan clases que Nuvio cambió ---
+          def stem(k): return os.path.basename(k)[:-3]
+          changed = [k for k in R["C"] + R["G"] + R["auto"] + [c[0] for c in R["choque"]] if k.endswith(".kt") and not stem(k).endswith("Test")]
+          mine = set(R["B"]) | set(R["auto"]) | {c[0] for c in R["choque"]} | {k for k in G if k not in O}
+          texts = {}
+          for k in mine:
+              if k.endswith(".kt"):
+                  with open(os.path.join(REPO, k), errors="ignore") as fh: texts[k] = fh.read()
+          riesgos = []
+          for c in changed:
+              s = stem(c); pat = re.compile(r"\b" + re.escape(s) + r"\b")
+              users = sorted(f for f, t in texts.items() if f != c and pat.search(t))
+              if users: riesgos.append((c, users))
+
+          # --- Seek Preview (ella no lo quiere) ---
+          seek = []
+          for dp, dn, fn in os.walk(os.path.join(REPO, "composeApp", "src")):
+              for f in fn:
+                  if f.endswith(".kt"):
+                      p = os.path.join(dp, f)
+                      with open(p, errors="ignore") as fh:
+                          if "showHorizontalSeekPreview" in fh.read(): seek.append(os.path.relpath(p, REPO))
+
+          # --- resumen ---
+          L = []; w = L.append
+          nch = len(R["choque"])
+          w(f"# Actualización Nuvio {OLDV} → {NEWV}\n")
+          w("## ⚠️ HAY CHOQUES: NO COMPILAR TODAVÍA\n" if nch else "## ✅ Sin choques: ya se puede compilar\n")
+          w("| Qué | Archivos |\n|---|---|")
+          w(f"| Actualizados solos (solo cambió Nuvio) | {len(R['C'])} |")
+          w(f"| Nuevos de Nuvio añadidos | {len(R['G'])} |")
+          w(f"| Tuyos que se quedan (Nuvio no los cambió) | {len(R['B'])} |")
+          w(f"| Mezclados solos (cambiaron los dos, sin choque) | {len(R['auto'])} |")
+          w(f"| **CHOQUES (hay que arreglar a mano)** | **{nch}** |")
+          w(f"| Nuevos de Nuvio NO traídos (iPhone/idiomas/etc. que quitaste) | {len(R['skip_nuevo'])} |")
+          w(f"| Cambiados por Nuvio pero tú los quitaste (ignorados) | {len(R['E'])} |")
+          w(f"| Borrados porque Nuvio los borró | {len(R['borrado'])} |\n")
+          if nch:
+              w("## Choques (lista de trabajo)\n")
+              for k, m in R["choque"]: w(f"- `{k}` — {m}")
+              w("")
+          if R["borrado_revisar"]:
+              w("## Nuvio borró, pero tú lo habías cambiado (revisar)\n")
+              for k in R["borrado_revisar"]: w(f"- `{k}`")
+              w("")
+          w("## Mezclados solos (revisar que compilen)\n")
+          for k in R["auto"]: w(f"- `{k}`")
+          w("\n## Riesgo de compilación: archivos tuyos que usan algo que Nuvio cambió\n")
+          if riesgos:
+              for c, u in riesgos[:60]: w(f"- `{stem(c)}` (cambió Nuvio) ← usado en: " + ", ".join(f"`{os.path.basename(x)}`" for x in u[:6]))
+          else: w("- Ninguno encontrado.")
+          w("\n## Seek Preview\n")
+          w("- ⚠️ Sigue apareciendo `showHorizontalSeekPreview` en: " + ", ".join(f"`{os.path.basename(x)}`" for x in seek) if seek else "- No se encontró.")
+          w("\n## Archivos actualizados por Nuvio\n")
+          for k in R["C"] + R["G"]: w(f"- `{k}`")
+          text = "\n".join(L) + "\n"
+          open(SUMMARY, "a").write(text); print(text)
+          open(STATE, "w").write(f"choques={nch}\n")
+          PY
+          OLD_DIR=/tmp/OLD NEW_DIR=/tmp/NEW REPO_DIR=. OLD_VER="$VIEJA" NEW_VER="$NUEVA" \
+            SUMMARY_FILE="$GITHUB_STEP_SUMMARY" STATE_FILE=/tmp/estado.txt python3 /tmp/merge3.py
+          . /tmp/estado.txt
+          echo "CHOQUES=$choques" >> "$GITHUB_ENV"
+
+      - name: Guardar la rama
+        env:
+          REINICIAR: ${{ inputs.reiniciar }}
+          NUEVA: ${{ inputs.version_nueva }}
+        run: |
+          set -eu
+          [ -f gradlew ] && chmod +x gradlew
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "- No hubo cambios que guardar." >> "$GITHUB_STEP_SUMMARY"; exit 0
+          fi
+          git commit -m "chore: mezclar Nuvio $VIEJA -> $NUEVA (choques: $CHOQUES)"
+          if [ "$REINICIAR" = "true" ]; then git push --force origin "HEAD:refs/heads/$BR"; else git push origin "HEAD:refs/heads/$BR"; fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Rama creada: \`$BR\`. main no cambió." >> "$GITHUB_STEP_SUMMARY"
+          if [ "$CHOQUES" != "0" ]; then
+            echo "::warning::Hay $CHOQUES archivo(s) con choque. NO compiles todavía: copia el resumen al chat."
+          fi
