@@ -2,37 +2,35 @@
 
 Léelo junto con `claude.md` y `ambos.md`. Aquí está lo aprendido en la actualización 0.6.10 → 0.6.11-beta. Si algo de aquí ya no sirve, cámbialo y entrega este archivo en el ZIP.
 
-## Método actual (no uses Fetch Original + Apply Gracie)
-- `apply_gracie.sh` **se perdió** (se borró del repo). No lo busques ni lo reconstruyas.
-- Se usa el workflow **Update Nuvio** (`.github/workflows/update-nuvio.yml`): compara 3 versiones (Nuvio viejo, Gracie actual, Nuvio nuevo) y mezcla archivo por archivo en una rama aparte `actualizacion-<version>`. `main` no cambia hasta que ella fusione.
-- La versión base la guarda `BASE-NUVIO.txt` (raíz). Después de fusionar una actualización hay que dejarla con la versión nueva.
-- Fetch Original y Apply Gracie quedan solo como respaldo. Fetch Original **pisa** los archivos de Gracie: no lo uses sobre `main`.
+## Método (el único que se usa)
+- Workflow **Update Nuvio** (`.github/workflows/update-nuvio.yml`): compara 3 versiones (Nuvio viejo, Gracie actual, Nuvio nuevo) y mezcla archivo por archivo en una rama aparte `actualizacion-<version>`. `main` no cambia hasta que ella fusione.
+- Ella lo lanza en Actions → Update Nuvio. Solo escribe la versión nueva (etiqueta de Nuvio, ej. `0.6.12-beta`); la vieja se lee de `BASE-NUVIO.txt` (en la **raíz** del repo).
+- `apply_gracie.sh`, Apply Gracie y Fetch Original ya no existen / no se usan. No reconstruyas `apply_gracie.sh`. Fetch Original pisaba los archivos de Gracie.
+- Al fusionar una actualización, `BASE-NUVIO.txt` debe quedar con la versión nueva (entrégalo en un ZIP con `ROUTES.txt`).
 
 ## Qué es de Gracie (el workflow lo respeta)
 - Archivos solo suyos (burbuja AutoSync, ajuste de audio, barra pill, caché, volumen, iconos…): no se tocan.
 - Archivos de Nuvio que ella modificó y Nuvio no: se quedan.
-- Lo que ella **quitó a propósito** y no debe volver: iPhone (`iosApp/`, `composeApp/src/ios*`), `desktopMain`, `nativeInterop`, `scripts/`, `Docs/`, `assets/`, y los idiomas `values-xx` que no tiene (conserva `values` y `values-es`). El workflow ignora los archivos nuevos de Nuvio dentro de carpetas que Gracie ya no tiene.
+- Lo que ella **quitó a propósito** y no debe volver: iPhone (`iosApp/`, `composeApp/src/ios*`), `desktopMain`, `nativeInterop`, `scripts/`, `Docs/`, `assets/`, y los idiomas `values-xx` que no tiene (conserva `values` y `values-es`).
 
-## Seek Preview: ella NO lo quiere
-- Ella ya lo había quitado, pero en el ZIP de `main` analizado seguía el código `showHorizontalSeekPreview` (el aviso que sale al arrastrar horizontalmente) en 6 archivos: `PlayerSurfaceGestures.kt`, `PlayerScreenRuntimeGestureActions.kt`, `PlayerScreenRuntimeUi.kt` y 3 tests (`PlayerSurfaceGesturesTest`, `PlayerGestureOverlayTest`, `NextEpisodeCardTest`). Eran idénticos a Nuvio 0.6.10.
-- Casi seguro lo quitaba el `apply_gracie.sh` perdido. El resumen del workflow avisa si aparece. Si aparece: quítalo con el cambio mínimo y revisa que el gesto de arrastre siga funcionando y que los tests compilen. Si no sabes qué debe verse o no verse, pregúntale.
+## Cambios de comportamiento de Gracie que NO deben perderse
+Después de cada actualización comprueba que siguen y que Nuvio no los devolvió:
+- **Seek Preview quitado**: no debe existir `showHorizontalSeekPreview` (aviso con la hora al arrastrar horizontalmente). Archivos: `PlayerSurfaceGestures.kt`, `PlayerScreenRuntimeGestureActions.kt`, `PlayerScreenRuntimeUi.kt` y los tests `PlayerSurfaceGesturesTest`, `PlayerGestureOverlayTest`, `NextEpisodeCardTest`. El gesto de buscar (se aplica al soltar) sí debe seguir. Si reaparece, quítalo con el cambio mínimo y revisa que compile.
+- **El progreso no se marca como visto al salirte cerca del final**: `isProgressComplete` (`WatchingPolicies.kt`) solo devuelve true si el video terminó (`isEnded`); `WatchProgressCompletionPercentThreshold` (`WatchProgressModels.kt`) vale `100f`, no `90f`. Tests ajustados: `WatchProgressRulesTest`, `InfusePlaybackTest`. Si Nuvio cambia esas reglas, vuelve a aplicarlo.
 
-## Riesgos de compilación conocidos (sin choque de texto)
-Nuvio 0.6.11 cambió estos archivos y código de Gracie los usa. Revisa firmas y llamadas:
-- `AuthStorage` (+ `.android`) y `AuthRepository` ← `MainActivity.kt` y `HomeScreen.kt`.
-- `HomeHeroSection` ← `HomeScreen.kt`.
-- `AutoSyncPreferencesRepository` y `AutoSyncMpvCoordinator` ← varios archivos de AutoSync de Gracie.
-- Nuvio añadió `AuthSessionErrors.kt`, `BackdropFocus*.kt` y `MdbListRemapCache.kt` (nuevos): pueden ser necesarios para que compilen los archivos de Nuvio que los usan.
+## Qué pasó en 0.6.10 → 0.6.11-beta
+- Análisis: 92 archivos solo de Gracie, 77 de Nuvio modificados por ella, 15 solo cambiados por Nuvio, 12 por ambos, 389 quitados por Gracie a propósito.
+- Choques de texto (3 archivos, 4 choques), todos de AutoSync: `AutoSyncPlaybackSettings.kt`, `AutoSyncMpvCoordinator.kt`, `AutoSyncPlayerCoordinator.android.kt`.
 
-## Choques reales en 0.6.10 → 0.6.11-beta (3 archivos, 4 choques)
-Todos de AutoSync, y los dos primeros son imports. Los 9 archivos de AutoSync/strings que se mezclaron solos también hay que revisarlos.
-- `AutoSyncPlaybackSettings.kt` (1)
-- `AutoSyncMpvCoordinator.kt` (1)
-- `AutoSyncPlayerCoordinator.android.kt` (2; Gracie lo cambió en unas 760 líneas, es el más grande)
+## Lo aprendido (revísalo en la próxima actualización)
+- Los choques de texto no son todo. Busca también archivos SOLO de Gracie que llamen funciones cuya firma cambió Nuvio (caso: Nuvio quitó el argumento `preferredSubtitleLanguage` de `AutoSyncPlaybackSettingsRows`, y `NuvioReshapedSettingsPage.kt` lo seguía pasando), recursos `Res.string` nuevos y métodos nuevos en interfaces (Nuvio añadió `setSubtitleUriWithRestoredAutoSync`; está implementado en `AutoSyncPlayerEngineController.android.kt` y `AutoSyncMpvCoordinator.kt`).
+- Gracie renombró `operationToken` a `libassOperationToken` y `retryOperationToken`. Todo código nuevo de Nuvio que use `operationToken` hay que adaptarlo en los archivos de AutoSync.
+- Archivos de Nuvio que Gracie usa y cambiaron sin choque (revisa firmas y llamadas): `AuthStorage` (+ `.android`) y `AuthRepository` ← `MainActivity.kt` y `HomeScreen.kt`; `HomeHeroSection` ← `HomeScreen.kt`; `AutoSyncPreferencesRepository` y `AutoSyncMpvCoordinator` ← archivos de AutoSync. Nuvio añadió archivos nuevos que otros necesitan (`AuthSessionErrors.kt`, `BackdropFocus*.kt`, `MdbListRemapCache.kt`).
+- Revisión antes de entregar un arreglo: sin marcas de choque, llaves y paréntesis balanceados, todos los `Res.string` usados definidos. Aquí no se compila: la prueba real es el release.
 
-## Reglas para arreglar choques
-- Un grupo de 3 a 5 archivos por chat; primero los pequeños. Lee solo las partes que chocan (marcadas con `<<<<<<< GRACIE`, `||||||| NUVIO-vieja`, `>>>>>>> NUVIO-nueva`). Entrega ZIP con ruta completa que pise el archivo en la rama.
-- No supongas el contenido de archivos que no tengas: pídelos.
-
-## Truco de Sort Uploads
-Si un ZIP trae **una sola carpeta en la raíz y esa carpeta no existe en el repo** (ej. `gracie-nuvio/`), Sort Uploads cree que es un envoltorio y la quita. Solución: pon también un archivo suelto en la raíz del ZIP (por ejemplo `ROUTES.txt`).
+## Cómo trabajar sobre la rama (no main)
+- **Sort Uploads solo corre solo en `main`.** Para la rama: sube el ZIP a `Drop-Files/` de la rama, y lanza a mano Actions → Sort Uploads → elige la rama. Luego se lanza solo el release de esa rama.
+- Un ZIP con **una sola carpeta en la raíz que no existe en el repo** (ej. `gracie-nuvio/`) pierde esa carpeta (cree que es un envoltorio). Solución: un `ROUTES.txt` suelto en la raíz del ZIP.
+- Un archivo nuevo en la raíz del repo también necesita `ROUTES.txt`.
+- Choques: un grupo de 3 a 5 archivos por chat, primero los pequeños. Lee solo las partes marcadas (`<<<<<<< GRACIE`, `||||||| NUVIO-vieja`, `>>>>>>> NUVIO-nueva`). No supongas el contenido de archivos que no tengas: pídelos.
+- Mientras dure la actualización no se suben otros cambios a `main`.
