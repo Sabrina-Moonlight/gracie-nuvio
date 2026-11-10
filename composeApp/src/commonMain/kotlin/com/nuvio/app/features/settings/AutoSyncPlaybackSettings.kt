@@ -7,15 +7,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.features.autosync.AutoSyncPreferencesRepository
-<<<<<<< GRACIE
 import com.nuvio.app.features.player.AudioSyncSettings
-import com.nuvio.app.features.player.SubtitleLanguageOption
 import com.nuvio.app.features.player.SubtitleSyncStatus
 import com.nuvio.app.isIos
-||||||| NUVIO-0.6.10-beta
-import com.nuvio.app.features.player.SubtitleLanguageOption
-=======
->>>>>>> NUVIO-0.6.11-beta
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.settings_playback_audio_sync_fallback
 import nuvio.composeapp.generated.resources.settings_playback_audio_sync_fallback_description

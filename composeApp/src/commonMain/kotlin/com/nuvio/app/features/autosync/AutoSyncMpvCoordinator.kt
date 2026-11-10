@@ -163,40 +163,7 @@ internal class AutoSyncMpvCoordinator(
             try {
                 showMessage(token, AutoSyncBubbleKind.Working, Res.string.autosync_toast_analyzing)
                 var outcome: AutoSyncAnalysisOutcome? = null
-<<<<<<< GRACIE
                 var searchOutcome: AutoSyncReferenceSearchOutcome? = null
-                val resolved = AutomaticSubtitleSync.findTimelineRetime(
-                    sourceKey = sourceUrl,
-                    sourceHeaders = sourceHeaders,
-                    selectedSubtitleUrl = url,
-                    selectedSubtitleHeaders = subtitleHeaders,
-                    preferredLanguage = subtitleLanguage,
-                    alternativeSubtitles = candidateScope.alternativeCandidates(candidates),
-                    alternativeSubtitlesProvider = if (candidateScope.usesAlternativeProvider) {
-                        { candidates }
-                    } else null,
-                    onAnalysisOutcome = { outcome = it },
-                    selectedSubtitleBodyDeferred = retry?.let { CompletableDeferred(it.originalBody) },
-                    excludedReferenceKeys = retry?.rejectedKeys.orEmpty(),
-                    requiredReferenceSource = retry?.resolved?.reference?.source,
-                    onReferenceSearchOutcome = { searchOutcome = it },
-                    allowLiveReference = false,
-                )
-||||||| NUVIO-0.6.10-beta
-                val resolved = AutomaticSubtitleSync.findTimelineRetime(
-                    sourceKey = sourceUrl,
-                    sourceHeaders = sourceHeaders,
-                    selectedSubtitleUrl = url,
-                    selectedSubtitleHeaders = subtitleHeaders,
-                    preferredLanguage = subtitleLanguage,
-                    alternativeSubtitles = candidateScope.alternativeCandidates(candidates),
-                    alternativeSubtitlesProvider = if (candidateScope.usesAlternativeProvider) {
-                        { candidates }
-                    } else null,
-                    onAnalysisOutcome = { outcome = it },
-                    allowLiveReference = false,
-                )
-=======
                 suspend fun search(searchScope: AutoSyncCandidateScope) =
                     AutomaticSubtitleSync.findTimelineRetime(
                         sourceKey = sourceUrl,
@@ -209,6 +176,10 @@ internal class AutoSyncMpvCoordinator(
                             { candidates }
                         } else null,
                         onAnalysisOutcome = { outcome = it },
+                        selectedSubtitleBodyDeferred = retry?.let { CompletableDeferred(it.originalBody) },
+                        excludedReferenceKeys = retry?.rejectedKeys.orEmpty(),
+                        requiredReferenceSource = retry?.resolved?.reference?.source,
+                        onReferenceSearchOutcome = { searchOutcome = it },
                         allowLiveReference = false,
                     )
                 var resolved = search(candidateScope)
@@ -219,7 +190,6 @@ internal class AutoSyncMpvCoordinator(
                 ) {
                     resolved = search(AutoSyncCandidateScope.STARTUP_SEARCH)
                 }
->>>>>>> NUVIO-0.6.11-beta
                 currentCoroutineContext().ensureActive()
                 if (token != operationToken) return@launch
                 if (resolved == null) {

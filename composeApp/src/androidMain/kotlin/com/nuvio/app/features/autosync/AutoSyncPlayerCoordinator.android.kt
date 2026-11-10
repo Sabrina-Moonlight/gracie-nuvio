@@ -477,18 +477,18 @@ internal class AutoSyncPlayerCoordinator(
             .build()
 
         job = scope.launch {
-<<<<<<< GRACIE
             var analysisOutcome: AutoSyncAnalysisOutcome? = null
             var searchLanguage = getPreferredLanguage()
-            var resolved = AutomaticSubtitleSync.findTimelineRetime(
+            var searchScope = candidateScope
+            suspend fun searchSelected() = AutomaticSubtitleSync.findTimelineRetime(
                 sourceKey = sourceUrl,
                 sourceHeaders = sourceHeaders,
                 selectedSubtitleUrl = url,
                 selectedSubtitleHeaders = subtitleHeaders,
                 selectedSubtitleBodyDeferred = selectedSubtitleBodyDeferred,
                 preferredLanguage = searchLanguage,
-                alternativeSubtitles = candidateScope.alternativeCandidates(candidates),
-                alternativeSubtitlesProvider = if (candidateScope.usesAlternativeProvider) {
+                alternativeSubtitles = searchScope.alternativeCandidates(candidates),
+                alternativeSubtitlesProvider = if (searchScope.usesAlternativeProvider) {
                     { candidates }
                 } else {
                     null
@@ -496,8 +496,14 @@ internal class AutoSyncPlayerCoordinator(
                 onReferenceReady = {},
                 onAnalysisOutcome = { outcome -> analysisOutcome = outcome },
             )
+            var resolved = searchSelected()
             AutoSyncDebugLog.info {
                 "candidateScope=${candidateScope.name}"
+            }
+            // The restored subtitle does not fit: look for another one that does.
+            if (resolved == null && candidateScope.searchAfterSelectedFailed(analysisOutcome)) {
+                searchScope = AutoSyncCandidateScope.STARTUP_SEARCH
+                resolved = searchSelected()
             }
 
             // No match in the first language: search the secondary subtitle language before the
@@ -506,7 +512,7 @@ internal class AutoSyncPlayerCoordinator(
             val secondarySeed =
                 if (
                     resolved == null &&
-                    candidateScope == AutoSyncCandidateScope.STARTUP_SEARCH &&
+                    searchScope == AutoSyncCandidateScope.STARTUP_SEARCH &&
                     (
                         analysisOutcome == null ||
                             analysisOutcome == AutoSyncAnalysisOutcome.SUBTITLE_UNAVAILABLE ||
@@ -543,60 +549,6 @@ internal class AutoSyncPlayerCoordinator(
                 val secondaryLanguage = searchLanguage
                 AutoSyncDebugLog.info {
                     "secondaryLanguage=$secondaryLanguage matched=$matched"
-||||||| NUVIO-0.6.10-beta
-            try {
-                var outcome: AutoSyncAnalysisOutcome? = null
-                val resolved = AutomaticSubtitleSync.findTimelineRetime(
-                    sourceKey = sourceUrl,
-                    sourceHeaders = sourceHeaders,
-                    selectedSubtitleUrl = url,
-                    selectedSubtitleHeaders = subtitleHeaders,
-                    selectedSubtitleBodyDeferred = bodyDeferred,
-                    preferredLanguage = subtitleLanguage,
-                    alternativeSubtitles = candidateScope.alternativeCandidates(candidates),
-                    alternativeSubtitlesProvider = if (candidateScope.usesAlternativeProvider) {
-                        { candidates }
-                    } else null,
-                    onAnalysisOutcome = { outcome = it },
-                )
-                currentCoroutineContext().ensureActive()
-                if (token != operationToken) return@launch
-                if (resolved == null) {
-                    restoreOriginalIfRelevant()
-                    showNoFit(token, outcome)
-                    return@launch
-=======
-            try {
-                var outcome: AutoSyncAnalysisOutcome? = null
-                suspend fun search(searchScope: AutoSyncCandidateScope) =
-                    AutomaticSubtitleSync.findTimelineRetime(
-                        sourceKey = sourceUrl,
-                        sourceHeaders = sourceHeaders,
-                        selectedSubtitleUrl = url,
-                        selectedSubtitleHeaders = subtitleHeaders,
-                        selectedSubtitleBodyDeferred = bodyDeferred,
-                        preferredLanguage = subtitleLanguage,
-                        alternativeSubtitles = searchScope.alternativeCandidates(candidates),
-                        alternativeSubtitlesProvider = if (searchScope.usesAlternativeProvider) {
-                            { candidates }
-                        } else null,
-                        onAnalysisOutcome = { outcome = it },
-                    )
-                var resolved = search(candidateScope)
-                // The restored subtitle does not fit: look for another one that does.
-                if (
-                    resolved == null && token == operationToken &&
-                    candidateScope.searchAfterSelectedFailed(outcome)
-                ) {
-                    resolved = search(AutoSyncCandidateScope.STARTUP_SEARCH)
-                }
-                currentCoroutineContext().ensureActive()
-                if (token != operationToken) return@launch
-                if (resolved == null) {
-                    restoreOriginalIfRelevant()
-                    showNoFit(token, outcome)
-                    return@launch
->>>>>>> NUVIO-0.6.11-beta
                 }
             }
 
@@ -800,7 +752,7 @@ internal class AutoSyncPlayerCoordinator(
                 var resolved = search(ass = true)
                 // The restored subtitle does not fit: look for another one that does.
                 if (
-                    resolved == null && token == operationToken &&
+                    resolved == null && token == libassOperationToken &&
                     candidateScope.searchAfterSelectedFailed(outcome)
                 ) {
                     searchScope = AutoSyncCandidateScope.STARTUP_SEARCH
@@ -808,16 +760,8 @@ internal class AutoSyncPlayerCoordinator(
                 }
                 // No ASS/SSA fits: try the other formats, unless the video has nothing to compare with.
                 if (
-<<<<<<< GRACIE
-                    resolved == null && candidateScope.usesAlternativeProvider &&
-                    token == libassOperationToken &&
-||||||| NUVIO-0.6.10-beta
-                    resolved == null && candidateScope.usesAlternativeProvider &&
-                    token == operationToken &&
-=======
                     resolved == null && searchScope.usesAlternativeProvider &&
-                    token == operationToken &&
->>>>>>> NUVIO-0.6.11-beta
+                    token == libassOperationToken &&
                     outcome != AutoSyncAnalysisOutcome.NO_SUBTITLE_TRACKS &&
                     outcome != AutoSyncAnalysisOutcome.NO_USABLE_REFERENCE &&
                     candidates.any { !isAss(it.url) }
