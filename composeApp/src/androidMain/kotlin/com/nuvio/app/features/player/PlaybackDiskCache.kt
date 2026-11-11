@@ -67,13 +67,22 @@ internal object PlaybackDiskCache {
     private var pendingEviction: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    /** Called at launch: nothing from an earlier run is kept. */
+    /** Full reset: moves the main cache aside and deletes stale folders. */
     fun cleanUp(context: Context) {
         val appContext = context.applicationContext
         synchronized(lock) {
             if (cache == null) moveAside(File(appContext.cacheDir, DIR))
         }
         deleteStaleFolders(appContext)
+    }
+
+    /**
+     * Launch cleanup used by [PlaybackBufferAndroid]: only removes leftover [STALE_PREFIX]
+     * folders from a previous crash/resize. Keeps the live disk cache so seek-buffer data
+     * survives app restarts.
+     */
+    fun cleanUpStaleOnly(context: Context) {
+        deleteStaleFolders(context.applicationContext)
     }
 
     /**
@@ -180,21 +189,34 @@ internal object PlaybackDiskCache {
             cache = null
         }
         val dir = File(context.cacheDir, DIR)
-        // A crash can leave last run's files; a fresh folder never races their deletion.
-        moveAside(dir)
         deleteStaleFolders(context)
-        val created = try {
-            dir.mkdirs()
-            val provider = databaseProvider ?: StandaloneDatabaseProvider(context).also { databaseProvider = it }
-            SimpleCache(dir, TrimmingEvictor(maxBytes), provider)
-        } catch (failure: Throwable) {
-            Log.w(TAG, "DISK_CACHE: unavailable, streaming direct", failure)
+        // Prefer reopening the existing on-disk store so seek-buffer data survives restarts.
+        // Only move aside when the folder cannot be opened (corrupt / locked).
+        var created = openExistingOrCreate(context, dir, maxBytes)
+        if (created == null && dir.exists()) {
+            Log.w(TAG, "DISK_CACHE: existing store unusable, rebuilding")
+            moveAside(dir)
+            deleteStaleFolders(context)
+            created = openExistingOrCreate(context, dir, maxBytes)
+        }
+        if (created == null) {
+            Log.w(TAG, "DISK_CACHE: unavailable, streaming direct")
             cacheDisabled = true
-            null
         }
         cache = created
         cacheCapBytes = if (created != null) maxBytes else -1L
         return created
+    }
+
+    private fun openExistingOrCreate(context: Context, dir: File, maxBytes: Long): SimpleCache? {
+        return try {
+            dir.mkdirs()
+            val provider = databaseProvider ?: StandaloneDatabaseProvider(context).also { databaseProvider = it }
+            SimpleCache(dir, TrimmingEvictor(maxBytes), provider)
+        } catch (failure: Throwable) {
+            Log.w(TAG, "DISK_CACHE: open failed", failure)
+            null
+        }
     }
 
     private fun moveAside(dir: File) {
