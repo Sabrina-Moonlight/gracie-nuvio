@@ -22,6 +22,8 @@ internal object NuvioExoPlayerPerformanceHelper {
     private const val LOCAL_FILE_TARGET_BUFFER_MB = 48
     private const val BACK_BUFFER_TARGET_SHARE_NUM = 1L
     private const val BACK_BUFFER_TARGET_SHARE_DEN = 2L
+    /** In-memory time ceiling while the disk seek cache fills; not multi-hour. */
+    private const val FORWARD_SEEK_MAX_BUFFER_MS = 90_000
 
     @Volatile
     var enabled: Boolean = false
@@ -123,10 +125,11 @@ internal object NuvioExoPlayerPerformanceHelper {
     }
 
     /**
-     * Larger ahead-of-playhead buffer driven by the Seek buffer setting. Target bytes are capped
-     * by safe device memory (cannot hold multiple GB in RAM); time window is raised so loading
-     * continues until that size is filled. Combined with [PlaybackDiskCache], seeking forward
-     * into already-downloaded ranges can hit disk instead of the network.
+     * Seek buffer size (1/2/4 GB or Auto) is the *disk* cache budget in [PlaybackDiskCache].
+     * RAM must stay small: holding the GB-scale target in ExoPlayer's LoadControl was OOMing
+     * devices once that feature shipped. Ahead-of-playhead data still lands on disk as the
+     * player reads it; seeks into already-watched ranges hit the disk cache, not a multi-GB
+     * memory buffer.
      */
     private fun buildForwardSeekLoadControl(
         context: Context,
@@ -138,23 +141,13 @@ internal object NuvioExoPlayerPerformanceHelper {
         } else {
             playbackHeapBufferMaxMb()
         }.coerceAtLeast(MIN_BUFFER_MB)
-        val requestedMb = when (seekBufferMb) {
-            PlaybackDiskCacheSettings.AUTO_MB -> safeMb
-            else -> seekBufferMb.coerceAtLeast(MIN_BUFFER_MB)
-        }
-        val targetMb = requestedMb.coerceAtMost(safeMb).coerceAtLeast(MIN_BUFFER_MB)
-        // Time ceiling high enough that the byte target wins at typical stream bitrates.
-        val maxBufferMs = when {
-            seekBufferMb >= 4096 -> 60 * 60_000
-            seekBufferMb >= 2048 -> 40 * 60_000
-            seekBufferMb >= 1024 -> 25 * 60_000
-            seekBufferMb == PlaybackDiskCacheSettings.AUTO_MB -> 20 * 60_000
-            else -> 15 * 60_000
-        }
-        val minBufferMs = maxOf(bufferSettings.minBufferMs, 30_000).coerceAtMost(maxBufferMs)
+        // Modest in-memory window only. Disk holds the configured 1/2/4 GB (or Auto) size.
+        val targetMb = forwardSeekRamTargetMb(safeMb)
+        val maxBufferMs = FORWARD_SEEK_MAX_BUFFER_MS
+        val minBufferMs = maxOf(bufferSettings.minBufferMs, MIN_BUFFER_MS).coerceAtMost(maxBufferMs)
         Log.i(
             TAG,
-            "forward seek load control seekBufferMb=$seekBufferMb targetMb=$targetMb " +
+            "forward seek load control seekBufferMb=$seekBufferMb (disk) targetMb=$targetMb (ram) " +
                 "maxBufferMs=$maxBufferMs safeMb=$safeMb",
         )
         if (enabled) {
@@ -179,10 +172,19 @@ internal object NuvioExoPlayerPerformanceHelper {
                 bufferSettings.bufferForPlaybackMs.coerceAtLeast(BUFFER_FOR_PLAYBACK_MS),
                 bufferSettings.bufferForPlaybackAfterRebufferMs.coerceAtLeast(BUFFER_FOR_PLAYBACK_MS),
             )
-            // Size target drives how far ahead we load; time is only a ceiling.
             .setPrioritizeTimeOverSizeThresholds(false)
             .setBackBuffer(PlaybackBufferSettings.DEFAULT_BACK_BUFFER_MS, true)
             .build()
+    }
+
+    /** RAM only — never the disk seek-buffer GB values. */
+    private fun forwardSeekRamTargetMb(safeMb: Int): Int {
+        val preferred = when {
+            safeMb >= 1000 -> 128
+            safeMb >= 500 -> 96
+            else -> 64
+        }
+        return preferred.coerceIn(MIN_BUFFER_MB, safeMb)
     }
 
     /**

@@ -5,7 +5,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Seek buffer (Nuvio Reshaped): ExoPlayer's disk cache, set up the way Nuvio TV does it.
+ * Seek buffer (Nuvio Reshaped): ExoPlayer's *disk* cache size, set up the way Nuvio TV does it.
+ * Values are 1/2/4 GB (or Auto) on storage only — never the in-memory LoadControl target.
  * Persistence is injected by the platform so Nuvio's PlayerSettingsRepository stays untouched.
  * Applies from the next playback. The memory buffer is Nuvio's own setting (Playback settings).
  */
