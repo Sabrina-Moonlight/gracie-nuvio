@@ -4,9 +4,9 @@
     <string name="player_audio_sync_model_needs_wifi">Conéctate una vez a Wi-Fi para descargar el modelo de voz de %1$s MB y sincronizar subtítulos más rápido</string>
     <string name="player_audio_sync_live_only">No hay vista anticipada para el audio %1$s en este dispositivo; se sincroniza con el audio en vivo (más lento)</string>
     <string name="player_audio_sync_withdrawn">No se pudo confirmar la sincronización; se restauró el tiempo original</string>
-    <string name="player_audio_sync_estimated">Sincronizando subtítulos con el audio (%1$s), afinando…</string>
-    <string name="player_audio_sync_synced">Sincronización de subtítulos confirmada (%1$s)</string>
-    <string name="player_audio_sync_synced_rate">Sincronización de subtítulos confirmada (%1$s, velocidad de fotogramas corregida)</string>
+    <string name="player_audio_sync_estimated">Sincronizando subtítulos</string>
+    <string name="player_audio_sync_synced">Sincronización de subtítulos confirmada</string>
+    <string name="player_audio_sync_synced_rate">Sincronización de subtítulos confirmada</string>
     <string name="player_audio_sync_adjusted">Cambió el tiempo de los subtítulos; se volvió a sincronizar (%1$s)</string>
     <string name="settings_playback_audio_sync_fallback">Sincronizar con el audio cuando AutoSync no pueda</string>
     <string name="settings_playback_audio_sync_fallback_description">Cuando no hay subtítulos integrados o la coincidencia es demasiado débil, alinea el subtítulo con el diálogo escuchando el audio</string>

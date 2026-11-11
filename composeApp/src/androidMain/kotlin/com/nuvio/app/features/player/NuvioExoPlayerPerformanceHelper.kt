@@ -86,9 +86,15 @@ internal object NuvioExoPlayerPerformanceHelper {
         context: Context,
         bufferSettings: PlaybackBufferSettings = PlaybackBufferSettings(),
         localFileSource: Boolean = false,
+        seekBufferMb: Int = PlaybackDiskCacheSettings.NUVIO_DEFAULT_MB,
     ): DefaultLoadControl {
         if (localFileSource && !bufferSettings.enabled) {
             return localFileLoadControl()
+        }
+        // Seek buffer set to 1/2/4 GB or Auto: load further ahead so the user can seek forward
+        // into already-fetched data (disk cache keeps it once read).
+        if (seekBufferMb != PlaybackDiskCacheSettings.NUVIO_DEFAULT_MB) {
+            return buildForwardSeekLoadControl(context, seekBufferMb, bufferSettings)
         }
         if (bufferSettings.enabled) {
             return buildCustomLoadControl(context, bufferSettings)
@@ -114,6 +120,69 @@ internal object NuvioExoPlayerPerformanceHelper {
             bufferForPlaybackAfterRebufferMs = BUFFER_FOR_PLAYBACK_MS,
             backBufferMs = PlaybackBufferSettings.DEFAULT_BACK_BUFFER_MS,
         )
+    }
+
+    /**
+     * Larger ahead-of-playhead buffer driven by the Seek buffer setting. Target bytes are capped
+     * by safe device memory (cannot hold multiple GB in RAM); time window is raised so loading
+     * continues until that size is filled. Combined with [PlaybackDiskCache], seeking forward
+     * into already-downloaded ranges can hit disk instead of the network.
+     */
+    private fun buildForwardSeekLoadControl(
+        context: Context,
+        seekBufferMb: Int,
+        bufferSettings: PlaybackBufferSettings,
+    ): DefaultLoadControl {
+        val safeMb = if (enabled) {
+            getSafeNativeMemoryLimitMb(context)
+        } else {
+            playbackHeapBufferMaxMb()
+        }.coerceAtLeast(MIN_BUFFER_MB)
+        val requestedMb = when (seekBufferMb) {
+            PlaybackDiskCacheSettings.AUTO_MB -> safeMb
+            else -> seekBufferMb.coerceAtLeast(MIN_BUFFER_MB)
+        }
+        val targetMb = requestedMb.coerceAtMost(safeMb).coerceAtLeast(MIN_BUFFER_MB)
+        // Time ceiling high enough that the byte target wins at typical stream bitrates.
+        val maxBufferMs = when {
+            seekBufferMb >= 4096 -> 60 * 60_000
+            seekBufferMb >= 2048 -> 40 * 60_000
+            seekBufferMb >= 1024 -> 25 * 60_000
+            seekBufferMb == PlaybackDiskCacheSettings.AUTO_MB -> 20 * 60_000
+            else -> 15 * 60_000
+        }
+        val minBufferMs = maxOf(bufferSettings.minBufferMs, 30_000).coerceAtMost(maxBufferMs)
+        Log.i(
+            TAG,
+            "forward seek load control seekBufferMb=$seekBufferMb targetMb=$targetMb " +
+                "maxBufferMs=$maxBufferMs safeMb=$safeMb",
+        )
+        if (enabled) {
+            return nativeLoadControl(
+                targetBufferMb = targetMb,
+                minBufferMs = minBufferMs,
+                maxBufferMs = maxBufferMs,
+                bufferForPlaybackMs = bufferSettings.bufferForPlaybackMs.coerceAtLeast(BUFFER_FOR_PLAYBACK_MS),
+                bufferForPlaybackAfterRebufferMs = bufferSettings.bufferForPlaybackAfterRebufferMs
+                    .coerceAtLeast(BUFFER_FOR_PLAYBACK_MS),
+                backBufferMs = PlaybackBufferSettings.DEFAULT_BACK_BUFFER_MS,
+            )
+        }
+        val targetBytes = (targetMb.toLong() * 1024L * 1024L)
+            .coerceAtMost(Int.MAX_VALUE.toLong())
+            .toInt()
+        return DefaultLoadControl.Builder()
+            .setTargetBufferBytes(targetBytes)
+            .setBufferDurationsMs(
+                minBufferMs,
+                maxBufferMs,
+                bufferSettings.bufferForPlaybackMs.coerceAtLeast(BUFFER_FOR_PLAYBACK_MS),
+                bufferSettings.bufferForPlaybackAfterRebufferMs.coerceAtLeast(BUFFER_FOR_PLAYBACK_MS),
+            )
+            // Size target drives how far ahead we load; time is only a ceiling.
+            .setPrioritizeTimeOverSizeThresholds(false)
+            .setBackBuffer(PlaybackBufferSettings.DEFAULT_BACK_BUFFER_MS, true)
+            .build()
     }
 
     /**

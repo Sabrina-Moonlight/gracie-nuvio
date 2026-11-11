@@ -6,5 +6,5 @@
     <string name="settings_playback_buffer_default">Nuvio default</string>
     <string name="settings_playback_buffer_auto">Auto</string>
     <string name="settings_playback_buffer_value_gb">%1$d GB</string>
-    <string name="settings_playback_buffer_description">Keeps what you have watched in a disk cache, like Nuvio TV, so jumping back is instant. Auto sizes it from free storage. It is cleared when playback ends. Tap to change; applies from the next playback.</string>
+    <string name="settings_playback_buffer_description">Loads the stream further ahead and keeps it on disk so you can jump forward without waiting. Larger sizes buffer more ahead (limited by free memory on the phone). Auto sizes from free storage. Tap to change; applies from the next playback.</string>
 </resources>

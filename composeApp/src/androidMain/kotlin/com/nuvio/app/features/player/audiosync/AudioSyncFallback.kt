@@ -436,10 +436,9 @@ private suspend fun AudioSyncStatus.message(): String? = when (this) {
         Res.string.player_audio_sync_live_only,
         mimeType.substringAfter('/').uppercase(),
     )
-    is AudioSyncStatus.Estimated -> getString(Res.string.player_audio_sync_estimated, formatOffset(offsetMs))
+    is AudioSyncStatus.Estimated -> getString(Res.string.player_audio_sync_estimated)
     is AudioSyncStatus.Synced -> getString(
         if (rateCorrected) Res.string.player_audio_sync_synced_rate else Res.string.player_audio_sync_synced,
-        formatOffset(offsetMs),
     )
     is AudioSyncStatus.Adjusted -> getString(Res.string.player_audio_sync_adjusted, formatOffset(offsetMs))
 }

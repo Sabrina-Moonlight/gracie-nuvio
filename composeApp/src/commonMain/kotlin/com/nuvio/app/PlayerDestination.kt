@@ -4,7 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.nuvio.app.core.ui.NuvioToastController
 import com.nuvio.app.features.party.PartyMedia
@@ -29,7 +32,16 @@ internal fun PlayerDestination(
     openExternalStreamUrl: (String) -> Boolean,
     onOpenPartyMedia: (PartyMedia) -> Unit,
 ) {
-    val onBack = rememberGuardedPopBackStack(navController, route)
+    // Back leaves the player and any stream list under it (home/details, not stream selection).
+    var popHandled by remember(route) { mutableStateOf(false) }
+    val onBack = remember(navController, route, popHandled) {
+        {
+            if (!popHandled && navController.currentRoute == route) {
+                popHandled = true
+                navController.popPlayerPastStreams(expectedPlayerRoute = route)
+            }
+        }
+    }
     val launch = remember(route.launchId) { PlayerLaunchStore.get(route.launchId) }
     if (launch == null) {
         LaunchedEffect(route.launchId) {

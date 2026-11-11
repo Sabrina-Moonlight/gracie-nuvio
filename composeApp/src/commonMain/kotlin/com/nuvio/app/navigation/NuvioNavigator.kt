@@ -62,6 +62,24 @@ internal class NuvioNavigator(
         onExternalBack?.invoke()
         return onExternalBack != null
     }
+
+    /**
+     * Leave the player without landing on stream selection: pop the player, any stream screens,
+     * and the detail page underneath so back returns to the app home (tabs) instead of streams.
+     */
+    fun popPlayerPastStreams(expectedPlayerRoute: AppRoute? = null): Boolean {
+        if (expectedPlayerRoute != null && currentRoute != expectedPlayerRoute) return false
+        if (!popBackStack(expectedRoute = expectedPlayerRoute)) return false
+        while (backStack.size > 1) {
+            when (currentRoute) {
+                is StreamRoute, is DetailRoute -> {
+                    if (!popBackStack()) break
+                }
+                else -> break
+            }
+        }
+        return true
+    }
 }
 
 internal class NuvioNavigateOptions {

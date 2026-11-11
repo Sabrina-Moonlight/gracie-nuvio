@@ -24,6 +24,14 @@ import kotlinx.coroutines.yield
 import java.io.File
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+ * ExoPlayer disk cache for VOD streams.
+ *
+ * Unfinished continue-watching episodes keep their cache across player exits and app launches.
+ * Cache for a stream is removed when that episode is finished or the user moves to the next one.
+ * Changing stream mid-episode keeps the previous stream's data so switching back still hits cache.
+ * Overall size is still bounded by the configured cap (LRU) and by trimming behind the playhead.
+ */
 @UnstableApi
 internal object VodCache {
     private const val TAG = "VodCache"
@@ -33,6 +41,8 @@ internal object VodCache {
     private const val RETAIN_BEHIND_BYTES = 1024L * 1024L * 1024L
     private const val TRIM_STEP_BYTES = 64L * 1024L * 1024L
     private const val EVICTION_DELAY_MS = 5_000L
+    /** Progress fraction above which the episode is treated as finished for cache eviction. */
+    private const val COMPLETED_FRACTION = 0.92
 
     @Volatile
     var playheadBytesProvider: (() -> Long)? = null
@@ -47,6 +57,17 @@ internal object VodCache {
     private var pendingEviction: Job? = null
     private val bytesReadFromCache = AtomicLong(0L)
     private val writeCounters = VodCacheWriteSink.Counters()
+
+    /** URLs written during the current player session. */
+    private val activeKeys = LinkedHashSet<String>()
+    /**
+     * Last known playhead fraction (0..1) for the active session. Used on release to decide
+     * whether the episode finished and its cache should be dropped.
+     */
+    @Volatile
+    private var activePlayheadFraction: Double = 0.0
+    /** Keys kept after leaving the player so continue-watching can reuse them. */
+    private val retainedKeys = LinkedHashSet<String>()
 
     fun wrap(
         context: Context,
@@ -71,17 +92,97 @@ internal object VodCache {
             return upstream
         }
         val cache = obtain(appContext, maxBytes) ?: return upstream
+        synchronized(lock) {
+            activeKeys += url
+            // A new stream for the same session still keeps previous keys (stream switch).
+            Log.i(TAG, "active keys=${activeKeys.size} retained=${retainedKeys.size} url=$url")
+        }
         Log.i(TAG, "active capMb=${maxBytes / (1024L * 1024L)} mode=$sizeMode")
         val cached = cacheFactory(upstream, cache)
         return DataSource.Factory { BufferedReadDataSource(cached.createDataSource()) }
     }
 
+    /**
+     * Update progress so release can tell a finished episode from a paused one.
+     * Call from the player with position/duration in milliseconds.
+     */
+    fun onPlayheadProgress(positionMs: Long, durationMs: Long) {
+        if (durationMs <= 0L || positionMs < 0L) return
+        activePlayheadFraction = (positionMs.toDouble() / durationMs).coerceIn(0.0, 1.0)
+    }
+
+    /**
+     * Called when the player is disposed.
+     * [episodeFinished] true → drop this session's keys (finished or moved to next).
+     * false → keep them for continue watching / same episode later.
+     */
+    fun releaseSession(episodeFinished: Boolean = false) {
+        val keysToDrop = synchronized(lock) {
+            val keys = activeKeys.toSet()
+            activeKeys.clear()
+            val finished = episodeFinished || activePlayheadFraction >= COMPLETED_FRACTION
+            activePlayheadFraction = 0.0
+            if (finished) {
+                retainedKeys.removeAll(keys)
+                keys
+            } else {
+                retainedKeys += keys
+                emptySet()
+            }
+        }
+        if (keysToDrop.isEmpty()) {
+            Log.i(TAG, "releaseSession keep for resume retained=${synchronized(lock) { retainedKeys.size }}")
+            return
+        }
+        Log.i(TAG, "releaseSession drop ${keysToDrop.size} finished keys")
+        scheduleRemoveKeys(keysToDrop)
+    }
+
+    /**
+     * Drop cache for the previous episode when the user starts the next one (or any new content
+     * that should not keep the prior session). Keeps [activeKeys] of the current session.
+     */
+    fun discardPreviousSession() {
+        val keysToDrop = synchronized(lock) {
+            val keys = retainedKeys.toSet()
+            retainedKeys.clear()
+            keys
+        }
+        if (keysToDrop.isEmpty()) return
+        Log.i(TAG, "discardPreviousSession drop ${keysToDrop.size} keys")
+        scheduleRemoveKeys(keysToDrop)
+    }
+
+    /** @deprecated Prefer [releaseSession]. Kept so older call sites still compile. */
     fun evictCachedSession() {
+        // Default: keep cache for continue watching. Finished detection uses onPlayheadProgress.
+        releaseSession(episodeFinished = false)
+    }
+
+    private fun scheduleRemoveKeys(keys: Set<String>) {
+        if (keys.isEmpty()) return
         pendingEviction?.cancel()
         pendingEviction = maintenanceScope.launch {
             delay(EVICTION_DELAY_MS)
             val cache = synchronized(lock) { sharedCache } ?: return@launch
-            clearAll(cache)
+            removeKeys(cache, keys)
+        }
+    }
+
+    private suspend fun removeKeys(cache: SimpleCache, keys: Set<String>) {
+        for (key in keys) {
+            val spans = try {
+                cache.getCachedSpans(key)
+            } catch (_: Exception) {
+                continue
+            }
+            for (span in spans) {
+                try {
+                    cache.removeSpan(span)
+                } catch (_: Exception) {
+                }
+                yield()
+            }
         }
     }
 
@@ -125,17 +226,19 @@ internal object VodCache {
                     Log.i(
                         TAG,
                         "keeping cap ${configuredMaxBytes / (1024L * 1024L)}MB, " +
-                            "${maxBytes / (1024L * 1024L)}MB applies next launch",
+                            "${maxBytes / (1024L * 1024L)}MB applies next cold open",
                     )
                 }
                 return existing
             }
             val dir = File(context.cacheDir, DIR_NAME)
-            val movedAside = moveStaleAside(dir)
-            var created = create(context, dir, maxBytes)
-            if (created == null) {
-                dir.deleteRecursively()
-                created = create(context, dir, maxBytes)
+            // Reuse the on-disk cache so continue-watching keeps buffered data across launches.
+            // Only move aside when the existing store cannot be opened (corrupt / locked).
+            var created = openExistingOrCreate(context, dir, maxBytes)
+            if (created == null && dir.exists()) {
+                Log.w(TAG, "existing cache unusable, rebuilding")
+                moveStaleAside(dir)
+                created = openExistingOrCreate(context, dir, maxBytes)
             }
             if (created == null) {
                 disabledForSession = true
@@ -144,10 +247,6 @@ internal object VodCache {
                 configuredMaxBytes = maxBytes
                 bytesReadFromCache.set(0L)
                 writeCounters.reset()
-                if (!movedAside) {
-                    val cache = created
-                    maintenanceScope.launch { clearAll(cache) }
-                }
             }
             deleteStaleFolders(context)
             sharedCache = created
@@ -155,18 +254,17 @@ internal object VodCache {
         }
     }
 
-    private fun create(context: Context, dir: File, maxBytes: Long): SimpleCache? {
-        var cache: SimpleCache? = null
+    private fun openExistingOrCreate(context: Context, dir: File, maxBytes: Long): SimpleCache? {
         return try {
             dir.mkdirs()
             val builtEvictor = CountingCacheEvictor(maxBytes)
             val built = SimpleCache(dir, builtEvictor, database(context))
             evictor = builtEvictor
-            cache = built
+            // Touch cacheSpace to surface corruption early.
             built.cacheSpace
             built
-        } catch (_: Throwable) {
-            cache?.let { runCatching { it.release() } }
+        } catch (failure: Throwable) {
+            Log.w(TAG, "open/create failed", failure)
             null
         }
     }
@@ -195,28 +293,6 @@ internal object VodCache {
                 } catch (_: Throwable) {
                     folder.deleteRecursively()
                 }
-            }
-        }
-    }
-
-    private suspend fun clearAll(cache: SimpleCache) {
-        val keys = try {
-            cache.keys.toList()
-        } catch (_: Exception) {
-            return
-        }
-        for (key in keys) {
-            val spans = try {
-                cache.getCachedSpans(key)
-            } catch (_: Exception) {
-                continue
-            }
-            for (span in spans) {
-                try {
-                    cache.removeSpan(span)
-                } catch (_: Exception) {
-                }
-                yield()
             }
         }
     }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Seek buffer strings, kept apart from strings.xml so upstream merges stay clean. -->
+<resources>
+    <string name="settings_playback_buffer_section">Reproducción</string>
+    <string name="settings_playback_buffer_title">Búfer de búsqueda: %1$s</string>
+    <string name="settings_playback_buffer_default">Nuvio por defecto</string>
+    <string name="settings_playback_buffer_auto">Automático</string>
+    <string name="settings_playback_buffer_value_gb">%1$d GB</string>
+    <string name="settings_playback_buffer_description">Carga el stream más adelante y lo guarda en el disco para que puedas saltar hacia delante sin esperar. Cuanto más grande, más adelanta (limitado por la memoria libre del móvil). Automático se ajusta al espacio libre. Toca para cambiar; aplica en la siguiente reproducción.</string>
+</resources>

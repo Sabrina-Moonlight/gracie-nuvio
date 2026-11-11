@@ -330,9 +330,12 @@ private fun ExoPlayerSurface(
             }
     }
     val networkBytesCounter = remember { AtomicLong() }
+    val seekBufferMb = PlaybackDiskCacheSettings.bufferMb.value
+    val diskCacheFactoryRef = remember { AtomicReference<DataSource.Factory?>(null) }
     val dataSourceFactory = remember(
         context,
         sourceUrl,
+        sourceAudioUrl,
         sanitizedSourceHeaders,
         sanitizedSourceResponseHeaders,
         useYoutubeChunkedPlayback,
@@ -341,6 +344,7 @@ private fun ExoPlayerSurface(
         playerSettings.vodCacheEnabled,
         playerSettings.vodCacheSizeMode,
         playerSettings.vodCacheSizeMb,
+        seekBufferMb,
     ) {
         val loopbackSource = isLoopbackPlaybackSource(sourceUrl)
         val upstream = PlatformPlaybackDataSourceFactory.create(
@@ -359,12 +363,23 @@ private fun ExoPlayerSurface(
         val adaptive = mimeType == MimeTypes.APPLICATION_M3U8 ||
             mimeType == MimeTypes.APPLICATION_MPD ||
             mimeType == MimeTypes.APPLICATION_SS
-        // A torrent response that closes early would be stored as the whole file.
-        // The next open past that length then fails before the stream can resume.
+        // Seek buffer disk cache: data loaded ahead is stored so forward seeks can hit disk.
+        val cacheableForDisk = !loopbackSource && !useYoutubeChunkedPlayback && !adaptive
+        val withDiskCache = PlaybackDiskCache.wrap(
+            context = context,
+            sourceUrl = sourceUrl,
+            audioUrl = sourceAudioUrl,
+            cacheable = cacheableForDisk,
+            upstream = upstream,
+        )
+        diskCacheFactoryRef.getAndSet(withDiskCache)?.let { previous ->
+            if (previous !== withDiskCache) PlaybackDiskCache.release(previous)
+        }
         if (loopbackSource && playerSettings.vodCacheEnabled && !useYoutubeChunkedPlayback && !adaptive) {
             Log.i(TAG, "Skipping VOD cache for loopback playback")
         }
         val media = if (
+            PlaybackDiskCache.skipsNuvioVodCache(withDiskCache, upstream, sourceUrl) ||
             !useVodCacheForSource(
                 vodCacheEnabled = playerSettings.vodCacheEnabled,
                 youtubeChunked = useYoutubeChunkedPlayback,
@@ -372,11 +387,11 @@ private fun ExoPlayerSurface(
                 loopback = loopbackSource,
             )
         ) {
-            upstream
+            withDiskCache
         } else {
             VodCache.wrap(
                 context = context,
-                upstream = upstream,
+                upstream = withDiskCache,
                 url = sourceUrl,
                 enabled = true,
                 sizeMode = playerSettings.vodCacheSizeMode,
@@ -387,6 +402,11 @@ private fun ExoPlayerSurface(
             media = media,
             subtitles = subtitleDataSourceFactory(context, externalSubtitles),
         )
+    }
+    DisposableEffect(dataSourceFactory) {
+        onDispose {
+            diskCacheFactoryRef.getAndSet(null)?.let(PlaybackDiskCache::release)
+        }
     }
     val throughputSampler = remember(sourceUrl) { PlaybackThroughputSampler(sourceUrl) }
     DisposableEffect(throughputSampler) {
@@ -516,6 +536,7 @@ private fun ExoPlayerSurface(
                 targetBufferSizeMb = playerSettings.targetBufferSizeMb,
             ),
             localFileSource = isLocalFileSource,
+            seekBufferMb = PlaybackDiskCacheSettings.bufferMb.value,
         )
 
         // Audio focus is handled by PlayerAudioFocus, so a denied request (e.g. during a call)
@@ -598,6 +619,9 @@ private fun ExoPlayerSurface(
 
     fun dispatchExoPlayerSnapshot() {
         val snapshot = exoPlayer.snapshot()
+        if (snapshot.durationMs > 0L && snapshot.positionMs >= 0L) {
+            PlaybackDiskCache.onPlayhead(sourceUrl, snapshot.positionMs, snapshot.durationMs)
+        }
         latestOnSnapshot.value(snapshot)
         nowPlayingController.syncPlayback(snapshot)
     }

@@ -264,9 +264,23 @@ internal fun WatchProgressEntry.toContinueWatchingItem(): ContinueWatchingItem {
     val resolvedPoster = normalizedEntry.poster.nonBlankOrNull() ?: cloudPosterUrl
     val resolvedBackground = normalizedEntry.background.nonBlankOrNull()
     val resolvedEpisodeThumbnail = normalizedEntry.episodeThumbnail.nonBlankOrNull()
-    val explicitResumeProgressFraction = normalizedEntry.normalizedProgressPercent
-        ?.takeIf { durationMs <= 0L && it > 0f }
+    // Prefer the saved millisecond position. If tracking only sent a percent (and
+    // lastPositionMs is 0), derive resume from that percent so continue-watching
+    // does not restart at 0:00 while the progress bar still shows mid-episode.
+    val percentFraction = normalizedEntry.normalizedProgressPercent
+        ?.takeIf { it > 0f }
         ?.let { explicitPercent -> (explicitPercent / 100f).coerceIn(0f, 1f) }
+    val resumePositionMs = when {
+        normalizedEntry.lastPositionMs > 0L -> normalizedEntry.lastPositionMs
+        percentFraction != null && normalizedEntry.durationMs > 0L ->
+            (normalizedEntry.durationMs.toDouble() * percentFraction.toDouble()).toLong()
+        else -> 0L
+    }
+    val resumeProgressFraction = when {
+        resumePositionMs > 0L -> null
+        percentFraction != null -> percentFraction
+        else -> null
+    }
 
     return ContinueWatchingItem(
         parentMetaId = normalizedEntry.parentMetaId,
@@ -291,8 +305,8 @@ internal fun WatchProgressEntry.toContinueWatchingItem(): ContinueWatchingItem {
         isNextUp = false,
         nextUpSeedSeasonNumber = null,
         nextUpSeedEpisodeNumber = null,
-        resumePositionMs = if (explicitResumeProgressFraction != null) 0L else normalizedEntry.lastPositionMs,
-        resumeProgressFraction = explicitResumeProgressFraction,
+        resumePositionMs = resumePositionMs,
+        resumeProgressFraction = resumeProgressFraction,
         durationMs = normalizedEntry.durationMs,
         progressFraction = normalizedEntry.progressFraction,
         isReleaseAlert = false,

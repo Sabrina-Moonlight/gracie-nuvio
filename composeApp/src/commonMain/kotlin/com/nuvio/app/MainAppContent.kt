@@ -1195,7 +1195,8 @@ internal fun MainAppContent(
                                 item = lookup.target.item,
                                 file = lookup.target.file,
                                 resumePositionMs = item.resumePositionMs,
-                                resumeProgressFraction = item.resumeProgressFraction,
+                                resumeProgressFraction = item.resumeProgressFraction
+                                    ?: item.progressFraction.takeIf { item.resumePositionMs <= 0L && it > 0f },
                                 startFromBeginning = startFromBeginning,
                             )
                             if (!launched) {
@@ -1238,7 +1239,9 @@ internal fun MainAppContent(
                     episodeThumbnail = item.episodeThumbnail,
                     pauseDescription = item.pauseDescription,
                     resumePositionMs = item.resumePositionMs,
-                    resumeProgressFraction = item.resumeProgressFraction,
+                    // If only the UI progress bar had a value (percent-only progress), still resume.
+                    resumeProgressFraction = item.resumeProgressFraction
+                        ?: item.progressFraction.takeIf { item.resumePositionMs <= 0L && it > 0f },
                     manualSelection = manualSelection,
                     startFromBeginning = startFromBeginning,
                 )

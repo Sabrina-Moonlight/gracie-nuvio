@@ -265,7 +265,12 @@ internal object PlaybackDiskCache {
                 .getOrDefault(C.LENGTH_UNSET.toLong())
             if (length <= 0L) return
             val playhead = (length * fraction).toLong()
-            val cutoff = playhead - RETAIN_BEHIND_BYTES
+            // Keep up to the configured Seek buffer size so forward-loaded ranges stay available.
+            val retainBehind = when {
+                cacheCapBytes > 0L -> cacheCapBytes
+                else -> RETAIN_BEHIND_BYTES
+            }.coerceAtLeast(RETAIN_BEHIND_BYTES)
+            val cutoff = playhead - retainBehind
             if (cutoff <= 0L) return
             // A seek back leaves the playhead behind the last trim: hold still rather than drop
             // what the seek is about to play.
