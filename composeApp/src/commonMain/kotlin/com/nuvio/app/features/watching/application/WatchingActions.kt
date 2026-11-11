@@ -12,6 +12,7 @@ import com.nuvio.app.features.watched.toEpisodeWatchedItem
 import com.nuvio.app.features.watched.toSeriesWatchedItem
 import com.nuvio.app.features.watched.toWatchedItem
 import com.nuvio.app.features.cloud.CloudLibraryContentType
+import com.nuvio.app.features.player.ContentPlaybackCacheCleaner
 import com.nuvio.app.features.watchprogress.ContinueWatchingItem
 import com.nuvio.app.features.watchprogress.CurrentDateProvider
 import com.nuvio.app.features.watchprogress.WatchProgressEntry
@@ -191,6 +192,7 @@ object WatchingActions {
             videoId = item.videoId,
             parentMetaId = item.parentMetaId,
         )
+        ContentPlaybackCacheCleaner.clearForContinueWatchingItem(item)
         if (!item.parentMetaType.isSeriesLikeType()) return
         actionScope.launch {
             MetaDetailsRepository.fetch(type = item.parentMetaType, id = item.parentMetaId)

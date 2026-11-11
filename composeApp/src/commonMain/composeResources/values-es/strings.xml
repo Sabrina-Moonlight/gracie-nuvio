@@ -2173,6 +2173,9 @@
     <string name="settings_p2p_cache_2_gb">2 GB</string>
     <string name="settings_p2p_cache_5_gb">5 GB</string>
     <string name="settings_p2p_cache_10_gb">10 GB</string>
+    <string name="settings_p2p_cache_20_gb">20 GB</string>
+    <string name="settings_p2p_cache_40_gb">40 GB</string>
+    <string name="settings_p2p_cache_80_gb">80 GB</string>
     <string name="settings_p2p_clear_cache_title">Borrar caché de torrents</string>
     <string name="settings_p2p_clear_cache_usage">%1$s en uso actualmente</string>
     <string name="settings_p2p_clear_cache_usage_pending">El uso se calcula tras iniciar P2P; pulsa para borrar los datos de torrents en caché</string>

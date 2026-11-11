@@ -159,6 +159,17 @@ internal object VodCache {
         releaseSession(episodeFinished = false)
     }
 
+    /** Drop disk spans for specific stream URLs (mark watched / remove from continue watching). */
+    fun removeCachedUrls(urls: Collection<String>) {
+        val keys = urls.map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+        if (keys.isEmpty()) return
+        synchronized(lock) {
+            activeKeys.removeAll(keys)
+            retainedKeys.removeAll(keys)
+        }
+        scheduleRemoveKeys(keys)
+    }
+
     private fun scheduleRemoveKeys(keys: Set<String>) {
         if (keys.isEmpty()) return
         pendingEviction?.cancel()

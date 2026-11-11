@@ -137,6 +137,7 @@ import com.nuvio.app.features.player.externalPlaybackSession
 import com.nuvio.app.features.player.infusePlaybackCallbacks
 import com.nuvio.app.features.player.recordExternalPlaybackProgress
 import com.nuvio.app.features.player.ExternalPlayerPlatform
+import com.nuvio.app.features.player.ContentPlaybackCacheCleaner
 import com.nuvio.app.features.player.PlayerLaunch
 import com.nuvio.app.features.player.PlayerLaunchStore
 import com.nuvio.app.features.player.PlayerSettingsRepository
@@ -1273,6 +1274,7 @@ internal fun MainAppContent(
             } else {
                 WatchProgressRepository.removeProgress(contentId = item.parentMetaId)
             }
+            ContentPlaybackCacheCleaner.clearForContinueWatchingItem(item)
         }
 
         val onContinueWatchingMarkWatched: (ContinueWatchingItem) -> Unit = { item ->

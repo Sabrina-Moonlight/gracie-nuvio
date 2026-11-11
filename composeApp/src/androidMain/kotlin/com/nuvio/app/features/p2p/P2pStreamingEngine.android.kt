@@ -480,6 +480,7 @@ actual object P2pStreamingEngine {
             "Could not create the Nuvio Engine cache directory"
         }
         migrateNestedPayloadDirectory(cacheDirectory)
+        com.nuvio.app.features.player.P2pPayloadCacheCleaner.install { cacheDirectory }
         return NuvioEngine.create(
             buildNuvioEngineConfig(
                 stateDirectory = stateDirectory,

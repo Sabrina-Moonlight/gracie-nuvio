@@ -182,6 +182,9 @@ private fun p2pCacheSizeLabel(size: P2pCacheSize): String = when (size) {
     P2pCacheSize.GB_2 -> stringResource(Res.string.settings_p2p_cache_2_gb)
     P2pCacheSize.GB_5 -> stringResource(Res.string.settings_p2p_cache_5_gb)
     P2pCacheSize.GB_10 -> stringResource(Res.string.settings_p2p_cache_10_gb)
+    P2pCacheSize.GB_20 -> stringResource(Res.string.settings_p2p_cache_20_gb)
+    P2pCacheSize.GB_40 -> stringResource(Res.string.settings_p2p_cache_40_gb)
+    P2pCacheSize.GB_80 -> stringResource(Res.string.settings_p2p_cache_80_gb)
 }
 
 private fun formatP2pCacheBytes(bytes: Long): String {

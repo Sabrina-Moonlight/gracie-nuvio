@@ -98,6 +98,44 @@ object StreamLinkCacheRepository {
         StreamLinkCacheStorage.removeEntry(hashedKey(contentKey))
     }
 
+    /**
+     * Loads a cached stream link without applying age/expiry checks (for cleanup only).
+     */
+    fun peek(contentKey: String): CachedStreamLink? {
+        val raw = StreamLinkCacheStorage.loadEntry(hashedKey(contentKey)) ?: return null
+        return runCatching {
+            json.decodeFromString(CachedStreamLink.serializer(), raw)
+        }.getOrNull()
+    }
+
+    /**
+     * Removes the stream-link entry for this content and returns what was stored (url / infoHash)
+     * so platform disk caches can drop matching media data.
+     */
+    fun removeForContent(
+        type: String,
+        videoId: String,
+        parentMetaId: String? = null,
+        season: Int? = null,
+        episode: Int? = null,
+    ): CachedStreamLink? {
+        val key = contentKey(
+            type = type,
+            videoId = videoId,
+            parentMetaId = parentMetaId,
+            season = season,
+            episode = episode,
+        )
+        val entry = peek(key)
+        remove(key)
+        // Also clear the non-episode key form used for movies / single ids.
+        if (!parentMetaId.isNullOrBlank() && season != null && episode != null) {
+            val simpleKey = contentKey(type = type, videoId = videoId)
+            if (simpleKey != key) remove(simpleKey)
+        }
+        return entry
+    }
+
     fun getValid(contentKey: String, maxAgeMs: Long): CachedStreamLink? {
         if (maxAgeMs <= 0L) return null
         val raw = StreamLinkCacheStorage.loadEntry(hashedKey(contentKey)) ?: return null

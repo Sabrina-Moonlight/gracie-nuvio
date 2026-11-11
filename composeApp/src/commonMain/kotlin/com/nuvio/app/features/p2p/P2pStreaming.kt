@@ -24,6 +24,9 @@ enum class P2pCacheSize(val bytes: Long) {
     GB_2(2L * 1024L * 1024L * 1024L),
     GB_5(5L * 1024L * 1024L * 1024L),
     GB_10(10L * 1024L * 1024L * 1024L),
+    GB_20(20L * 1024L * 1024L * 1024L),
+    GB_40(40L * 1024L * 1024L * 1024L),
+    GB_80(80L * 1024L * 1024L * 1024L),
 }
 
 data class P2pCacheUiState(
