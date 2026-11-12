@@ -387,14 +387,8 @@ private fun ExoPlayerSurface(
                 loopback = loopbackSource,
             )
         ) {
-<<<<<<< GRACIE
-            withDiskCache
-||||||| NUVIO-0.6.11-beta
-            upstream
-=======
-            // upstream ends in a DefaultDataSource, which opens the data: init segment this may add.
-            if (mimeType == MimeTypes.APPLICATION_M3U8) HlsParameterSetInitDataSource.Factory(upstream) else upstream
->>>>>>> NUVIO-0.6.12-beta
+            // withDiskCache ends in a DefaultDataSource, which opens the data: init segment this may add.
+            if (mimeType == MimeTypes.APPLICATION_M3U8) HlsParameterSetInitDataSource.Factory(withDiskCache) else withDiskCache
         } else {
             VodCache.wrap(
                 context = context,
