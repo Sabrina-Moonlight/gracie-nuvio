@@ -171,6 +171,14 @@ object WatchingActions {
             markedAtEpochMs = entry.lastUpdatedEpochMs,
         )
         WatchedRepository.markWatchedFromPlaybackCompletion(watchedItem, syncRemote = syncRemote)
+        // Drop disk seek-buffer + torrent payload once the title is finished.
+        ContentPlaybackCacheCleaner.clearForContent(
+            type = entry.parentMetaType,
+            videoId = entry.videoId,
+            parentMetaId = entry.parentMetaId,
+            season = entry.seasonNumber,
+            episode = entry.episodeNumber,
+        )
 
         if (!syncRemote || !entry.isEpisode) return
         actionScope.launch {
