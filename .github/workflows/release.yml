@@ -78,6 +78,15 @@ jobs:
           fi
           echo "Using persistent signing key from secret."
 
+      # Muestra de dónde sale la versión del APK (iosApp/Configuration/Version.xcconfig de la rama que se compila).
+      - name: Mostrar version que se va a compilar
+        run: |
+          X=iosApp/Configuration/Version.xcconfig
+          V=$(grep '^MARKETING_VERSION=' "$X" | cut -d= -f2 | tr -d '[:space:]')
+          C=$(grep '^CURRENT_PROJECT_VERSION=' "$X" | cut -d= -f2 | tr -d '[:space:]')
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+          echo "## Version del APK: $V (codigo $C) - rama: ${{ github.ref_name }}" | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Build Full Release APKs
         # Memoria bajada a lo que cabe en el runner (gradle.properties pide 12 GB + 8 GB, no caben).
         # Kotlin corre dentro del mismo proceso de Gradle: un solo JVM, sin daemon.
@@ -99,6 +108,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: nuvio-release
+          name: nuvio-release-${{ env.VERSION }}
           path: androidApp/build/outputs/apk/full/release/*arm64-v8a*.apk
           if-no-files-found: error
