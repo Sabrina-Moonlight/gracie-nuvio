@@ -2,7 +2,12 @@ package com.nuvio.app.features.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,7 +18,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.core.ui.DialogButton
 import com.nuvio.app.core.ui.DialogButtons
@@ -24,9 +31,23 @@ import com.nuvio.app.core.ui.nuvio
 import com.nuvio.app.features.profiles.ProfileRepository
 import com.nuvio.app.features.watchprogress.ContinueWatchingEnrichmentCache
 import com.nuvio.app.features.watchprogress.WatchProgressRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.action_cancel
+import nuvio.composeapp.generated.resources.settings_advanced_backup_export
+import nuvio.composeapp.generated.resources.settings_advanced_backup_export_description
+import nuvio.composeapp.generated.resources.settings_advanced_backup_export_failed
+import nuvio.composeapp.generated.resources.settings_advanced_backup_export_saved
+import nuvio.composeapp.generated.resources.settings_advanced_backup_import
+import nuvio.composeapp.generated.resources.settings_advanced_backup_import_confirm
+import nuvio.composeapp.generated.resources.settings_advanced_backup_import_description
+import nuvio.composeapp.generated.resources.settings_advanced_backup_import_dialog_title
+import nuvio.composeapp.generated.resources.settings_advanced_backup_import_failed
+import nuvio.composeapp.generated.resources.settings_advanced_backup_import_success
+import nuvio.composeapp.generated.resources.settings_advanced_backup_section
+import nuvio.composeapp.generated.resources.settings_advanced_backup_warning
 import nuvio.composeapp.generated.resources.settings_advanced_clear_cw_cache
 import nuvio.composeapp.generated.resources.settings_advanced_clear_cw_cache_done
 import nuvio.composeapp.generated.resources.settings_advanced_clear_cw_cache_subtitle
@@ -110,6 +131,9 @@ internal fun LazyListScope.advancedSettingsContent(
         }
     }
     item {
+        BackupSettingsSection(isTablet = isTablet)
+    }
+    item {
         SettingsSection(
             title = stringResource(Res.string.settings_advanced_section_cache),
             isTablet = isTablet,
@@ -143,6 +167,134 @@ internal fun LazyListScope.advancedSettingsContent(
 }
 
 @Composable
+private fun BackupSettingsSection(isTablet: Boolean) {
+    val scope = rememberCoroutineScope()
+    var exportStatus by rememberSaveable { mutableStateOf<BackupExportStatus?>(null) }
+    var importStatus by rememberSaveable { mutableStateOf<BackupImportStatus?>(null) }
+    var pendingImportJson by remember { mutableStateOf<String?>(null) }
+
+    val fileActions = rememberSettingsBackupFileActions(
+        onExportResult = { success ->
+            exportStatus = if (success) BackupExportStatus.Saved else BackupExportStatus.Failed
+        },
+        onImportResult = { json ->
+            if (json.isNullOrBlank()) {
+                importStatus = BackupImportStatus.Failed
+            } else {
+                pendingImportJson = json
+            }
+        },
+    )
+
+    SettingsSection(
+        title = stringResource(Res.string.settings_advanced_backup_section),
+        isTablet = isTablet,
+    ) {
+        SettingsGroup(isTablet = isTablet) {
+            SettingsNavigationRow(
+                title = stringResource(Res.string.settings_advanced_backup_export),
+                description = when (exportStatus) {
+                    BackupExportStatus.Saved -> stringResource(Res.string.settings_advanced_backup_export_saved)
+                    BackupExportStatus.Failed -> stringResource(Res.string.settings_advanced_backup_export_failed)
+                    null -> stringResource(Res.string.settings_advanced_backup_export_description)
+                },
+                icon = Icons.Rounded.Upload,
+                isTablet = isTablet,
+                onClick = {
+                    exportStatus = null
+                    scope.launch {
+                        val result = withContext(Dispatchers.Default) {
+                            runCatching { SettingsBackup.exportActiveProfileToJson() }
+                        }
+                        result.onSuccess { json ->
+                            val name = "nuvio-settings-profile-${ProfileRepository.activeProfileId}.json"
+                            fileActions.exportJson(json, name)
+                        }.onFailure {
+                            exportStatus = BackupExportStatus.Failed
+                        }
+                    }
+                },
+            )
+            SettingsGroupDivider(isTablet = isTablet)
+            SettingsNavigationRow(
+                title = stringResource(Res.string.settings_advanced_backup_import),
+                description = when (importStatus) {
+                    BackupImportStatus.Success -> stringResource(Res.string.settings_advanced_backup_import_success)
+                    BackupImportStatus.Failed -> stringResource(Res.string.settings_advanced_backup_import_failed)
+                    null -> stringResource(Res.string.settings_advanced_backup_import_description)
+                },
+                icon = Icons.Rounded.Download,
+                isTablet = isTablet,
+                onClick = {
+                    importStatus = null
+                    fileActions.importJson()
+                },
+            )
+        }
+        Text(
+            text = stringResource(Res.string.settings_advanced_backup_warning),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.nuvio.colors.textMuted,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, start = if (isTablet) 20.dp else 16.dp, end = if (isTablet) 20.dp else 16.dp),
+        )
+    }
+
+    val importJson = pendingImportJson
+    if (importJson != null) {
+        BackupImportConfirmDialog(
+            onDismiss = { pendingImportJson = null },
+            onConfirm = {
+                scope.launch {
+                    val result = withContext(Dispatchers.Default) {
+                        SettingsBackup.importFromJson(importJson)
+                    }
+                    importStatus = when (result) {
+                        is SettingsBackupResult.Success -> BackupImportStatus.Success
+                        is SettingsBackupResult.Error -> BackupImportStatus.Failed
+                    }
+                    pendingImportJson = null
+                }
+            },
+        )
+    }
+}
+
+private enum class BackupExportStatus { Saved, Failed }
+private enum class BackupImportStatus { Success, Failed }
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun BackupImportConfirmDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    val tokens = MaterialTheme.nuvio
+    DialogSurface(
+        title = stringResource(Res.string.settings_advanced_backup_import_dialog_title),
+        onDismissRequest = onDismiss,
+    ) {
+        Text(
+            text = stringResource(Res.string.settings_advanced_backup_import_confirm),
+            style = MaterialTheme.typography.bodyLarge,
+            color = tokens.colors.textMuted,
+        )
+        DialogButtons {
+            DialogButton(
+                text = stringResource(Res.string.action_cancel),
+                onClick = onDismiss,
+            )
+            DialogButton(
+                text = stringResource(Res.string.settings_advanced_backup_import),
+                onClick = onConfirm,
+                style = DialogButtonStyle.Primary,
+            )
+        }
+    }
+}
+
+@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun SentrySettingsDialog(
     enabled: Boolean,
@@ -151,14 +303,14 @@ private fun SentrySettingsDialog(
 ) {
     val tokens = MaterialTheme.nuvio
     DialogSurface(
-        onDismissRequest = onDismiss,
         title = stringResource(
-                        if (enabled) {
-                            Res.string.sentry_disable_dialog_title
-                        } else {
-                            Res.string.sentry_enable_dialog_title
-                        },
-                    ),
+            if (enabled) {
+                Res.string.sentry_disable_dialog_title
+            } else {
+                Res.string.sentry_enable_dialog_title
+            },
+        ),
+        onDismissRequest = onDismiss,
     ) {
         Text(
             text = stringResource(
@@ -190,22 +342,22 @@ private fun SentrySettingsDialog(
         DialogButtons {
             DialogButton(
                 text = stringResource(
-                        if (enabled) {
-                            Res.string.sentry_keep_enabled
-                        } else {
-                            Res.string.action_cancel
-                        },
-                    ),
+                    if (enabled) {
+                        Res.string.sentry_keep_enabled
+                    } else {
+                        Res.string.action_cancel
+                    },
+                ),
                 onClick = onDismiss,
             )
             DialogButton(
                 text = stringResource(
-                        if (enabled) {
-                            Res.string.sentry_turn_off
-                        } else {
-                            Res.string.sentry_turn_on
-                        },
-                    ),
+                    if (enabled) {
+                        Res.string.sentry_turn_off
+                    } else {
+                        Res.string.sentry_turn_on
+                    },
+                ),
                 onClick = {
                     onConfirm()
                     onDismiss()

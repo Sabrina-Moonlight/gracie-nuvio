@@ -552,6 +552,20 @@
     <string name="settings_advanced_clear_cw_cache">Borrar la caché de Continuar viendo</string>
     <string name="settings_advanced_clear_cw_cache_subtitle">Elimine los datos de Continuar viendo almacenados en caché y actualice el progreso de la visualización</string>
     <string name="settings_advanced_clear_cw_cache_done">Caché borrado</string>
+
+    <string name="settings_advanced_backup_section">COPIA DE SEGURIDAD</string>
+    <string name="settings_advanced_backup_export">Exportar configuración</string>
+    <string name="settings_advanced_backup_export_description">Guarda toda la configuración del perfil (incluidas las API keys) en un archivo JSON</string>
+    <string name="settings_advanced_backup_export_saved">Configuración guardada en archivo</string>
+    <string name="settings_advanced_backup_export_failed">No se pudo exportar la configuración</string>
+    <string name="settings_advanced_backup_import">Importar configuración</string>
+    <string name="settings_advanced_backup_import_description">Restaura la configuración del perfil desde un archivo JSON exportado previamente</string>
+    <string name="settings_advanced_backup_import_dialog_title">Importar configuración</string>
+    <string name="settings_advanced_backup_import_confirm">Esto reemplaza la configuración actual del perfil, incluidas las API keys. Guarda un backup antes si no estás seguro.</string>
+    <string name="settings_advanced_backup_import_hint">Pega aquí el JSON del backup</string>
+    <string name="settings_advanced_backup_import_success">Configuración restaurada</string>
+    <string name="settings_advanced_backup_import_failed">No se pudo importar la configuración. Revisa el JSON e inténtalo de nuevo.</string>
+    <string name="settings_advanced_backup_warning">Los backups incluyen API keys y tokens. Guárdalos en un lugar seguro.</string>
     <string name="settings_licenses_attributions_section_app">LICENCIA DE APLICACIÓN</string>
     <string name="settings_licenses_attributions_section_data">DATOS Y SERVICIOS</string>
     <string name="settings_licenses_attributions_section_playback">LICENCIA DE REPRODUCCIÓN</string>
@@ -1211,7 +1225,7 @@
     <string name="settings_playback_vod_cache_size_value">%1$d MB</string>
     <string name="settings_playback_vod_cache_warning">Se seguirá escribiendo en el disco mientras se reproduce una transmisión almacenada en caché. El nuevo tamaño se aplicará la próxima vez que se inicie la aplicación.</string>
     <string name="settings_playback_exo_chapters">Mostrar capítulos</string>
-    <string name="settings_playback_exo_chapters_description">Lee los capítulos de los archivos MKV para marcarlos en la barra de progreso y mostrarlos en una lista dentro del reproductor. Hace unas pocas peticiones extra al empezar a reproducir. libmpv siempre muestra los capítulos</string>
+    <string name="settings_playback_exo_chapters_description">Lee los capítulos de los archivos MKV para marcarlos en la barra de progreso y mostrarlos en una lista dentro del reproductor.</string>
     <string name="settings_tmdb_api_key_label">Clave de API</string>
     <string name="settings_tmdb_api_key_override_description">Usa tu propia clave de API de TMDB, o déjala en blanco para usar la predeterminada.</string>
     <string name="settings_tmdb_personal_api_key">Clave de API personal</string>
@@ -1710,6 +1724,13 @@
     <string name="notifications_test_send_failed">No se pudo enviar una notificación de prueba.</string>
     <string name="notifications_test_sent_for">Notificación de prueba enviada para %1$s.</string>
     <string name="player_unable_to_play_stream">No se puede reproducir este stream.</string>
+    <string name="player_error_stream_expired">El enlace de la transmisión ha caducado. Prueba con otra fuente.</string>
+    <string name="player_error_stream_removed">El enlace de la transmisión ha caducado o ha sido eliminado. Prueba con otra fuente.</string>
+    <string name="player_error_stream_rate_limited">Demasiadas solicitudes a la fuente de la transmisión. Espera un momento e inténtalo de nuevo.</string>
+    <string name="player_error_stream_unavailable">El servidor de la transmisión no está disponible en este momento. Prueba con otra fuente.</string>
+    <string name="player_error_stream_blocked">La fuente de la transmisión está bloqueada o restringida. Prueba con otra fuente.</string>
+    <string name="player_error_source_invalid_content">Error de fuente: la fuente de la transmisión devolvió contenido inválido o no reproducible. Es posible que el enlace haya caducado o que el servidor haya devuelto una página de error en lugar de vídeo.\n\nPrueba con otra fuente. [%1$s]</string>
+    <string name="player_error_unsupported_format">Esta transmisión usa un formato que tu dispositivo podría no admitir. Prueba con otra fuente. [%1$s]</string>
     <string name="profile_pin_changed_requires_refresh">El PIN de este perfil cambió. Conéctate una vez para actualizar el bloqueo en este dispositivo.</string>
     <string name="profile_pin_clear_failed">No se pudo quitar el bloqueo por PIN. Inténtalo de nuevo.</string>
     <string name="profile_pin_clear_requires_internet">Conéctate a internet para quitar el bloqueo por PIN.</string>

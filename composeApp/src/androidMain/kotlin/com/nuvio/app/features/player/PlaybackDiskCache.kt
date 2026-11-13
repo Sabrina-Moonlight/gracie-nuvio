@@ -23,20 +23,19 @@ import java.io.File
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
 
 /**
  * ExoPlayer disk cache for [PlaybackDiskCacheSettings], ported from Nuvio TV's VOD disk cache
  * (PlayerMediaSourceFactory): what the player reads is also written to a cache on storage, so a
- * seek back into anything already loaded reads from disk instead of the network.
+ * seek into anything already loaded reads from disk instead of the network.
  *
- * As on TV: the size is set by hand or from free space (Auto), at least 1 GB of free space is
- * always left, only the last 1 GB behind the playhead is kept, and the cache is cleared a few
- * seconds after playback ends and at every launch. Writes go through [PlaybackDiskCacheWriteSink],
+ * Size is set by hand or from free space (Auto); at least 1 GB of free space is always left.
+ * Behind the playhead only the configured seek-buffer window is kept. Unfinished titles stay on
+ * disk across player exits and app restarts so continue-watching can reuse them; completed or
+ * removed titles are cleared via [removeCachedUrls]. Writes go through [PlaybackDiskCacheWriteSink],
  * off the loading thread. Only the stream itself is cached (not subtitles), never HLS/DASH, live
  * streams or sources already on the device.
  */
@@ -54,8 +53,6 @@ internal object PlaybackDiskCache {
     const val FRAGMENT_BYTES = 8L * MB
     private const val RETAIN_BEHIND_BYTES = GB
     private const val TRIM_STEP_BYTES = 64L * MB
-    // Deleting gigabytes the instant playback ends lands on the exit animation.
-    private const val EVICTION_DELAY_MS = 5_000L
 
     private val lock = Any()
     private var cache: SimpleCache? = null
@@ -64,7 +61,6 @@ internal object PlaybackDiskCache {
     private var databaseProvider: StandaloneDatabaseProvider? = null
     private val liveSessions = LinkedHashSet<Session>()
     @Volatile private var liveSnapshot: List<Session> = emptyList()
-    private var pendingEviction: Job? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** Called at launch: nothing from an earlier run is kept. */
@@ -104,8 +100,6 @@ internal object PlaybackDiskCache {
         ) return upstream
         val appContext = context.applicationContext
         val session = synchronized(lock) {
-            pendingEviction?.cancel()
-            pendingEviction = null
             val maxBytes = resolveMaxBytes(appContext, choice)
             if (maxBytes <= 0L) {
                 Log.i(TAG, "DISK_CACHE: off, not enough free space")
@@ -138,18 +132,16 @@ internal object PlaybackDiskCache {
         }
     }
 
-    /** Called when the player built on [factory] is gone: its data is cleared shortly after. */
+    /**
+     * Called when the player built on [factory] is gone. Unfinished seek-buffer data is kept for
+     * the next open of the same title; only explicit [removeCachedUrls] (mark watched / remove)
+     * deletes a title's spans.
+     */
     fun release(factory: DataSource.Factory) {
         val session = (factory as? DiskCacheDataSourceFactory)?.session ?: return
         synchronized(lock) {
             if (!liveSessions.remove(session)) return
             liveSnapshot = liveSessions.toList()
-            pendingEviction?.cancel()
-            pendingEviction = scope.launch {
-                delay(EVICTION_DELAY_MS)
-                val active = synchronized(lock) { cache } ?: return@launch
-                clearUnused(active)
-            }
         }
     }
 
@@ -165,20 +157,6 @@ internal object PlaybackDiskCache {
                     runCatching { active.removeSpan(span) }
                     yield()
                 }
-            }
-        }
-    }
-
-    /** Removes every title no live player is using (a quick rebuild of the same one keeps it). */
-    private suspend fun clearUnused(active: SimpleCache) {
-        val keys = runCatching { active.keys.toList() }.getOrNull() ?: return
-        for (key in keys) {
-            if (liveSnapshot.any { key in it.keys }) continue
-            val spans = runCatching { active.getCachedSpans(key).toList() }.getOrNull() ?: continue
-            for (span in spans) {
-                // A span still being read stays until the next write evicts it.
-                runCatching { active.removeSpan(span) }
-                yield()
             }
         }
     }
@@ -204,19 +182,30 @@ internal object PlaybackDiskCache {
             if (cacheCapBytes == maxBytes || liveSessions.isNotEmpty()) return existing
             runCatching { existing.release() }
             cache = null
+            // Size change with no readers: park the old folder so the new cap starts clean.
+            moveAside(File(context.cacheDir, DIR))
+            deleteStaleFolders(context)
         }
         val dir = File(context.cacheDir, DIR)
-        // A crash can leave last run's files; a fresh folder never races their deletion.
-        moveAside(dir)
-        deleteStaleFolders(context)
         val created = try {
             dir.mkdirs()
             val provider = databaseProvider ?: StandaloneDatabaseProvider(context).also { databaseProvider = it }
+            // Reopen an existing folder when present so seek-buffer data survives restarts.
             SimpleCache(dir, TrimmingEvictor(maxBytes), provider)
         } catch (failure: Throwable) {
-            Log.w(TAG, "DISK_CACHE: unavailable, streaming direct", failure)
-            cacheDisabled = true
-            null
+            Log.w(TAG, "DISK_CACHE: open failed, trying fresh folder", failure)
+            // Corrupt index: park it and retry once on an empty directory.
+            moveAside(dir)
+            deleteStaleFolders(context)
+            try {
+                dir.mkdirs()
+                val provider = databaseProvider ?: StandaloneDatabaseProvider(context).also { databaseProvider = it }
+                SimpleCache(dir, TrimmingEvictor(maxBytes), provider)
+            } catch (retryFailure: Throwable) {
+                Log.w(TAG, "DISK_CACHE: unavailable, streaming direct", retryFailure)
+                cacheDisabled = true
+                null
+            }
         }
         cache = created
         cacheCapBytes = if (created != null) maxBytes else -1L
