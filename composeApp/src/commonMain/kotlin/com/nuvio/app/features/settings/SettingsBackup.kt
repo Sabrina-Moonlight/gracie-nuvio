@@ -32,6 +32,15 @@ import com.nuvio.app.features.trakt.TraktAuthStorage
 import com.nuvio.app.features.trakt.TraktCommentsSettings
 import com.nuvio.app.features.trakt.TraktCommentsStorage
 import com.nuvio.app.features.trakt.TraktSettingsStorage
+import com.nuvio.app.features.mdblist.MdbListTracker
+import com.nuvio.app.features.mdblist.PlatformMdbListAuthPersistence
+import com.nuvio.app.features.p2p.P2pSettingsRepository
+import com.nuvio.app.features.p2p.P2pSettingsStorage
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import com.nuvio.app.features.watchprogress.ContinueWatchingPreferencesRepository
 import com.nuvio.app.features.watchprogress.ContinueWatchingPreferencesStorage
 import kotlinx.serialization.SerialName
@@ -54,7 +63,7 @@ internal object SettingsBackup {
         prettyPrint = true
     }
 
-    private const val CURRENT_VERSION = 1
+    private const val CURRENT_VERSION = 2
 
     fun exportActiveProfileToJson(): String {
         ensureLoaded()
@@ -67,7 +76,7 @@ internal object SettingsBackup {
         return json.encodeToString(SettingsBackupBlob.serializer(), blob)
     }
 
-    fun importFromJson(raw: String): SettingsBackupResult {
+    suspend fun importFromJson(raw: String): SettingsBackupResult {
         val trimmed = raw.trim()
         if (trimmed.isEmpty()) {
             return SettingsBackupResult.Error("empty")
@@ -116,7 +125,34 @@ internal object SettingsBackup {
                 enabledStates = AddonStorage.loadAddonEnabledStates(profileId),
             ),
             plugins = exportPlugins(),
+            mdblistAuthPayload = PlatformMdbListAuthPersistence.read(profileId).orEmpty(),
+            profileAvatar = exportProfileAvatar(),
+            p2pSettings = exportP2pSettings(),
         )
+    }
+
+    private fun exportProfileAvatar(): ProfileAvatarBackupPayload {
+        val profile = ProfileRepository.state.value.activeProfile
+        return ProfileAvatarBackupPayload(
+            name = profile?.name.orEmpty(),
+            avatarColorHex = profile?.avatarColorHex.orEmpty(),
+            avatarId = profile?.avatarId.orEmpty(),
+            avatarUrl = profile?.avatarUrl.orEmpty(),
+            profileBackgroundId = profile?.profileBackgroundId.orEmpty(),
+            profileBackgroundUrl = profile?.profileBackgroundUrl.orEmpty(),
+            usesPrimaryAddons = profile?.usesPrimaryAddons ?: false,
+        )
+    }
+
+    private fun exportP2pSettings(): JsonObject {
+        P2pSettingsRepository.ensureLoaded()
+        return buildJsonObject {
+            P2pSettingsStorage.loadP2pEnabled()?.let { put("p2p_enabled", JsonPrimitive(it)) }
+            P2pSettingsStorage.loadEnableUpload()?.let { put("enable_upload", JsonPrimitive(it)) }
+            P2pSettingsStorage.loadHideTorrentStats()?.let { put("hide_torrent_stats", JsonPrimitive(it)) }
+            P2pSettingsStorage.loadTorrentProfile()?.let { put("torrent_profile", JsonPrimitive(it)) }
+            P2pSettingsStorage.loadCacheSize()?.let { put("cache_size", JsonPrimitive(it)) }
+        }
     }
 
     private fun exportPlugins(): PluginsBackupPayload {
@@ -135,7 +171,7 @@ internal object SettingsBackup {
         )
     }
 
-    private fun applyFeatures(features: SettingsBackupFeatures) {
+    private suspend fun applyFeatures(features: SettingsBackupFeatures) {
         val profileId = ProfileRepository.activeProfileId
 
         ThemeSettingsStorage.replaceFromSyncPayload(features.themeSettings)
@@ -201,6 +237,59 @@ internal object SettingsBackup {
         AddonStorage.saveAddonEnabledStates(profileId, features.addons.enabledStates)
 
         applyPlugins(features.plugins)
+
+        if (features.mdblistAuthPayload.isNotBlank()) {
+            PlatformMdbListAuthPersistence.write(profileId, features.mdblistAuthPayload)
+            // Reload in-memory MDBList auth for the active profile.
+            MdbListTracker.store.selectProfile(profileId)
+        }
+
+        applyP2pSettings(features.p2pSettings)
+        applyProfileAvatar(features.profileAvatar, profileId)
+    }
+
+    private fun applyP2pSettings(payload: JsonObject) {
+        if (payload.isEmpty()) return
+        payload["p2p_enabled"]?.jsonPrimitive?.booleanOrNull
+            ?.let(P2pSettingsStorage::saveP2pEnabled)
+        payload["enable_upload"]?.jsonPrimitive?.booleanOrNull
+            ?.let(P2pSettingsStorage::saveEnableUpload)
+        payload["hide_torrent_stats"]?.jsonPrimitive?.booleanOrNull
+            ?.let(P2pSettingsStorage::saveHideTorrentStats)
+        payload["torrent_profile"]?.jsonPrimitive?.contentOrNull
+            ?.takeIf { it.isNotBlank() }
+            ?.let(P2pSettingsStorage::saveTorrentProfile)
+        payload["cache_size"]?.jsonPrimitive?.contentOrNull
+            ?.takeIf { it.isNotBlank() }
+            ?.let(P2pSettingsStorage::saveCacheSize)
+        P2pSettingsRepository.onProfileChanged()
+    }
+
+    private suspend fun applyProfileAvatar(avatar: ProfileAvatarBackupPayload, profileId: Int) {
+        if (
+            avatar.avatarId.isBlank() &&
+            avatar.avatarUrl.isBlank() &&
+            avatar.avatarColorHex.isBlank() &&
+            avatar.name.isBlank()
+        ) {
+            return
+        }
+        val current = ProfileRepository.state.value.activeProfile ?: return
+        if (current.profileIndex != profileId) return
+        runCatching {
+            ProfileRepository.updateProfile(
+                profileIndex = profileId,
+                name = avatar.name.ifBlank { current.name },
+                avatarColorHex = avatar.avatarColorHex.ifBlank { current.avatarColorHex },
+                avatarId = avatar.avatarId.ifBlank { null } ?: current.avatarId,
+                avatarUrl = avatar.avatarUrl.ifBlank { null } ?: current.avatarUrl,
+                profileBackgroundId = avatar.profileBackgroundId.ifBlank { null } ?: current.profileBackgroundId,
+                profileBackgroundUrl = avatar.profileBackgroundUrl.ifBlank { null } ?: current.profileBackgroundUrl,
+                usesPrimaryAddons = avatar.usesPrimaryAddons,
+            )
+        }.onFailure { error ->
+            log.e(error) { "applyProfileAvatar — FAILED (avatar fields were still exported; may need network)" }
+        }
     }
 
     private fun applyPlugins(payload: PluginsBackupPayload) {
@@ -234,6 +323,7 @@ internal object SettingsBackup {
         TrackingSettingsRepository.ensureLoaded()
         EpisodeReleaseNotificationsRepository.ensureLoaded()
         PluginRepository.initialize()
+        P2pSettingsRepository.ensureLoaded()
     }
 }
 
@@ -270,6 +360,9 @@ private data class SettingsBackupFeatures(
     @SerialName("notifications_settings") val notificationsSettings: NotificationsBackupPayload = NotificationsBackupPayload(),
     val addons: AddonsBackupPayload = AddonsBackupPayload(),
     val plugins: PluginsBackupPayload = PluginsBackupPayload(),
+    @SerialName("mdblist_auth_payload") val mdblistAuthPayload: String = "",
+    @SerialName("profile_avatar") val profileAvatar: ProfileAvatarBackupPayload = ProfileAvatarBackupPayload(),
+    @SerialName("p2p_settings") val p2pSettings: JsonObject = JsonObject(emptyMap()),
 )
 
 @Serializable
@@ -296,4 +389,15 @@ private data class PluginRepositoryBackupItem(
     val url: String = "",
     val name: String = "",
     @SerialName("sort_order") val sortOrder: Int = 0,
+)
+
+@Serializable
+private data class ProfileAvatarBackupPayload(
+    val name: String = "",
+    @SerialName("avatar_color_hex") val avatarColorHex: String = "",
+    @SerialName("avatar_id") val avatarId: String = "",
+    @SerialName("avatar_url") val avatarUrl: String = "",
+    @SerialName("profile_background_id") val profileBackgroundId: String = "",
+    @SerialName("profile_background_url") val profileBackgroundUrl: String = "",
+    @SerialName("uses_primary_addons") val usesPrimaryAddons: Boolean = false,
 )
