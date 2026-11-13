@@ -552,6 +552,20 @@
     <string name="settings_advanced_clear_cw_cache">Borrar la caché de Continuar viendo</string>
     <string name="settings_advanced_clear_cw_cache_subtitle">Elimine los datos de Continuar viendo almacenados en caché y actualice el progreso de la visualización</string>
     <string name="settings_advanced_clear_cw_cache_done">Caché borrado</string>
+
+    <string name="settings_advanced_backup_section">COPIA DE SEGURIDAD</string>
+    <string name="settings_advanced_backup_export">Exportar configuración</string>
+    <string name="settings_advanced_backup_export_description">Guarda toda la configuración del perfil (incluidas las API keys) en un archivo JSON</string>
+    <string name="settings_advanced_backup_export_saved">Configuración guardada en archivo</string>
+    <string name="settings_advanced_backup_export_failed">No se pudo exportar la configuración</string>
+    <string name="settings_advanced_backup_import">Importar configuración</string>
+    <string name="settings_advanced_backup_import_description">Restaura la configuración del perfil desde un archivo JSON exportado previamente</string>
+    <string name="settings_advanced_backup_import_dialog_title">Importar configuración</string>
+    <string name="settings_advanced_backup_import_confirm">Esto reemplaza la configuración actual del perfil, incluidas las API keys. Guarda un backup antes si no estás seguro.</string>
+    <string name="settings_advanced_backup_import_hint">Pega aquí el JSON del backup</string>
+    <string name="settings_advanced_backup_import_success">Configuración restaurada</string>
+    <string name="settings_advanced_backup_import_failed">No se pudo importar la configuración. Revisa el JSON e inténtalo de nuevo.</string>
+    <string name="settings_advanced_backup_warning">Los backups incluyen API keys y tokens. Guárdalos en un lugar seguro.</string>
     <string name="settings_licenses_attributions_section_app">LICENCIA DE APLICACIÓN</string>
     <string name="settings_licenses_attributions_section_data">DATOS Y SERVICIOS</string>
     <string name="settings_licenses_attributions_section_playback">LICENCIA DE REPRODUCCIÓN</string>

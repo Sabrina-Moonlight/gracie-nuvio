@@ -556,6 +556,20 @@
     <string name="settings_advanced_clear_cw_cache">Clear Continue Watching Cache</string>
     <string name="settings_advanced_clear_cw_cache_subtitle">Remove cached Continue Watching data and refresh watch progress</string>
     <string name="settings_advanced_clear_cw_cache_done">Cache cleared</string>
+
+    <string name="settings_advanced_backup_section">BACKUP</string>
+    <string name="settings_advanced_backup_export">Export settings</string>
+    <string name="settings_advanced_backup_export_description">Save all profile settings (including API keys) to a JSON file</string>
+    <string name="settings_advanced_backup_export_saved">Settings saved to file</string>
+    <string name="settings_advanced_backup_export_failed">Could not export settings</string>
+    <string name="settings_advanced_backup_import">Import settings</string>
+    <string name="settings_advanced_backup_import_description">Restore profile settings from a previously exported JSON file</string>
+    <string name="settings_advanced_backup_import_dialog_title">Import settings</string>
+    <string name="settings_advanced_backup_import_confirm">This replaces the current profile settings, including API keys. Save a backup first if you are unsure.</string>
+    <string name="settings_advanced_backup_import_hint">Paste JSON backup here</string>
+    <string name="settings_advanced_backup_import_success">Settings restored</string>
+    <string name="settings_advanced_backup_import_failed">Could not import settings. Check the JSON and try again.</string>
+    <string name="settings_advanced_backup_warning">Backups include API keys and tokens. Store them in a safe place.</string>
     <string name="settings_licenses_attributions_section_app">APP LICENSE</string>
     <string name="settings_licenses_attributions_section_data">DATA &amp; SERVICES</string>
     <string name="settings_licenses_attributions_section_playback">PLAYBACK LICENSE</string>
