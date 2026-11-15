@@ -36,7 +36,7 @@ object DirectDebridPlaybackResolver {
         episode: Int?,
         forceRefresh: Boolean = false,
     ): DirectDebridResolveResult {
-        if (!shouldResolveToPlayableStream(stream)) {
+        if (!shouldResolveToPlayableStream(stream) && !shouldResolveForDownload(stream)) {
             return DirectDebridResolveResult.Stale
         }
         val cacheKey = stream.debridResolveCacheKey(season, episode)
@@ -133,6 +133,26 @@ object DirectDebridPlaybackResolver {
             DebridProviderApis.apiFor(providerId) != null
     }
 
+    /**
+     * Same idea as [shouldResolveToPlayableStream] but for the Download action.
+     * Does not require the "resolve playable links" switch: if the user has a
+     * Torbox/Premiumize account, torrent streams can still become an https link
+     * and download with addon subtitles.
+     */
+    fun shouldResolveForDownload(stream: StreamItem): Boolean {
+        if (stream.playableDirectUrl != null) return false
+        val settings = DebridSettingsRepository.snapshot()
+        if (stream.needsLocalDebridResolve) {
+            return stream.isInstalledAddonStream && localTorrentResolveCredential(settings) != null
+        }
+        if (!stream.isInstalledAddonStream || !stream.isDirectDebridStream) {
+            return false
+        }
+        val providerId = DebridProviders.byId(stream.clientResolve?.service)?.id ?: return false
+        return settings.apiKeyFor(providerId).isNotBlank() &&
+            DebridProviderApis.apiFor(providerId) != null
+    }
+
     private suspend fun resolveUncached(stream: StreamItem, season: Int?, episode: Int?): DirectDebridResolveResult {
         if (stream.needsLocalDebridResolve) {
             return localAddonStreamResolver.resolve(stream, season, episode)
@@ -140,7 +160,12 @@ object DirectDebridPlaybackResolver {
         val providerId = DebridProviders.byId(stream.clientResolve?.service)?.id
             ?: return DirectDebridResolveResult.Error
         val settings = DebridSettingsRepository.snapshot()
-        if (providerId != settings.activeResolverProviderId) {
+        // Playback prefers the active resolver; download allows any provider that has a key.
+        if (
+            settings.canResolvePlayableLinks &&
+            settings.activeResolverProviderId != null &&
+            providerId != settings.activeResolverProviderId
+        ) {
             return DirectDebridResolveResult.Stale
         }
         val apiKey = settings
@@ -158,7 +183,7 @@ object DirectDebridPlaybackResolver {
         episode: Int?,
         forceRefresh: Boolean = false,
     ): DirectDebridPlayableResult {
-        if (!shouldResolveToPlayableStream(stream)) {
+        if (!shouldResolveToPlayableStream(stream) && !shouldResolveForDownload(stream)) {
             return DirectDebridPlayableResult.Success(stream)
         }
         return when (val result = resolve(stream, season, episode, forceRefresh)) {

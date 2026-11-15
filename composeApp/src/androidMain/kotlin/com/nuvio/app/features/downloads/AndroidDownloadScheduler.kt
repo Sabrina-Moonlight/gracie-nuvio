@@ -155,24 +155,35 @@ internal class AndroidDownloadScheduler(val context: Context) {
             currentCoroutineContext().ensureActive()
             if (!isActive(transfer)) return@withLock false
             var lastProgressAt = 0L
-            val partial = if (destination.isFile) destination else transferAndroidDownload(
-                item = transfer.item,
-                directory = directory,
-                validator = transfer.validator,
-                client = client,
-                onHeaders = { total, validator ->
-                    updateActive(transfer) { it.copy(validator = validator, item = it.item.copy(totalBytes = total)) }
-                },
-                onProgress = { bytes, total ->
-                    val now = SystemClock.elapsedRealtime()
-                    if (now - lastProgressAt >= 1_000L || bytes == total) {
-                        lastProgressAt = now
-                        updateActive(transfer) {
-                            it.copy(item = it.item.copy(downloadedBytes = bytes, totalBytes = total))
-                        }?.let(onProgress)
-                    }
-                },
-            )
+            val progressCallback: (Long, Long?) -> Unit = { bytes, total ->
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastProgressAt >= 1_000L || (total != null && bytes == total)) {
+                    lastProgressAt = now
+                    updateActive(transfer) {
+                        it.copy(item = it.item.copy(downloadedBytes = bytes, totalBytes = total))
+                    }?.let(onProgress)
+                }
+            }
+            val partial = if (destination.isFile) {
+                destination
+            } else if (transfer.item.isP2pDownload) {
+                transferAndroidP2pDownload(
+                    item = transfer.item,
+                    directory = directory,
+                    onProgress = progressCallback,
+                )
+            } else {
+                transferAndroidDownload(
+                    item = transfer.item,
+                    directory = directory,
+                    validator = transfer.validator,
+                    client = client,
+                    onHeaders = { total, validator ->
+                        updateActive(transfer) { it.copy(validator = validator, item = it.item.copy(totalBytes = total)) }
+                    },
+                    onProgress = progressCallback,
+                )
+            }
             currentCoroutineContext().ensureActive()
             updateActive(transfer) { current ->
                 if (partial != destination && !partial.renameTo(destination)) {

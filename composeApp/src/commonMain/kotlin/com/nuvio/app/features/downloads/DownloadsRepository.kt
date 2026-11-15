@@ -1,5 +1,8 @@
 package com.nuvio.app.features.downloads
 
+import com.nuvio.app.core.build.AppFeaturePolicy
+import com.nuvio.app.features.p2p.P2pSettingsRepository
+import com.nuvio.app.features.p2p.buildP2pMagnetUri
 import com.nuvio.app.features.player.SubtitleRequestExtras
 import com.nuvio.app.features.player.addonSubtitleRequests
 import com.nuvio.app.features.streams.StreamItem
@@ -127,12 +130,31 @@ object DownloadsRepository {
     ): DownloadEnqueueResult {
         ensureLoaded()
 
-        val sourceUrl = stream.playableDirectUrl
+        val httpUrl = stream.playableDirectUrl
             ?.trim()
-            ?.takeIf { it.isNotBlank() }
-            ?: return DownloadEnqueueResult.MissingUrl
+            ?.takeIf { it.isNotBlank() && it.isSupportedHttpDownloadUrl() }
 
-        if (!sourceUrl.isSupportedDownloadUrl()) {
+        val p2pHash = stream.p2pInfoHash?.trim()?.takeIf { it.isNotBlank() }
+        val p2pEnabled = AppFeaturePolicy.p2pEnabled &&
+            run {
+                P2pSettingsRepository.ensureLoaded()
+                P2pSettingsRepository.uiState.value.p2pEnabled
+            }
+        val canUseP2p = p2pEnabled && !p2pHash.isNullOrBlank()
+
+        val sourceUrl = when {
+            httpUrl != null -> httpUrl
+            canUseP2p -> {
+                stream.torrentMagnetUri?.takeIf { it.isNotBlank() }
+                    ?: runCatching { buildP2pMagnetUri(p2pHash!!, stream.p2pTrackers) }.getOrNull()
+            }
+            else -> null
+        } ?: return DownloadEnqueueResult.MissingUrl
+
+        if (httpUrl == null && !canUseP2p) {
+            return DownloadEnqueueResult.UnsupportedFormat
+        }
+        if (httpUrl != null && !httpUrl.isSupportedHttpDownloadUrl()) {
             return DownloadEnqueueResult.UnsupportedFormat
         }
 
@@ -192,6 +214,14 @@ object DownloadsRepository {
                 extras = SubtitleRequestExtras.from(stream.behaviorHints, sourceUrl),
             ),
             sourceSubtitles = stream.externalSubtitles,
+            p2pInfoHash = if (httpUrl == null && canUseP2p) p2pHash else null,
+            p2pFileIdx = if (httpUrl == null && canUseP2p) stream.p2pFileIdx else null,
+            p2pTrackers = if (httpUrl == null && canUseP2p) stream.p2pTrackers else emptyList(),
+            p2pFilenameHint = if (httpUrl == null && canUseP2p) {
+                stream.behaviorHints.filename?.takeIf { it.isNotBlank() }
+            } else {
+                null
+            },
             localFileUri = null,
             fileName = fileName,
             status = DownloadStatus.Downloading,
@@ -569,7 +599,7 @@ private fun String.fileExtensionFromUrl(): String {
     }
 }
 
-private fun String.isSupportedDownloadUrl(): Boolean {
+private fun String.isSupportedHttpDownloadUrl(): Boolean {
     val normalized = trim().lowercase()
     if (normalized.startsWith("magnet:")) return false
     if (normalized.endsWith(".m3u8") || normalized.contains(".m3u8?")) return false

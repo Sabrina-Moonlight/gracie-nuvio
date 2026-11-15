@@ -43,6 +43,11 @@ data class DownloadItem(
     val sourceResponseHeaders: Map<String, String> = emptyMap(),
     val subtitleRequests: List<SubtitleAddonRequest> = emptyList(),
     val sourceSubtitles: List<StreamSubtitle> = emptyList(),
+    /** When set, this download is fulfilled by the local P2P torrent engine instead of HTTP. */
+    val p2pInfoHash: String? = null,
+    val p2pFileIdx: Int? = null,
+    val p2pTrackers: List<String> = emptyList(),
+    val p2pFilenameHint: String? = null,
     val localFileUri: String? = null,
     val fileName: String,
     val status: DownloadStatus,
@@ -54,6 +59,9 @@ data class DownloadItem(
 ) {
     val isEpisode: Boolean
         get() = seasonNumber != null && episodeNumber != null
+
+    val isP2pDownload: Boolean
+        get() = !p2pInfoHash.isNullOrBlank()
 
     val isPlayable: Boolean
         get() = status == DownloadStatus.Completed && !localFileUri.isNullOrBlank()

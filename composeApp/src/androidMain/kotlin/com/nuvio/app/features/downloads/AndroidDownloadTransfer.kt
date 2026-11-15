@@ -1,5 +1,8 @@
 package com.nuvio.app.features.downloads
 
+import com.nuvio.app.features.p2p.P2pStreamRequest
+import com.nuvio.app.features.p2p.P2pStreamingEngine
+import com.nuvio.app.features.p2p.P2pStreamingState
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -8,7 +11,11 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -120,4 +127,98 @@ internal fun parseDownloadContentRange(value: String): Pair<Long, Long?>? {
     val total = match.groupValues[3].toLongOrNull()
     if (end < start || (total != null && end >= total)) return null
     return start to total
+}
+
+/**
+ * Downloads a torrent via the local P2P engine, waits until the selected file is complete,
+ * then copies it from the engine's local HTTP URL into the permanent downloads directory.
+ */
+internal suspend fun transferAndroidP2pDownload(
+    item: DownloadItem,
+    directory: File,
+    onProgress: (downloadedBytes: Long, totalBytes: Long?) -> Unit,
+): File = withContext(Dispatchers.IO) {
+    val infoHash = item.p2pInfoHash?.trim()?.takeIf { it.isNotBlank() }
+        ?: throw IOException("Missing torrent info hash for P2P download")
+    require(File(item.fileName).name == item.fileName && item.fileName.isNotBlank())
+    check(directory.isDirectory || directory.mkdirs()) { "Cannot create downloads directory" }
+
+    val request = P2pStreamRequest(
+        infoHash = infoHash,
+        fileIdx = item.p2pFileIdx,
+        filename = item.p2pFilenameHint,
+        trackers = item.p2pTrackers,
+    )
+
+    val localUrl = try {
+        P2pStreamingEngine.startStream(request)
+    } catch (error: Exception) {
+        throw IOException(error.message ?: "Could not start torrent download", error)
+    }
+
+    var totalBytes: Long? = null
+    try {
+        // Wait until the torrent file is fully verified/downloaded.
+        while (currentCoroutineContext().isActive) {
+            when (val state = P2pStreamingEngine.state.value) {
+                is P2pStreamingState.Streaming -> {
+                    totalBytes = state.downloadedBytes.takeIf { it > 0L }?.let { downloaded ->
+                        if (state.totalProgress in 0.01f..1f) {
+                            (downloaded / state.totalProgress.toDouble()).toLong().coerceAtLeast(downloaded)
+                        } else {
+                            totalBytes
+                        }
+                    } ?: totalBytes
+                    onProgress(state.downloadedBytes.coerceAtLeast(0L), totalBytes)
+                    if (state.totalProgress >= 0.999f) break
+                    if (state.verifiedBytes > 0L && totalBytes != null && state.verifiedBytes >= totalBytes) break
+                }
+                is P2pStreamingState.Error -> {
+                    throw IOException(state.message.ifBlank { "Torrent download failed" })
+                }
+                P2pStreamingState.Idle -> {
+                    // Engine reset unexpectedly
+                    throw IOException("Torrent download stopped unexpectedly")
+                }
+                is P2pStreamingState.Connecting -> {
+                    onProgress(0L, totalBytes)
+                }
+            }
+            delay(1_000L)
+        }
+        ensureActive()
+
+        // Copy from the local engine HTTP URL into the permanent .part file.
+        val partial = File(directory, "${item.fileName}.part")
+        val callRequest = Request.Builder().url(localUrl).header("Accept-Encoding", "identity").build()
+        downloadHttpClient.newCall(callRequest).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IOException("Could not read completed torrent file (HTTP ${response.code})")
+            }
+            val body = response.body ?: throw IOException("Empty torrent payload")
+            val contentLength = body.contentLength().takeIf { it >= 0L }
+            var downloaded = 0L
+            onProgress(0L, contentLength ?: totalBytes)
+            body.byteStream().use { input ->
+                FileOutputStream(partial, false).use { output ->
+                    val buffer = ByteArray(64 * 1024)
+                    while (true) {
+                        ensureActive()
+                        val size = input.read(buffer)
+                        if (size == -1) break
+                        output.write(buffer, 0, size)
+                        downloaded += size
+                        onProgress(downloaded, contentLength ?: totalBytes)
+                    }
+                    output.fd.sync()
+                }
+            }
+            if (contentLength != null && downloaded != contentLength) {
+                throw IOException("Torrent copy ended before all bytes were received")
+            }
+        }
+        partial
+    } finally {
+        runCatching { P2pStreamingEngine.stopStream() }
+    }
 }
