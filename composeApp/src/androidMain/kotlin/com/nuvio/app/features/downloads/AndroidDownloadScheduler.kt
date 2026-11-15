@@ -168,6 +168,7 @@ internal class AndroidDownloadScheduler(val context: Context) {
                 destination
             } else if (transfer.item.isP2pDownload) {
                 transferAndroidP2pDownload(
+                    context = context,
                     item = transfer.item,
                     directory = directory,
                     onProgress = progressCallback,

@@ -1,14 +1,19 @@
 package com.nuvio.app.features.downloads
 
-import com.nuvio.app.features.p2p.P2pStreamRequest
-import com.nuvio.app.features.p2p.P2pStreamingEngine
-import com.nuvio.app.features.p2p.P2pStreamingState
+import android.content.Context
+import com.nuvio.app.features.p2p.P2pSettingsRepository
+import com.nuvio.app.features.p2p.buildP2pMagnetUri
+import com.nuvio.engine.NuvioEngine
+import com.nuvio.engine.NuvioEngineConfig
+import com.nuvio.engine.NuvioTorrentProfile
+import com.nuvio.engine.NuvioUploadMode
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
@@ -130,10 +135,13 @@ internal fun parseDownloadContentRange(value: String): Pair<Long, Long?>? {
 }
 
 /**
- * Downloads a torrent via the local P2P engine, waits until the selected file is complete,
- * then copies it from the engine's local HTTP URL into the permanent downloads directory.
+ * Downloads a torrent with a **dedicated** NuvioEngine instance (separate from playback).
+ *
+ * Always uses the Fast torrent profile and disables upload on this engine so bandwidth
+ * goes to downloading. Playback can use its own engine at the same time.
  */
 internal suspend fun transferAndroidP2pDownload(
+    context: Context,
     item: DownloadItem,
     directory: File,
     onProgress: (downloadedBytes: Long, totalBytes: Long?) -> Unit,
@@ -143,52 +151,78 @@ internal suspend fun transferAndroidP2pDownload(
     require(File(item.fileName).name == item.fileName && item.fileName.isNotBlank())
     check(directory.isDirectory || directory.mkdirs()) { "Cannot create downloads directory" }
 
-    val request = P2pStreamRequest(
-        infoHash = infoHash,
-        fileIdx = item.p2pFileIdx,
-        filename = item.p2pFilenameHint,
-        trackers = item.p2pTrackers,
-    )
+    P2pSettingsRepository.ensureLoaded()
+    val settings = P2pSettingsRepository.uiState.value
 
-    val localUrl = try {
-        P2pStreamingEngine.startStream(request)
-    } catch (error: Exception) {
-        throw IOException(error.message ?: "Could not start torrent download", error)
+    val appContext = context.applicationContext
+    val stateDirectory = File(appContext.noBackupFilesDir, "nuvio-engine-downloads/state")
+    val cacheDirectory = File(appContext.cacheDir, "nuvio-engine-downloads")
+    check(stateDirectory.mkdirs() || stateDirectory.isDirectory) {
+        "Could not create the download torrent state directory"
+    }
+    check(cacheDirectory.mkdirs() || cacheDirectory.isDirectory) {
+        "Could not create the download torrent cache directory"
     }
 
-    var totalBytes: Long? = null
+    // Fast + no upload + larger memory cache: download-only engine, max speed.
+    val diskCacheBytes = settings.cacheSize.bytes.coerceAtLeast(2L * 1024L * 1024L * 1024L)
+    val engine = NuvioEngine.create(
+        NuvioEngineConfig(
+            dataDirectory = stateDirectory,
+            cacheDirectory = cacheDirectory,
+            memoryCacheCapacityBytes = 64L * 1024L * 1024L,
+            diskCacheCapacityBytes = diskCacheBytes,
+            torrentProfile = NuvioTorrentProfile.Fast,
+            uploadMode = NuvioUploadMode.Disabled,
+            streamInactivityTimeoutMilliseconds = 0,
+        ),
+    )
+
+    var streamId: String? = null
+    var torrentId: String? = null
     try {
-        // Wait until the torrent file is fully verified/downloaded.
+        val magnet = item.sourceUrl.takeIf { it.startsWith("magnet:", ignoreCase = true) }
+            ?: buildP2pMagnetUri(infoHash, item.p2pTrackers)
+        torrentId = engine.addMagnet(magnet)
+        ensureActive()
+
+        val stream = engine.prepareStream(
+            torrentId = torrentId,
+            fileIndex = item.p2pFileIdx,
+            filenameHint = item.p2pFilenameHint,
+        )
+        streamId = stream.id
+        val localUrl = stream.url
+
+        // Lock total size once known so the UI weight does not jump up and down.
+        var lockedTotalBytes: Long? = stream.fileSize.takeIf { it > 0L }
+        var lastDownloadedBytes = 0L
+
         while (currentCoroutineContext().isActive) {
-            when (val state = P2pStreamingEngine.state.value) {
-                is P2pStreamingState.Streaming -> {
-                    totalBytes = state.downloadedBytes.takeIf { it > 0L }?.let { downloaded ->
-                        if (state.totalProgress in 0.01f..1f) {
-                            (downloaded / state.totalProgress.toDouble()).toLong().coerceAtLeast(downloaded)
-                        } else {
-                            totalBytes
-                        }
-                    } ?: totalBytes
-                    onProgress(state.downloadedBytes.coerceAtLeast(0L), totalBytes)
-                    if (state.totalProgress >= 0.999f) break
-                    if (state.verifiedBytes > 0L && totalBytes != null && state.verifiedBytes >= totalBytes) break
-                }
-                is P2pStreamingState.Error -> {
-                    throw IOException(state.message.ifBlank { "Torrent download failed" })
-                }
-                P2pStreamingState.Idle -> {
-                    // Engine reset unexpectedly
-                    throw IOException("Torrent download stopped unexpectedly")
-                }
-                is P2pStreamingState.Connecting -> {
-                    onProgress(0L, totalBytes)
-                }
+            val stats = engine.currentStreamStats(stream.id)
+            if (lockedTotalBytes == null && stats.fileSize > 0L) {
+                lockedTotalBytes = stats.fileSize
             }
+            val total = lockedTotalBytes
+            val verified = stats.verifiedFileBytes.coerceAtLeast(0L)
+            // Monotonic progress only (never shrinks) — fixes the size flicker in the UI.
+            val downloaded = maxOf(lastDownloadedBytes, verified)
+            lastDownloadedBytes = downloaded
+            onProgress(downloaded, total)
+
+            val progress = stats.fileProgress
+            if (progress >= 0.999f) break
+            if (total != null && total > 0L && verified >= total) break
             delay(1_000L)
         }
         ensureActive()
 
-        // Copy from the local engine HTTP URL into the permanent .part file.
+        val totalForCopy = lockedTotalBytes
+        // Keep the bar at the torrent total while we copy into the permanent file (no reset to 0).
+        if (totalForCopy != null && totalForCopy > 0L) {
+            onProgress(totalForCopy, totalForCopy)
+        }
+
         val partial = File(directory, "${item.fileName}.part")
         val callRequest = Request.Builder().url(localUrl).header("Accept-Encoding", "identity").build()
         downloadHttpClient.newCall(callRequest).execute().use { response ->
@@ -197,8 +231,8 @@ internal suspend fun transferAndroidP2pDownload(
             }
             val body = response.body ?: throw IOException("Empty torrent payload")
             val contentLength = body.contentLength().takeIf { it >= 0L }
-            var downloaded = 0L
-            onProgress(0L, contentLength ?: totalBytes)
+            val finalTotal = totalForCopy ?: contentLength
+            var copied = 0L
             body.byteStream().use { input ->
                 FileOutputStream(partial, false).use { output ->
                     val buffer = ByteArray(64 * 1024)
@@ -207,18 +241,31 @@ internal suspend fun transferAndroidP2pDownload(
                         val size = input.read(buffer)
                         if (size == -1) break
                         output.write(buffer, 0, size)
-                        downloaded += size
-                        onProgress(downloaded, contentLength ?: totalBytes)
+                        copied += size
+                        // Local copy is fast; keep reported size stable at final total.
+                        if (finalTotal != null) {
+                            onProgress(finalTotal, finalTotal)
+                        } else {
+                            onProgress(maxOf(lastDownloadedBytes, copied), null)
+                        }
                     }
                     output.fd.sync()
                 }
             }
-            if (contentLength != null && downloaded != contentLength) {
+            if (contentLength != null && copied != contentLength) {
                 throw IOException("Torrent copy ended before all bytes were received")
             }
         }
         partial
+    } catch (error: Exception) {
+        if (error is kotlinx.coroutines.CancellationException) throw error
+        throw IOException(error.message ?: "Torrent download failed", error)
     } finally {
-        runCatching { P2pStreamingEngine.stopStream() }
+        withContext(NonCancellable) {
+            streamId?.let { id -> runCatching { engine.stopStream(id) } }
+            torrentId?.let { id -> runCatching { engine.removeTorrent(id) } }
+            runCatching { engine.shutdown() }
+            runCatching { engine.close() }
+        }
     }
 }
