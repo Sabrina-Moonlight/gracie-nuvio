@@ -261,16 +261,10 @@ internal fun PlayerScreenRuntime.RenderPlayerRuntimeUi(
                     },
                     onError = { message ->
                         if (!active.value || playbackKey != activePlaybackKey) return@PlatformPlayerSurface
-<<<<<<< GRACIE
-                        if (message != null && tryRefreshExpiredLinkAfterError(message)) {
-||||||| NUVIO-0.6.11-beta
-                        if (message != null && tryRefreshCredentialedSourceAfterError(message)) {
-=======
                         if (message != null && tryRefreshExpiredLinkAfterError(message)) {
                             return@PlatformPlayerSurface
                         }
                         if (message != null && tryFallbackToNextSourceAfterError(message)) {
->>>>>>> NUVIO-1.1.0-beta.2
                             return@PlatformPlayerSurface
                         }
                         // Engine failover is decided here, driven by its own player setting;

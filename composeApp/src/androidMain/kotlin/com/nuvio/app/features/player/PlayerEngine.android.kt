@@ -387,15 +387,8 @@ private fun ExoPlayerSurface(
                 loopback = loopbackSource,
             )
         ) {
-<<<<<<< GRACIE
             // withDiskCache ends in a DefaultDataSource, which opens the data: init segment this may add.
             if (mimeType == MimeTypes.APPLICATION_M3U8) HlsParameterSetInitDataSource.Factory(withDiskCache) else withDiskCache
-||||||| NUVIO-0.6.11-beta
-            upstream
-=======
-            // upstream ends in a DefaultDataSource, which opens the data: init segment this may add.
-            if (mimeType == MimeTypes.APPLICATION_M3U8) HlsParameterSetInitDataSource.Factory(upstream) else upstream
->>>>>>> NUVIO-1.1.0-beta.2
         } else {
             VodCache.wrap(
                 context = context,
@@ -1525,14 +1518,8 @@ private fun LibmpvPlayerSurface(
             override fun event(eventId: Int, data: MPVNode) {
                 when (eventId) {
                     MPV.mpvEvent.MPV_EVENT_START_FILE -> {
-<<<<<<< GRACIE
-                        errorLog.clear()
-||||||| NUVIO-0.6.11-beta
-                        synchronized(recentErrorLogs) { recentErrorLogs.clear() }
-=======
                         view.onFileStarted()
                         errorLog.clear()
->>>>>>> NUVIO-1.1.0-beta.2
                         Log.i(
                             PLAYER_DIAGNOSTIC_TAG,
                             "mpv_event=START_FILE attempt=${playbackDiagnostics.attempt} " +

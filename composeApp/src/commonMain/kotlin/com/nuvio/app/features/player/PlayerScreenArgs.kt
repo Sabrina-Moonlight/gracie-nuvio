@@ -45,11 +45,6 @@ internal data class PlayerScreenArgs(
     val sourceFilename: String? = null,
     val onOpenPartyMedia: (PartyMedia) -> Unit = {},
     val stream: com.nuvio.app.features.streams.StreamItem? = null,
-<<<<<<< GRACIE
-    val sourceFromLinkCache: Boolean = false,
-||||||| NUVIO-0.6.11-beta
-=======
     val sourceFromLinkCache: Boolean = false,
     val sourceAutoSelected: Boolean = false,
->>>>>>> NUVIO-1.1.0-beta.2
 )

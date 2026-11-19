@@ -987,43 +987,11 @@ internal fun PlayerScreenRuntime.tryRefreshExpiredLinkAfterError(message: String
                 pollCount++
             }
 
-<<<<<<< GRACIE
-            val candidate = refreshedStream
-            if (candidate == null) {
-                errorMessage = message
-                controlsVisible = !playerControlsLocked
-||||||| NUVIO-0.6.11-beta
-            val stream = refreshedStream
-            if (stream == null) {
-                errorMessage = message
-                controlsVisible = !playerControlsLocked
-=======
             val candidate = refreshedStream
             if (candidate == null) {
                 showErrorUnlessSourceFallback(message)
->>>>>>> NUVIO-1.1.0-beta.2
                 return@launch
             }
-<<<<<<< GRACIE
-            // Debrid links are always requested anew; a prepared or in-memory one may be the expired link.
-            val unresolved = if (candidate.debridResolved) candidate.copy(url = null, debridResolved = false) else candidate
-            val stream = when (
-                val resolved = DirectDebridPlaybackResolver.resolveToPlayableStream(
-                    stream = unresolved,
-                    season = season,
-                    episode = episode,
-                    forceRefresh = true,
-                )
-            ) {
-                is DirectDebridPlayableResult.Success -> resolved.stream
-                else -> {
-                    errorMessage = message
-                    controlsVisible = !playerControlsLocked
-                    return@launch
-                }
-            }
-||||||| NUVIO-0.6.11-beta
-=======
             // Debrid links are always requested anew; a prepared or in-memory one may be the expired link.
             val unresolved = if (candidate.debridResolved) candidate.copy(url = null, debridResolved = false) else candidate
             val stream = when (
@@ -1040,7 +1008,6 @@ internal fun PlayerScreenRuntime.tryRefreshExpiredLinkAfterError(message: String
                     return@launch
                 }
             }
->>>>>>> NUVIO-1.1.0-beta.2
 
             val refreshedUrl = stream.playableDirectUrl
             if (refreshedUrl.isNullOrBlank() || refreshedUrl == failedUrl) {
@@ -1048,56 +1015,7 @@ internal fun PlayerScreenRuntime.tryRefreshExpiredLinkAfterError(message: String
                 return@launch
             }
 
-<<<<<<< GRACIE
-            if (playerSettingsUiState.streamReuseLastLinkEnabled) {
-                saveDirectStreamForReuse(stream, refreshedUrl, currentVideoId, season, episode)
-            }
-            flushWatchProgress()
-            stopActiveP2pStream()
-            activeSourceUrl = refreshedUrl
-            activeSourceAudioUrl = null
-            activeSourceHeaders = sanitizePlaybackHeaders(stream.behaviorHints.proxyHeaders?.request)
-            activeSourceResponseHeaders = sanitizePlaybackResponseHeaders(stream.behaviorHints.proxyHeaders?.response)
-            activeStreamType = stream.streamType
-            activeStreamTitle = stream.streamLabel
-            activeStreamSubtitle = stream.streamSubtitle
-            activeStreamFilename = streamPlaybackFilename(stream, refreshedUrl)
-            activeProviderName = stream.addonName
-            activeProviderAddonId = stream.addonId
-            activeStream = stream
-            currentStreamBingeGroup = stream.behaviorHints.bingeGroup
-            activeSubtitleExtras = SubtitleRequestExtras.from(stream.behaviorHints, refreshedUrl)
-            currentStreamFilename = stream.behaviorHints.filename
-            currentStreamInfoHash = stream.infoHash
-            activeInitialPositionMs = savedPositionMs
-            activeInitialProgressFraction = null
-            showSourcesPanel = false
-            controlsVisible = true
-||||||| NUVIO-0.6.11-beta
-            flushWatchProgress()
-            stopActiveP2pStream()
-            activeSourceUrl = refreshedUrl
-            activeSourceAudioUrl = null
-            activeSourceHeaders = sanitizePlaybackHeaders(stream.behaviorHints.proxyHeaders?.request)
-            activeSourceResponseHeaders = sanitizePlaybackResponseHeaders(stream.behaviorHints.proxyHeaders?.response)
-            activeStreamType = stream.streamType
-            activeStreamTitle = stream.streamLabel
-            activeStreamSubtitle = stream.streamSubtitle
-            activeStreamFilename = streamPlaybackFilename(stream, refreshedUrl)
-            activeProviderName = stream.addonName
-            activeProviderAddonId = stream.addonId
-            activeStream = stream
-            currentStreamBingeGroup = stream.behaviorHints.bingeGroup
-            activeSubtitleExtras = SubtitleRequestExtras.from(stream.behaviorHints, refreshedUrl)
-            currentStreamFilename = stream.behaviorHints.filename
-            currentStreamInfoHash = stream.infoHash
-            activeInitialPositionMs = savedPositionMs
-            activeInitialProgressFraction = null
-            showSourcesPanel = false
-            controlsVisible = true
-=======
             playReplacementSource(stream, refreshedUrl, currentVideoId)
->>>>>>> NUVIO-1.1.0-beta.2
         } finally {
             PlayerStreamsRepository.stopSourcesLoading()
         }
