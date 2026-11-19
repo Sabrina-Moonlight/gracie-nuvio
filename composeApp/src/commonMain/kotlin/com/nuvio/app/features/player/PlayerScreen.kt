@@ -47,7 +47,13 @@ fun PlayerScreen(
     launchId: Long? = null,
     sourceFilename: String? = null,
     stream: com.nuvio.app.features.streams.StreamItem? = null,
+<<<<<<< GRACIE
     sourceFromLinkCache: Boolean = false,
+||||||| NUVIO-0.6.11-beta
+=======
+    sourceFromLinkCache: Boolean = false,
+    sourceAutoSelected: Boolean = false,
+>>>>>>> NUVIO-1.1.0-beta.2
 ) {
     PlayerScreenContent(
         PlayerScreenArgs(
@@ -92,7 +98,13 @@ fun PlayerScreen(
             sourceFilename = sourceFilename,
             onOpenPartyMedia = onOpenPartyMedia,
             stream = stream,
+<<<<<<< GRACIE
             sourceFromLinkCache = sourceFromLinkCache,
+||||||| NUVIO-0.6.11-beta
+=======
+            sourceFromLinkCache = sourceFromLinkCache,
+            sourceAutoSelected = sourceAutoSelected,
+>>>>>>> NUVIO-1.1.0-beta.2
         )
     )
 }

@@ -2,4 +2,22 @@
 <locale-config xmlns:android="http://schemas.android.com/apk/res/android">
     <locale android:name="en"/>
     <locale android:name="es"/>
+<<<<<<< GRACIE
+||||||| NUVIO-0.6.11-beta
+    <locale android:name="ta"/>
+    <locale android:name="tr"/>
+    <locale android:name="ur"/>
+    <locale android:name="nb"/>
+	<locale android:name="ja"/>
+    <locale android:name="vi"/>
+=======
+    <locale android:name="ta"/>
+    <locale android:name="tr"/>
+    <locale android:name="ur"/>
+    <locale android:name="uk"/>
+    <locale android:name="nb"/>
+	<locale android:name="ja"/>
+    <locale android:name="vi"/>
+    <locale android:name="zh"/>
+>>>>>>> NUVIO-1.1.0-beta.2
 </locale-config>

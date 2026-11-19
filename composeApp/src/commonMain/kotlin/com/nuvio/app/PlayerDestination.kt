@@ -90,7 +90,13 @@ internal fun PlayerDestination(
         launchId = route.launchId,
         sourceFilename = launch.sourceFilename,
         stream = launch.stream,
+<<<<<<< GRACIE
         sourceFromLinkCache = launch.sourceFromLinkCache,
+||||||| NUVIO-0.6.11-beta
+=======
+        sourceFromLinkCache = launch.sourceFromLinkCache,
+        sourceAutoSelected = launch.sourceAutoSelected,
+>>>>>>> NUVIO-1.1.0-beta.2
         onBack = onBack,
         onOpenInExternalPlayer = { request ->
             val playerLaunch = PlayerLaunch(

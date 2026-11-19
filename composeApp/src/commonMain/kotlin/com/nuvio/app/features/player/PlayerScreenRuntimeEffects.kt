@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.nuvio.app.features.addons.AddonPlayerAction
 import com.nuvio.app.features.details.MetaDetailsRepository
 import com.nuvio.app.features.p2p.P2pSettingsRepository
 import com.nuvio.app.features.p2p.P2pStreamRequest
@@ -157,6 +158,16 @@ internal fun PlayerScreenRuntime.BindPlayerRuntimeEffects() {
         PlayerStreamsRepository.clearEpisodeStreams()
         resetAddonSubtitlesIfSourceChanged()
         WatchProgressRepository.ensureLoaded()
+
+        // A source that does not finish loading within the configured time counts as failed when
+        // falling back to the next source. It has an effect only where that fallback applies.
+        val startupTimeoutSeconds = playerSettingsUiState.streamAutoPlayFallbackStartupTimeoutSeconds
+        delay(startupTimeoutSeconds * 1_000L)
+        if (!initialLoadCompleted && errorMessage == null) {
+            tryFallbackToNextSourceAfterError(
+                getString(Res.string.player_error_source_startup_timeout, startupTimeoutSeconds),
+            )
+        }
     }
 
     LaunchedEffect(
@@ -556,6 +567,10 @@ private fun PlayerScreenRuntime.BindPlayerUiVisibilityEffects() {
             flushWatchProgress(TrackingScrobbleAction.PAUSE)
         }
 
+        if (!previousIsPlaying && playbackSnapshot.isPlaying) {
+            emitAddonPlayerEvent(AddonPlayerAction.START)
+        }
+
         if (playbackSnapshot.isPlaying && pendingSeekScrobbleRestart) {
             pendingSeekScrobbleRestart = false
             if (hasRequestedScrobbleStartForCurrentItem) {
@@ -924,7 +939,6 @@ internal fun PlayerScreenRuntime.tryRefreshExpiredLinkAfterError(message: String
     linkCacheSourceUrl = null
     removeFailedStreamFromCache()
 
-    val savedPositionMs = playbackSnapshot.positionMs.coerceAtLeast(0L)
     val expectedProviderAddonId = activeProviderAddonId
     val expectedProviderName = activeProviderName
     val expectedStreamTitle = activeStreamTitle
@@ -973,12 +987,24 @@ internal fun PlayerScreenRuntime.tryRefreshExpiredLinkAfterError(message: String
                 pollCount++
             }
 
+<<<<<<< GRACIE
             val candidate = refreshedStream
             if (candidate == null) {
                 errorMessage = message
                 controlsVisible = !playerControlsLocked
+||||||| NUVIO-0.6.11-beta
+            val stream = refreshedStream
+            if (stream == null) {
+                errorMessage = message
+                controlsVisible = !playerControlsLocked
+=======
+            val candidate = refreshedStream
+            if (candidate == null) {
+                showErrorUnlessSourceFallback(message)
+>>>>>>> NUVIO-1.1.0-beta.2
                 return@launch
             }
+<<<<<<< GRACIE
             // Debrid links are always requested anew; a prepared or in-memory one may be the expired link.
             val unresolved = if (candidate.debridResolved) candidate.copy(url = null, debridResolved = false) else candidate
             val stream = when (
@@ -996,14 +1022,33 @@ internal fun PlayerScreenRuntime.tryRefreshExpiredLinkAfterError(message: String
                     return@launch
                 }
             }
+||||||| NUVIO-0.6.11-beta
+=======
+            // Debrid links are always requested anew; a prepared or in-memory one may be the expired link.
+            val unresolved = if (candidate.debridResolved) candidate.copy(url = null, debridResolved = false) else candidate
+            val stream = when (
+                val resolved = DirectDebridPlaybackResolver.resolveToPlayableStream(
+                    stream = unresolved,
+                    season = season,
+                    episode = episode,
+                    forceRefresh = true,
+                )
+            ) {
+                is DirectDebridPlayableResult.Success -> resolved.stream
+                else -> {
+                    showErrorUnlessSourceFallback(message)
+                    return@launch
+                }
+            }
+>>>>>>> NUVIO-1.1.0-beta.2
 
             val refreshedUrl = stream.playableDirectUrl
             if (refreshedUrl.isNullOrBlank() || refreshedUrl == failedUrl) {
-                errorMessage = message
-                controlsVisible = !playerControlsLocked
+                showErrorUnlessSourceFallback(message)
                 return@launch
             }
 
+<<<<<<< GRACIE
             if (playerSettingsUiState.streamReuseLastLinkEnabled) {
                 saveDirectStreamForReuse(stream, refreshedUrl, currentVideoId, season, episode)
             }
@@ -1028,6 +1073,31 @@ internal fun PlayerScreenRuntime.tryRefreshExpiredLinkAfterError(message: String
             activeInitialProgressFraction = null
             showSourcesPanel = false
             controlsVisible = true
+||||||| NUVIO-0.6.11-beta
+            flushWatchProgress()
+            stopActiveP2pStream()
+            activeSourceUrl = refreshedUrl
+            activeSourceAudioUrl = null
+            activeSourceHeaders = sanitizePlaybackHeaders(stream.behaviorHints.proxyHeaders?.request)
+            activeSourceResponseHeaders = sanitizePlaybackResponseHeaders(stream.behaviorHints.proxyHeaders?.response)
+            activeStreamType = stream.streamType
+            activeStreamTitle = stream.streamLabel
+            activeStreamSubtitle = stream.streamSubtitle
+            activeStreamFilename = streamPlaybackFilename(stream, refreshedUrl)
+            activeProviderName = stream.addonName
+            activeProviderAddonId = stream.addonId
+            activeStream = stream
+            currentStreamBingeGroup = stream.behaviorHints.bingeGroup
+            activeSubtitleExtras = SubtitleRequestExtras.from(stream.behaviorHints, refreshedUrl)
+            currentStreamFilename = stream.behaviorHints.filename
+            currentStreamInfoHash = stream.infoHash
+            activeInitialPositionMs = savedPositionMs
+            activeInitialProgressFraction = null
+            showSourcesPanel = false
+            controlsVisible = true
+=======
+            playReplacementSource(stream, refreshedUrl, currentVideoId)
+>>>>>>> NUVIO-1.1.0-beta.2
         } finally {
             PlayerStreamsRepository.stopSourcesLoading()
         }
