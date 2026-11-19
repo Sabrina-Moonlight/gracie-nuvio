@@ -388,7 +388,13 @@ internal fun StreamDestination(
                         bingeGroup = cached.bingeGroup,
                     ),
                 ),
+<<<<<<< GRACIE
                 sourceFromLinkCache = true,
+||||||| NUVIO-0.6.11-beta
+=======
+                sourceFromLinkCache = true,
+                sourceAutoSelected = true,
+>>>>>>> NUVIO-1.1.0-beta.2
             )
             if (playerSettings.externalPlayerEnabled) {
                 openExternalPlayback(playerLaunch)
@@ -560,6 +566,7 @@ internal fun StreamDestination(
             contentLanguage = resolveLaunchContentLanguage(),
             sourceFilename = stream.behaviorHints.filename,
             stream = stream,
+            sourceAutoSelected = true,
         )
         if (playerSettings.externalPlayerEnabled && stream.serverTarget == null) {
             openExternalPlayback(playerLaunch)
