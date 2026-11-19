@@ -24,7 +24,7 @@ Ella tiene pocos tokens por conversación. Lo peor que puede pasar es que te que
 
 ### Lista de pendientes (to-do)
 - Se entrega como **archivo suelto en el chat**, en cada entrega. **Nunca dentro del ZIP.**
-- Nombre: `TODO.md` (si ella ya usa un archivo de plan, como `PLAN_GRACIE.md`, actualiza ese).
+- Nombre: `gracie-APP-lista-descripcion.md`, con el mismo `APP` y la misma `descripcion` que el ZIP de esa entrega, o sea, lo que se está haciendo (por ejemplo `gracie-music-lista-widget-notificacion.md`). Sin `vNN`. Así cada app y cada trabajo tiene su propia lista. Si ella ya usa un archivo de plan, como `PLAN_GRACIE.md`, actualiza ese.
 - Contenido, corto y fácil de pegar en un chat nuevo:
   - **Hecho:** lo ya entregado, con el nombre del ZIP.
   - **Pendiente:** lo que falta, en el orden en que lo harás.
@@ -44,7 +44,7 @@ Ella tiene pocos tokens por conversación. Lo peor que puede pasar es que te que
 - Ya conoce lo básico de GitHub (subir archivos, ejecutar workflows, fusionar pull requests). No se lo expliques. Si debe hacer algo nuevo a mano, dale los pasos exactos, uno por uno.
 - Tú modificas el código y las aplicaciones. Tienes **permiso total** para leer, crear, modificar y borrar archivos del proyecto (menos estos archivos de reglas). No preguntes "¿puedo hacer X?": hazlo y explica después.
 - Ella es la tester: sube, compila, prueba y te cuenta. No tienes acceso a su GitHub. Nunca digas "no puedo compilar ni probar": entrega y espera su resultado.
-- Cada chat empieza sin memoria. Este archivo y el `TODO.md` son la memoria.
+- Cada chat empieza sin memoria. Este archivo y la lista (`gracie-APP-lista-descripcion.md`) son la memoria.
 
 ## El proyecto
 Trabaja con el código del proyecto que tienes delante. No supongas carpetas, nombres, paquetes ni librerías: compruébalos en el código. Si algo no está, dilo.
@@ -73,11 +73,11 @@ Si en un mismo chat haces varias entregas, un ZIP por entrega, numerados en orde
 - Solo los archivos que cambiaste, con su nombre original y **su ruta completa desde la raíz del proyecto**. La raíz del ZIP es la raíz del proyecto, sin carpeta envoltorio. Con ruta completa no hace falta `ROUTES.txt`.
 - Un archivo suelto (sin carpetas) solo se coloca solo si ya existe en la raíz del proyecto. Si es nuevo en la raíz, o lo pones suelto aunque viva en otra carpeta, añade `ROUTES.txt`: una línea por archivo, `Nombre.ext = ruta/completa/Nombre.ext`.
 - `DELETE.txt` si hay que borrar archivos: una ruta completa por línea. Solo archivos que existan (si no existe, Sort Uploads marca error). Nunca carpetas, ni `LICENSE`, ni `.git`, ni `.github`.
-- **Nunca** dentro del ZIP: `.github/`, `*.keystore`, `*.jks`, `LICENSE`, `claude.md`, `grok.md`, ni el `TODO.md`/plan. Sort Uploads ignora lo primero; lo demás va suelto.
+- **Nunca** dentro del ZIP: `.github/`, `*.keystore`, `*.jks`, `LICENSE`, `claude.md`, `grok.md`, ni la lista/plan. Sort Uploads ignora lo primero; lo demás va suelto.
 
 **Fuera del ZIP (archivos sueltos en el chat):**
 - Todo lo de `.github/` (workflows): dile la ruta exacta para que lo edite a mano en GitHub.
-- El `TODO.md` o plan, en cada entrega.
+- La lista (`gracie-APP-lista-descripcion.md`) o plan, en cada entrega.
 
 **En el chat:** una línea por archivo con lo que cambió y una línea de qué probar. Nada más.
 
@@ -96,7 +96,7 @@ Corta y directa, sin relleno ni halagos: qué hiciste, qué subir, qué probar, 
 - ¿Hice solo una parte, pequeña, y no todo a la vez?
 - ¿Toqué solo lo pedido (o todo lo necesario si era arreglar)?
 - ¿El ZIP cumple la sección «Entrega» y tiene progreso?
-- ¿Va el `TODO.md` suelto, actualizado, sin que ella lo pidiera?
+- ¿Va la lista con nombre `gracie-APP-lista-descripcion.md` suelto, actualizado, sin que ella lo pidiera?
 - ¿No toqué `claude.md` ni `grok.md`?
 
 Si incumpliste algo, dilo en una línea y corrígelo.
