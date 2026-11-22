@@ -134,6 +134,8 @@ internal fun parseDownloadContentRange(value: String): Pair<Long, Long?>? {
     return start to total
 }
 
+private const val P2P_DOWNLOAD_STALL_TIMEOUT_MS = 4 * 60 * 1_000L
+
 /**
  * Downloads a torrent with a **dedicated** NuvioEngine instance (separate from playback).
  *
@@ -194,67 +196,48 @@ internal suspend fun transferAndroidP2pDownload(
         streamId = stream.id
         val localUrl = stream.url
 
-        // Lock total size once known so the UI weight does not jump up and down.
-        var lockedTotalBytes: Long? = stream.fileSize.takeIf { it > 0L }
-        var lastDownloadedBytes = 0L
-
-        while (currentCoroutineContext().isActive) {
-            val stats = engine.currentStreamStats(stream.id)
-            if (lockedTotalBytes == null && stats.fileSize > 0L) {
-                lockedTotalBytes = stats.fileSize
-            }
-            val total = lockedTotalBytes
-            val verified = stats.verifiedFileBytes.coerceAtLeast(0L)
-            // Monotonic progress only (never shrinks) — fixes the size flicker in the UI.
-            val downloaded = maxOf(lastDownloadedBytes, verified)
-            lastDownloadedBytes = downloaded
-            onProgress(downloaded, total)
-
-            val progress = stats.fileProgress
-            if (progress >= 0.999f) break
-            if (total != null && total > 0L && verified >= total) break
-            delay(1_000L)
-        }
-        ensureActive()
-
-        val totalForCopy = lockedTotalBytes
-        // Keep the bar at the torrent total while we copy into the permanent file (no reset to 0).
-        if (totalForCopy != null && totalForCopy > 0L) {
-            onProgress(totalForCopy, totalForCopy)
-        }
-
+        // El motor es de streaming: solo descarga lo que alguien lee. Por eso se lee el archivo
+        // desde el principio y se guarda mientras llega (si solo se esperara, se frena a medias).
+        val knownTotal: Long? = stream.fileSize.takeIf { it > 0L }
         val partial = File(directory, "${item.fileName}.part")
-        val callRequest = Request.Builder().url(localUrl).header("Accept-Encoding", "identity").build()
-        downloadHttpClient.newCall(callRequest).execute().use { response ->
-            if (!response.isSuccessful) {
-                throw IOException("Could not read completed torrent file (HTTP ${response.code})")
-            }
-            val body = response.body ?: throw IOException("Empty torrent payload")
-            val contentLength = body.contentLength().takeIf { it >= 0L }
-            val finalTotal = totalForCopy ?: contentLength
-            var copied = 0L
-            body.byteStream().use { input ->
-                FileOutputStream(partial, false).use { output ->
-                    val buffer = ByteArray(64 * 1024)
-                    while (true) {
-                        ensureActive()
-                        val size = input.read(buffer)
-                        if (size == -1) break
-                        output.write(buffer, 0, size)
-                        copied += size
-                        // Local copy is fast; keep reported size stable at final total.
-                        if (finalTotal != null) {
-                            onProgress(finalTotal, finalTotal)
-                        } else {
-                            onProgress(maxOf(lastDownloadedBytes, copied), null)
+        val client = downloadHttpClient.newBuilder()
+            .readTimeout(P2P_DOWNLOAD_STALL_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            .build()
+        val call = client.newCall(
+            Request.Builder().url(localUrl).header("Accept-Encoding", "identity").build(),
+        )
+        // Si se pausa o cancela, se corta la lectura bloqueada al momento.
+        val cancelHook = currentCoroutineContext()[kotlinx.coroutines.Job]?.invokeOnCompletion { call.cancel() }
+        try {
+            call.execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw IOException("Could not read torrent file (HTTP ${response.code})")
+                }
+                val body = response.body ?: throw IOException("Empty torrent payload")
+                val contentLength = body.contentLength().takeIf { it >= 0L }
+                val total = knownTotal ?: contentLength
+                var copied = 0L
+                body.byteStream().use { input ->
+                    FileOutputStream(partial, false).use { output ->
+                        val buffer = ByteArray(64 * 1024)
+                        while (true) {
+                            ensureActive()
+                            val size = input.read(buffer)
+                            if (size == -1) break
+                            output.write(buffer, 0, size)
+                            copied += size
+                            onProgress(copied, total)
                         }
+                        output.fd.sync()
                     }
-                    output.fd.sync()
+                }
+                val expected = contentLength ?: total
+                if (expected != null && copied != expected) {
+                    throw IOException("Torrent download ended before all bytes were received")
                 }
             }
-            if (contentLength != null && copied != contentLength) {
-                throw IOException("Torrent copy ended before all bytes were received")
-            }
+        } finally {
+            cancelHook?.dispose()
         }
         partial
     } catch (error: Exception) {
