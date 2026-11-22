@@ -52,16 +52,10 @@ data class PlayerLaunch(
     val subtitleExtras: SubtitleRequestExtras? = null,
     val sourceFilename: String? = null,
     val stream: com.nuvio.app.features.streams.StreamItem? = null,
-<<<<<<< GRACIE
-    /** The source was taken from the reuse-last-link cache, not picked fresh from add-ons. */
-    val sourceFromLinkCache: Boolean = false,
-||||||| NUVIO-0.6.11-beta
-=======
     /** The source was taken from the reuse-last-link cache, not picked fresh from add-ons. */
     val sourceFromLinkCache: Boolean = false,
     /** The source was picked by auto source selection (or reused from the link cache). */
     val sourceAutoSelected: Boolean = false,
->>>>>>> NUVIO-1.1.0-beta.2
 )
 
 object PlayerLaunchStore {

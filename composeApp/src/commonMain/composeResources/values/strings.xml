@@ -1220,18 +1220,12 @@
     <string name="settings_playback_stream_selection_mode_regex_description">Play first source whose text matches your regex pattern.</string>
     <string name="settings_playback_stream_timeout">Stream Selection Timeout</string>
     <string name="settings_playback_stream_timeout_description">Wait time for addons before selecting.</string>
-<<<<<<< GRACIE
-||||||| NUVIO-0.6.11-beta
-    <string name="settings_playback_threshold_minutes">Threshold Minutes</string>
-=======
     <string name="settings_playback_fallback_next_source">Fallback to next matching source on failure</string>
     <string name="settings_playback_fallback_next_source_description">If the auto-selected source fails or does not start in time, quietly try the next matching sources.</string>
     <string name="settings_playback_fallback_max_sources">Sources to try on failure</string>
     <string name="settings_playback_fallback_startup_timeout">Time for a source to start</string>
     <string name="settings_playback_fallback_next_source_blocked_by_engine_switch">Turn off auto-switch engine on playback error to use this.</string>
     <string name="player_error_source_startup_timeout">The source did not start within %1$d seconds.</string>
-    <string name="settings_playback_threshold_minutes">Threshold Minutes</string>
->>>>>>> NUVIO-1.1.0-beta.2
     <string name="settings_playback_threshold_mode">Next Episode Threshold Mode</string>
     <string name="settings_playback_threshold_mode_minutes_before_end">Minutes before end</string>
     <string name="settings_playback_threshold_mode_percentage">Percentage</string>
@@ -1777,7 +1771,6 @@
     <string name="notifications_test_send_failed">Failed to send a test notification.</string>
     <string name="notifications_test_sent_for">Test notification sent for %1$s.</string>
     <string name="player_unable_to_play_stream">Unable to play this stream.</string>
-<<<<<<< GRACIE
     <string name="player_error_stream_expired">The stream link has expired. Try a different source.</string>
     <string name="player_error_stream_removed">The stream link has expired or been removed. Try a different source.</string>
     <string name="player_error_stream_rate_limited">Too many requests to the stream source. Wait a moment and try again.</string>
@@ -1785,18 +1778,6 @@
     <string name="player_error_stream_blocked">The stream source is blocked or restricted. Try a different source.</string>
     <string name="player_error_source_invalid_content">Source error: The stream source returned invalid or unplayable content. The link may have expired or the server returned an error page instead of video.\n\nTry a different source. [%1$s]</string>
     <string name="player_error_unsupported_format">This stream uses a format your device may not support. Try a different source. [%1$s]</string>
-||||||| NUVIO-0.6.11-beta
-    <string name="player_engine_unavailable_rebuild">MPV player engine not available. Please rebuild the app.</string>
-=======
-    <string name="player_error_stream_expired">The stream link has expired. Try a different source.</string>
-    <string name="player_error_stream_removed">The stream link has expired or been removed. Try a different source.</string>
-    <string name="player_error_stream_rate_limited">Too many requests to the stream source. Wait a moment and try again.</string>
-    <string name="player_error_stream_unavailable">The stream server is currently unavailable. Try a different source.</string>
-    <string name="player_error_stream_blocked">The stream source is blocked or restricted. Try a different source.</string>
-    <string name="player_error_source_invalid_content">Source error: The stream source returned invalid or unplayable content. The link may have expired or the server returned an error page instead of video.\n\nTry a different source. [%1$s]</string>
-    <string name="player_error_unsupported_format">This stream uses a format your device may not support. Try a different source. [%1$s]</string>
-    <string name="player_engine_unavailable_rebuild">MPV player engine not available. Please rebuild the app.</string>
->>>>>>> NUVIO-1.1.0-beta.2
     <string name="profile_pin_changed_requires_refresh">This profile PIN changed. Connect once to refresh the lock on this device.</string>
     <string name="profile_pin_clear_failed">Couldn't remove PIN lock. Try again.</string>
     <string name="profile_pin_clear_requires_internet">Connect to the internet to remove the PIN lock.</string>

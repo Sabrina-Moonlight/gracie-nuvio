@@ -22,6 +22,14 @@ Después de cada actualización comprueba que siguen y que Nuvio no los devolvi�
 - Análisis: 92 archivos solo de Gracie, 77 de Nuvio modificados por ella, 15 solo cambiados por Nuvio, 12 por ambos, 389 quitados por Gracie a propósito.
 - Choques de texto (3 archivos, 4 choques), todos de AutoSync: `AutoSyncPlaybackSettings.kt`, `AutoSyncMpvCoordinator.kt`, `AutoSyncPlayerCoordinator.android.kt`.
 
+## Qué pasó en 0.6.11-beta → 1.1.0-beta.2
+- Resumen del workflow: 16 choques de texto, resueltos en 4 entregas (idiomas/versión/biblioteca, debrid/streams, reproductor, PlayerEngine). Casi todos eran el mismo cambio que Nuvio y Gracie hicieron por separado (`forceRefresh`, `sourceFromLinkCache`): se queda la versión de Nuvio, que ya incluye lo de Gracie.
+- **Fallo del workflow:** trajo `values-uk` y `values-zh` como «nuevos» aunque Gracie solo tiene `values` y `values-es`. Hay que borrarlos (DELETE.txt) y no dejar `uk`/`zh` en `locale_config.xml` ni en `AppLanguage.kt`.
+- Textos nuevos de Nuvio: hay que traducirlos a `values-es` (si no, salen en inglés).
+- `Version.xcconfig` (iosApp/Configuration) es de donde Android lee la versión: choca siempre; poner la de Nuvio nueva.
+- Gracie quitó a propósito `settings_playback_threshold_minutes` y `player_engine_unavailable_rebuild`; no se usan, no devolverlos.
+- Revisión sin compilar hecha: sin marcas de choque, imports y `Res.string`/`Res.drawable` definidos, `expect` con `actual`, miembros llamados en los objetos que cambió Nuvio, Seek Preview sigue quitado, progreso 100 %.
+
 ## Lo aprendido (revísalo en la próxima actualización)
 - Los choques de texto no son todo. Busca también archivos SOLO de Gracie que llamen funciones cuya firma cambió Nuvio (caso: Nuvio quitó el argumento `preferredSubtitleLanguage` de `AutoSyncPlaybackSettingsRows`, y `NuvioReshapedSettingsPage.kt` lo seguía pasando), recursos `Res.string` nuevos y métodos nuevos en interfaces (Nuvio añadió `setSubtitleUriWithRestoredAutoSync`; está implementado en `AutoSyncPlayerEngineController.android.kt` y `AutoSyncMpvCoordinator.kt`).
 - Gracie renombró `operationToken` a `libassOperationToken` y `retryOperationToken`. Todo código nuevo de Nuvio que use `operationToken` hay que adaptarlo en los archivos de AutoSync.

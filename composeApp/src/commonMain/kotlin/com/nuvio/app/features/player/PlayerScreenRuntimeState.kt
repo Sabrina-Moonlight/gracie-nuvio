@@ -229,11 +229,6 @@ internal class PlayerScreenRuntime(
     var pendingP2pSwitch by mutableStateOf<PendingPlayerP2pSwitch?>(null)
     var credentialRefreshJob by mutableStateOf<Job?>(null)
     var credentialRefreshAttemptedSourceUrl by mutableStateOf<String?>(null)
-<<<<<<< GRACIE
-    /** URL opened from the reuse-last-link cache; it is refreshed after a playback error even without a token. */
-    var linkCacheSourceUrl: String? = args.sourceUrl.takeIf { args.sourceFromLinkCache && it.isNotBlank() }
-||||||| NUVIO-0.6.11-beta
-=======
     /** URL opened from the reuse-last-link cache; it is refreshed after a playback error even without a token. */
     var linkCacheSourceUrl: String? = args.sourceUrl.takeIf { args.sourceFromLinkCache && it.isNotBlank() }
     /** URL picked by auto source selection; only this source falls back to the next match on failure. */
@@ -241,7 +236,6 @@ internal class PlayerScreenRuntime(
     var sourceFallbackAttempts = 0
     val sourceFallbackTriedKeys = mutableSetOf<String>()
     var sourceFallbackJob: Job? = null
->>>>>>> NUVIO-1.1.0-beta.2
 
     var showAudioModal by mutableStateOf(false)
     var showSubtitleModal by mutableStateOf(false)

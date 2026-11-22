@@ -33,13 +33,9 @@ enum class LibraryWatchedFilter {
 data class LibraryDisplaySettingsUiState(
     val layoutMode: LibraryLayoutMode = LibraryLayoutMode.HORIZONTAL,
     val sortOption: LibrarySortOption = LibrarySortOption.DEFAULT,
-<<<<<<< GRACIE
     val calendarEnabled: Boolean = false,
-||||||| NUVIO-0.6.11-beta
-=======
     val selectedSectionKey: String? = null,
     val selectedType: String? = null,
->>>>>>> NUVIO-1.1.0-beta.2
 )
 
 object LibraryDisplaySettingsRepository {
@@ -76,7 +72,6 @@ object LibraryDisplaySettingsRepository {
         persist()
     }
 
-<<<<<<< GRACIE
     fun setCalendarEnabled(enabled: Boolean) {
         ensureLoaded()
         if (_uiState.value.calendarEnabled == enabled) return
@@ -84,8 +79,6 @@ object LibraryDisplaySettingsRepository {
         persist()
     }
 
-||||||| NUVIO-0.6.11-beta
-=======
     fun setSelectedSection(sectionKey: String) {
         ensureLoaded()
         val current = _uiState.value
@@ -101,7 +94,6 @@ object LibraryDisplaySettingsRepository {
         persist()
     }
 
->>>>>>> NUVIO-1.1.0-beta.2
     private fun loadFromDisk() {
         hasLoaded = true
         _uiState.value = decodeLibraryDisplaySettings(LibraryDisplaySettingsStorage.loadPayload())
@@ -326,13 +318,9 @@ internal fun encodeLibraryDisplaySettings(state: LibraryDisplaySettingsUiState):
         StoredLibraryDisplaySettings(
             layoutMode = state.layoutMode.name,
             sortOption = state.sortOption.name,
-<<<<<<< GRACIE
             calendarEnabled = state.calendarEnabled,
-||||||| NUVIO-0.6.11-beta
-=======
             selectedSectionKey = state.selectedSectionKey,
             selectedType = state.selectedType,
->>>>>>> NUVIO-1.1.0-beta.2
         ),
     )
 
@@ -351,13 +339,9 @@ internal fun decodeLibraryDisplaySettings(payload: String?): LibraryDisplaySetti
         sortOption = stored?.sortOption
             ?.let { value -> LibrarySortOption.entries.firstOrNull { it.name == value } }
             ?: LibrarySortOption.DEFAULT,
-<<<<<<< GRACIE
         calendarEnabled = stored?.calendarEnabled ?: false,
-||||||| NUVIO-0.6.11-beta
-=======
         selectedSectionKey = stored?.selectedSectionKey,
         selectedType = stored?.selectedType,
->>>>>>> NUVIO-1.1.0-beta.2
     )
 }
 
@@ -395,13 +379,9 @@ internal val LibrarySourceMode.isRemoteTrackingSource: Boolean
 private data class StoredLibraryDisplaySettings(
     @SerialName("layout_mode") val layoutMode: String = LibraryLayoutMode.HORIZONTAL.name,
     @SerialName("sort_option") val sortOption: String = LibrarySortOption.DEFAULT.name,
-<<<<<<< GRACIE
     @SerialName("calendar_enabled") val calendarEnabled: Boolean = false,
-||||||| NUVIO-0.6.11-beta
-=======
     @SerialName("selected_section_key") val selectedSectionKey: String? = null,
     @SerialName("selected_type") val selectedType: String? = null,
->>>>>>> NUVIO-1.1.0-beta.2
 )
 
 private fun libraryProviderOrderComparator(ranks: Map<String, Int>): Comparator<LibraryItem> =

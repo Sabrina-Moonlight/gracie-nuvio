@@ -388,13 +388,8 @@ internal fun StreamDestination(
                         bingeGroup = cached.bingeGroup,
                     ),
                 ),
-<<<<<<< GRACIE
-                sourceFromLinkCache = true,
-||||||| NUVIO-0.6.11-beta
-=======
                 sourceFromLinkCache = true,
                 sourceAutoSelected = true,
->>>>>>> NUVIO-1.1.0-beta.2
             )
             if (playerSettings.externalPlayerEnabled) {
                 openExternalPlayback(playerLaunch)

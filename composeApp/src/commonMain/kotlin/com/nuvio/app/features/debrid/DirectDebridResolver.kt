@@ -29,7 +29,6 @@ object DirectDebridPlaybackResolver {
     private val resolvedCache = mutableMapOf<String, CachedDirectDebridResolve>()
     private val inFlightResolves = mutableMapOf<String, Deferred<DirectDebridResolveResult>>()
 
-<<<<<<< GRACIE
     /** [forceRefresh] drops the in-memory resolved link first, so a new one is requested from the provider. */
     suspend fun resolve(
         stream: StreamItem,
@@ -38,19 +37,6 @@ object DirectDebridPlaybackResolver {
         forceRefresh: Boolean = false,
     ): DirectDebridResolveResult {
         if (!shouldResolveToPlayableStream(stream) && !shouldResolveForDownload(stream)) {
-||||||| NUVIO-0.6.11-beta
-    suspend fun resolve(stream: StreamItem, season: Int?, episode: Int?): DirectDebridResolveResult {
-        if (!shouldResolveToPlayableStream(stream)) {
-=======
-    /** [forceRefresh] drops the in-memory resolved link first, so a new one is requested from the provider. */
-    suspend fun resolve(
-        stream: StreamItem,
-        season: Int?,
-        episode: Int?,
-        forceRefresh: Boolean = false,
-    ): DirectDebridResolveResult {
-        if (!shouldResolveToPlayableStream(stream)) {
->>>>>>> NUVIO-1.1.0-beta.2
             return DirectDebridResolveResult.Stale
         }
         val cacheKey = stream.debridResolveCacheKey(season, episode)
