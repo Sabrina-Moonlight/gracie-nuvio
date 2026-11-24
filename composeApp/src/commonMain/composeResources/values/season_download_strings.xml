@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="season_download_action">Download season</string>
+    <string name="season_download_title">Download %1$s</string>
+    <string name="season_download_searching">Searching…</string>
+    <string name="season_download_no_results">No results</string>
+    <string name="season_download_no_addons">No addons available for this season</string>
+    <string name="season_download_show_more">Show more (%1$d)</string>
+    <string name="season_download_show_less">Show less</string>
+</resources>

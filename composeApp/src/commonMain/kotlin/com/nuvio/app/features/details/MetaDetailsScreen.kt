@@ -101,6 +101,7 @@ import com.nuvio.app.core.ui.rememberArtworkBackdrop
 import com.nuvio.app.core.ui.rememberHeroStretchState
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import com.nuvio.app.features.downloads.SeasonDownloadSheet
 import com.nuvio.app.features.details.components.DetailActions
 import com.nuvio.app.features.details.components.CommentDetailSheet
 import com.nuvio.app.features.details.components.DetailAdditionalInfoSection
@@ -260,6 +261,7 @@ fun MetaDetailsScreen(
     var episodeToRate by remember(type, id) { mutableStateOf<MetaVideo?>(null) }
     val episodeOverlayHazeState = rememberHazeState()
     var selectedSeasonForActions by remember(type, id) { mutableStateOf<Int?>(null) }
+    var seasonForDownload by remember(type, id) { mutableStateOf<Int?>(null) }
     val commentsEnabled by remember {
         TraktCommentsSettings.ensureLoaded()
         TraktCommentsSettings.enabled
@@ -1507,6 +1509,25 @@ fun MetaDetailsScreen(
                                         areCurrentlyWatched = false,
                                     )
                                 },
+                                onDownloadSeason = if (seasonEpisodes.isNotEmpty()) {
+                                    { seasonForDownload = selectedSeason }
+                                } else {
+                                    null
+                                },
+                            )
+                        }
+
+                        seasonForDownload?.let { downloadSeason ->
+                            SeasonDownloadSheet(
+                                meta = meta,
+                                seasonLabel = selectedSeasonLabel(downloadSeason),
+                                episodes = remember(meta, downloadSeason, todayIsoDate) {
+                                    meta.releasedEpisodesForSeason(
+                                        seasonNumber = downloadSeason,
+                                        todayIsoDate = todayIsoDate,
+                                    )
+                                },
+                                onDismiss = { seasonForDownload = null },
                             )
                         }
 
