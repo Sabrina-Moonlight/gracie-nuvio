@@ -37,7 +37,7 @@ Después de cada actualización comprueba que siguen y que Nuvio no los devolvi�
 - Revisión antes de entregar un arreglo: sin marcas de choque, llaves y paréntesis balanceados, todos los `Res.string` usados definidos. Aquí no se compila: la prueba real es el release.
 
 ## Cómo trabajar sobre la rama (no main)
-- **Sort Uploads solo corre solo en `main`.** Para la rama: sube el ZIP a `Drop-Files/` de la rama, y lanza a mano Actions → Sort Uploads → elige la rama. Luego se lanza solo el release de esa rama.
+- **Sort Uploads solo corre solo en `main`.** Para la rama: sube el ZIP a `0-sort-uploads/` de la rama, y lanza a mano Actions → Sort Uploads → elige la rama. Luego se lanza solo el release de esa rama.
 - Un ZIP con **una sola carpeta en la raíz que no existe en el repo** (ej. `gracie-nuvio/`) pierde esa carpeta (cree que es un envoltorio). Solución: un `ROUTES.txt` suelto en la raíz del ZIP.
 - Un archivo nuevo en la raíz del repo también necesita `ROUTES.txt`.
 - Choques: un grupo de 3 a 5 archivos por chat, primero los pequeños. Lee solo las partes marcadas (`<<<<<<< GRACIE`, `||||||| NUVIO-vieja`, `>>>>>>> NUVIO-nueva`). No supongas el contenido de archivos que no tengas: pídelos.
