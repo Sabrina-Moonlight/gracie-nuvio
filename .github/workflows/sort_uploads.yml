@@ -1,17 +1,17 @@
 name: Sort Uploads
 
 # Trabaja directo sobre la rama en la que se suben los archivos (en este proyecto, main). No abre pull requests.
-# Corre solo cuando se suben archivos a "Drop-Files" en main. También se puede lanzar a mano (Actions > Sort Uploads > Run workflow).
+# Corre solo cuando se suben archivos a "0-sort-uploads" en main. También se puede lanzar a mano (Actions > Sort Uploads > Run workflow).
 # Cuando termina de colocar los archivos sin problemas, lanza solo el workflow Release.
-# Si hay un ZIP en "Drop-Files", lo abre y copia su contenido al repositorio: los archivos nuevos se colocan
+# Si hay un ZIP en "0-sort-uploads", lo abre y copia su contenido al repositorio: los archivos nuevos se colocan
 #    y los que ya existen se PISAN con la versión del ZIP (se salta .github/workflows, que GitHub no deja tocar a un robot).
 #    Dentro del ZIP puede ir un ROUTES.txt (Nombre.ext = ruta/completa/Nombre.ext) y un DELETE.txt.
-# Si hay un "Drop-Files/DELETE.txt" (una ruta por línea), borra esos archivos del repositorio.
+# Si hay un "0-sort-uploads/DELETE.txt" (una ruta por línea), borra esos archivos del repositorio.
 on:
   push:
     branches: [main]
     paths:
-      - 'Drop-Files/**'
+      - '0-sort-uploads/**'
   workflow_dispatch:
 
 permissions:
@@ -42,7 +42,7 @@ jobs:
           RAMA: ${{ steps.rama.outputs.nombre }}
         run: |
           set -u
-          INBOX=Drop-Files
+          INBOX=0-sort-uploads
           ROUTES="$INBOX/ROUTES.txt"
           DELETE="$INBOX/DELETE.txt"
           movidos=0
@@ -142,7 +142,7 @@ jobs:
           done
           [ -f gradlew ] && chmod +x gradlew
 
-          # Borrar los archivos listados en Drop-Files/DELETE.txt
+          # Borrar los archivos listados en 0-sort-uploads/DELETE.txt
           if [ -f "$DELETE" ]; then
             borrar_lista "$DELETE"
             rm -f "$DELETE"
@@ -165,10 +165,10 @@ jobs:
               if [ "$count" -eq 1 ]; then
                 dest="${matches#./}"
               elif [ "$count" -eq 0 ]; then
-                echo "- \`$name\`: no existe en el repositorio. Añade una línea a \`Drop-Files/ROUTES.txt\`: \`$name = ruta/completa/$name\`" >> /tmp/informe.md
+                echo "- \`$name\`: no existe en el repositorio. Añade una línea a \`0-sort-uploads/ROUTES.txt\`: \`$name = ruta/completa/$name\`" >> /tmp/informe.md
                 pendientes=1; continue
               else
-                echo "- \`$name\`: hay $count archivos con ese nombre y no sé cuál es. Añade su ruta a \`Drop-Files/ROUTES.txt\`. Opciones:" >> /tmp/informe.md
+                echo "- \`$name\`: hay $count archivos con ese nombre y no sé cuál es. Añade su ruta a \`0-sort-uploads/ROUTES.txt\`. Opciones:" >> /tmp/informe.md
                 printf '%s\n' "$matches" | sed 's/^\.\//    - `/; s/$/`/' >> /tmp/informe.md
                 pendientes=1; continue
               fi
@@ -189,7 +189,7 @@ jobs:
           # Si no queda nada pendiente, borrar también ROUTES.txt
           if [ "$pendientes" -eq 0 ] && [ -f "$ROUTES" ]; then rm "$ROUTES"; fi
 
-          # También se guarda cuando solo se quitó el ZIP ya procesado, para que no se quede en Drop-Files
+          # También se guarda cuando solo se quitó el ZIP ya procesado, para que no se quede en 0-sort-uploads
           if [ $((movidos+borrados)) -gt 0 ] || [ "$hubo_zip" -eq 1 ]; then
             # chore = no crea versión (carga de plantilla). fix = crea una pre-versión al compilar.
             if [ "$hubo_zip" -eq 1 ]; then
@@ -204,7 +204,7 @@ jobs:
             git push origin "HEAD:refs/heads/$RAMA"
           fi
 
-          [ -s /tmp/informe.md ] || echo "- No había archivos nuevos en Drop-Files." >> /tmp/informe.md
+          [ -s /tmp/informe.md ] || echo "- No había archivos nuevos en 0-sort-uploads." >> /tmp/informe.md
           {
             echo "## Archivos subidos"
             cat /tmp/informe.md

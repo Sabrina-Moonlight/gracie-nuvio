@@ -8,7 +8,7 @@ name: Update Nuvio
 #  - archivos solo tuyos      -> no se tocan
 #  - lo que tú quitaste (iPhone, escritorio, scripts, idiomas) -> no se vuelve a traer
 # Todo se guarda en la rama actualizacion-<version>. main no cambia hasta que tú la fusiones.
-# No toca: .github, Drop-Files, gracie-nuvio, claude.md, ambos.md, grok.md, AGENTS.md, LICENSE, llaves de firma.
+# No toca: .github, 0-sort-uploads, gracie-nuvio, claude.md, ambos.md, grok.md, AGENTS.md, LICENSE, llaves de firma.
 on:
   workflow_dispatch:
     inputs:
@@ -95,7 +95,7 @@ jobs:
           SUMMARY = os.environ.get("SUMMARY_FILE", "/tmp/resumen.md")
           STATE = os.environ.get("STATE_FILE", "/tmp/estado.txt")
 
-          SKIP_PREFIX = (".git/", ".github/", "Drop-Files/", "gracie-nuvio/")
+          SKIP_PREFIX = (".git/", ".github/", "0-sort-uploads/", "gracie-nuvio/")
           SKIP_EXACT = {"AGENTS.md", "claude.md", "ambos.md", "grok.md", "BASE-NUVIO.txt", "LICENSE"}
 
           def skip(rel):
