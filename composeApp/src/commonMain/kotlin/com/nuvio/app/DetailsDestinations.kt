@@ -11,6 +11,11 @@ import com.nuvio.app.features.details.MetaDetailsScreen
 import com.nuvio.app.features.details.PersonDetailScreen
 import com.nuvio.app.features.details.TmdbEntityBrowseScreen
 import com.nuvio.app.features.home.MetaPreview
+import com.nuvio.app.features.profiles.ProfileRepository
+import com.nuvio.app.features.streams.DownloadQueueEpisode
+import com.nuvio.app.features.streams.StreamLaunch
+import com.nuvio.app.features.streams.StreamLaunchStore
+import com.nuvio.app.navigation.StreamRoute
 import com.nuvio.app.features.tmdb.TmdbEntityKind
 import com.nuvio.app.features.tmdb.TmdbService
 import com.nuvio.app.navigation.DetailRoute
@@ -84,6 +89,45 @@ internal fun DetailsDestination(
         onBack = onBack,
         onPlay = onPlay,
         onPlayManually = onPlayManually,
+        onDownloadSeason = { meta, episodes ->
+            // Gracie: abre la pantalla de streams del primer capítulo en "modo descarga";
+            // al elegir un resultado se descarga y se pasa al siguiente capítulo.
+            val ordered = episodes.sortedBy { it.episode ?: Int.MAX_VALUE }
+            val first = ordered.firstOrNull()
+            if (first != null) {
+                val launchId = StreamLaunchStore.put(
+                    StreamLaunch(
+                        profileId = ProfileRepository.activeProfileId,
+                        type = meta.type,
+                        videoId = first.id,
+                        parentMetaId = meta.id,
+                        parentMetaType = meta.type,
+                        title = meta.name,
+                        logo = meta.logo,
+                        poster = meta.poster,
+                        background = meta.background,
+                        seasonNumber = first.season,
+                        episodeNumber = first.episode,
+                        episodeTitle = first.title,
+                        episodeThumbnail = first.thumbnail,
+                        manualSelection = true,
+                        startFromBeginning = true,
+                        downloadQueue = ordered.drop(1).map {
+                            DownloadQueueEpisode(
+                                videoId = it.id,
+                                seasonNumber = it.season,
+                                episodeNumber = it.episode,
+                                title = it.title,
+                                thumbnail = it.thumbnail,
+                            )
+                        },
+                        downloadPosition = 1,
+                        downloadTotal = ordered.size,
+                    ),
+                )
+                navController.navigate(StreamRoute(launchId = launchId, title = meta.name))
+            }
+        },
         onOpenMeta = onOpenMeta,
         onCastClick = { person, avatarTransitionKey ->
             val tmdbId = person.tmdbId

@@ -5,6 +5,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -37,6 +45,10 @@ import com.nuvio.app.features.servers.serverPlaybackMessage
 import com.nuvio.app.features.streams.StreamBehaviorHints
 import com.nuvio.app.features.streams.StreamItem
 import com.nuvio.app.features.streams.StreamLaunchStore
+import com.nuvio.app.features.downloads.DownloadEnqueueResult
+import com.nuvio.app.features.downloads.DownloadsRepository
+import com.nuvio.app.features.downloads.toastMessage
+import com.nuvio.app.features.streams.DownloadQueueEpisode
 import com.nuvio.app.features.streams.StreamLinkCacheRepository
 import com.nuvio.app.features.streams.StreamsRepository
 import com.nuvio.app.features.streams.StreamsScreen
@@ -146,6 +158,92 @@ internal fun StreamDestination(
         effectiveVideoId = resolvedVideoId ?: launch.videoId
         hasResolvedVideoId = true
     }
+
+    // --- Gracie: modo descarga de temporada -------------------------------------------------
+    val downloadQueue = launch.downloadQueue
+    val downloadMode = downloadQueue != null
+    var downloadBusy by remember(route.launchId) { mutableStateOf(false) }
+    val seasonFinishedText = stringResource(Res.string.season_download_finished)
+
+    fun advanceDownloadQueue() {
+        val queue = launch.downloadQueue ?: return
+        val next = queue.firstOrNull()
+        if (next == null) {
+            StreamsRepository.cancelLoading()
+            NuvioToastController.show(seasonFinishedText)
+            onBack()
+            return
+        }
+        val nextLaunchId = StreamLaunchStore.put(
+            launch.copy(
+                videoId = next.videoId,
+                seasonNumber = next.seasonNumber,
+                episodeNumber = next.episodeNumber,
+                episodeTitle = next.title,
+                episodeThumbnail = next.thumbnail,
+                resumePositionMs = null,
+                resumeProgressFraction = null,
+                manualSelection = true,
+                startFromBeginning = true,
+                downloadQueue = queue.drop(1),
+                downloadPosition = launch.downloadPosition + 1,
+            ),
+        )
+        StreamsRepository.cancelLoading()
+        navController.navigate(StreamRoute(launchId = nextLaunchId, title = launch.title)) {
+            popUpTo<StreamRoute> { inclusive = true }
+        }
+    }
+
+    fun downloadSelectedStream(stream: StreamItem) {
+        if (downloadBusy) return
+        downloadBusy = true
+        streamRouteScope.launch {
+            try {
+                val playable: StreamItem? =
+                    if (DirectDebridPlaybackResolver.shouldResolveToPlayableStream(stream)) {
+                        when (
+                            val resolved = DirectDebridPlaybackResolver.resolveToPlayableStream(
+                                stream = stream,
+                                season = launch.seasonNumber,
+                                episode = launch.episodeNumber,
+                            )
+                        ) {
+                            is DirectDebridPlayableResult.Success -> resolved.stream
+                            else -> {
+                                resolved.toastMessage()?.let { NuvioToastController.show(it) }
+                                null
+                            }
+                        }
+                    } else {
+                        stream
+                    }
+                if (playable == null) return@launch
+                val result = DownloadsRepository.enqueueFromStream(
+                    contentType = launch.type,
+                    videoId = effectiveVideoId,
+                    parentMetaId = launch.parentMetaId ?: effectiveVideoId,
+                    parentMetaType = launch.parentMetaType ?: launch.type,
+                    title = launch.title,
+                    logo = launch.logo,
+                    poster = launch.poster,
+                    background = launch.background,
+                    seasonNumber = launch.seasonNumber,
+                    episodeNumber = launch.episodeNumber,
+                    episodeTitle = launch.episodeTitle,
+                    episodeThumbnail = launch.episodeThumbnail,
+                    stream = playable,
+                )
+                NuvioToastController.show(result.toastMessage())
+                if (result == DownloadEnqueueResult.Started || result == DownloadEnqueueResult.Replaced) {
+                    advanceDownloadQueue()
+                }
+            } finally {
+                downloadBusy = false
+            }
+        }
+    }
+    // ----------------------------------------------------------------------------------------
 
     val playerSettings by remember {
         PlayerSettingsRepository.ensureLoaded()
@@ -833,14 +931,18 @@ internal fun StreamDestination(
                 manualSelection = launch.manualSelection,
                 startFromBeginning = launch.startFromBeginning,
                 onStreamSelected = { stream, resolvedResumePositionMs, resolvedResumeProgressFraction ->
-                    openSelectedStream(
-                        stream = stream,
-                        resolvedResumePositionMs = resolvedResumePositionMs,
-                        resolvedResumeProgressFraction = resolvedResumeProgressFraction,
-                        forceExternal = false,
-                        forceInternal = false,
-                        saveForReuse = stream != sharedStream?.stream,
-                    )
+                    if (downloadMode) {
+                        downloadSelectedStream(stream)
+                    } else {
+                        openSelectedStream(
+                            stream = stream,
+                            resolvedResumePositionMs = resolvedResumePositionMs,
+                            resolvedResumeProgressFraction = resolvedResumeProgressFraction,
+                            forceExternal = false,
+                            forceInternal = false,
+                            saveForReuse = stream != sharedStream?.stream,
+                        )
+                    }
                 },
                 onStreamActionOpen = { stream, openExternally, resolvedResumePositionMs, resolvedResumeProgressFraction ->
                     openSelectedStream(
@@ -854,6 +956,30 @@ internal fun StreamDestination(
                 onBack = onBack,
                 modifier = Modifier.fillMaxSize(),
             )
+        }
+        if (downloadMode && !showLoadingScreen) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(end = 12.dp, top = 8.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
+                    .clickable(enabled = !downloadBusy) { advanceDownloadQueue() }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(
+                        Res.string.season_download_skip,
+                        launch.downloadPosition,
+                        launch.downloadTotal,
+                    ),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                )
+            }
         }
         pendingP2pStreamOpen?.let { pending ->
             P2pConsentDialog(

@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="season_download_action">Descargar temporada</string>
-    <string name="season_download_title">Descargar %1$s</string>
-    <string name="season_download_searching">Buscando…</string>
-    <string name="season_download_no_results">Sin resultados</string>
-    <string name="season_download_no_addons">No hay addons disponibles para esta temporada</string>
-    <string name="season_download_show_more">Ver más (%1$d)</string>
-    <string name="season_download_show_less">Ver menos</string>
+    <string name="season_download_skip">%1$d/%2$d · Saltar</string>
+    <string name="season_download_finished">Temporada terminada: todos los capítulos elegidos</string>
 </resources>

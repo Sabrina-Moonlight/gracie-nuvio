@@ -101,7 +101,6 @@ import com.nuvio.app.core.ui.rememberArtworkBackdrop
 import com.nuvio.app.core.ui.rememberHeroStretchState
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
-import com.nuvio.app.features.downloads.SeasonDownloadSheet
 import com.nuvio.app.features.details.components.DetailActions
 import com.nuvio.app.features.details.components.CommentDetailSheet
 import com.nuvio.app.features.details.components.DetailAdditionalInfoSection
@@ -190,6 +189,7 @@ fun MetaDetailsScreen(
     onBack: () -> Unit,
     onPlay: ((type: String, videoId: String, parentMetaId: String, parentMetaType: String, title: String, logo: String?, poster: String?, background: String?, seasonNumber: Int?, episodeNumber: Int?, episodeTitle: String?, episodeThumbnail: String?, pauseDescription: String?, resumePositionMs: Long?) -> Unit)? = null,
     onPlayManually: ((type: String, videoId: String, parentMetaId: String, parentMetaType: String, title: String, logo: String?, poster: String?, background: String?, seasonNumber: Int?, episodeNumber: Int?, episodeTitle: String?, episodeThumbnail: String?, pauseDescription: String?, resumePositionMs: Long?) -> Unit)? = null,
+    onDownloadSeason: ((MetaDetails, List<MetaVideo>) -> Unit)? = null,
     onOpenMeta: ((MetaPreview) -> Unit)? = null,
     onCastClick: ((MetaPerson, String?) -> Unit)? = null,
     onCompanyClick: ((MetaCompany, String) -> Unit)? = null,
@@ -1521,17 +1521,16 @@ fun MetaDetailsScreen(
                         }
 
                         seasonForDownload?.let { downloadSeason ->
-                            SeasonDownloadSheet(
-                                meta = meta,
-                                seasonLabel = selectedSeasonLabel(downloadSeason),
-                                episodes = remember(meta, downloadSeason, todayIsoDate) {
-                                    meta.releasedEpisodesForSeason(
-                                        seasonNumber = downloadSeason,
-                                        todayIsoDate = todayIsoDate,
-                                    )
-                                },
-                                onDismiss = { seasonForDownload = null },
-                            )
+                            LaunchedEffect(downloadSeason) {
+                                val episodesToDownload = meta.releasedEpisodesForSeason(
+                                    seasonNumber = downloadSeason,
+                                    todayIsoDate = todayIsoDate,
+                                )
+                                seasonForDownload = null
+                                if (episodesToDownload.isNotEmpty()) {
+                                    onDownloadSeason?.invoke(meta, episodesToDownload)
+                                }
+                            }
                         }
 
                         if (inAppTrailerPlaybackEnabled) {

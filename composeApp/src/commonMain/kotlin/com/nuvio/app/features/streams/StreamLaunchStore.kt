@@ -1,5 +1,14 @@
 package com.nuvio.app.features.streams
 
+/** Capítulo pendiente dentro de una descarga de temporada (Gracie). */
+data class DownloadQueueEpisode(
+    val videoId: String,
+    val seasonNumber: Int?,
+    val episodeNumber: Int?,
+    val title: String?,
+    val thumbnail: String?,
+)
+
 data class StreamLaunch(
     val profileId: Int,
     val type: String,
@@ -19,6 +28,14 @@ data class StreamLaunch(
     val resumeProgressFraction: Float? = null,
     val manualSelection: Boolean = false,
     val startFromBeginning: Boolean = false,
+    /**
+     * Gracie: si no es null, la pantalla de streams está en "modo descarga de temporada":
+     * al elegir un resultado se descarga (no se reproduce) y se pasa al siguiente capítulo de esta lista.
+     * Lista vacía = es el último capítulo.
+     */
+    val downloadQueue: List<DownloadQueueEpisode>? = null,
+    val downloadPosition: Int = 1,
+    val downloadTotal: Int = 1,
 )
 
 object StreamLaunchStore {
