@@ -252,27 +252,9 @@
     <string name="collections_editor_trakt_sort_popular">Popular</string>
     <string name="collections_editor_trakt_sort_percentage">Porcentaje</string>
     <string name="collections_editor_trakt_sort_votes">Votos</string>
-<<<<<<< GRACIE
-    <string name="collections_editor_trakt_load_failed">No se pudo cargar la lista Trakt</string>
-||||||| NUVIO-1.1.0-beta.2
-    <string name="collections_editor_trakt_enter_name_url_or_id">Introduce un nombre, URL o ID de lista de Trakt</string>
-    <string name="collections_editor_trakt_enter_id_or_url">Introduce un ID o URL de lista de Trakt</string>
-    <string name="collections_editor_trakt_load_failed">No se pudo cargar la lista Trakt</string>
-=======
-    <string name="collections_editor_trakt_enter_name_url_or_id">Introduce un nombre, URL o ID de lista de Trakt</string>
-    <string name="collections_editor_trakt_enter_id_or_url">Introduce un ID o URL de lista de Trakt</string>
     <string name="collections_editor_trakt_load_failed">No se pudo cargar la lista de Trakt</string>
->>>>>>> NUVIO-1.1.0-beta.3
     <string name="collections_editor_trakt_no_lists_found">No se encontraron listas de Trakt</string>
-<<<<<<< GRACIE
-    <string name="collections_editor_trakt_fallback_title">Lista de rutas %1$d</string>
-||||||| NUVIO-1.1.0-beta.2
-    <string name="collections_editor_trakt_resolved_subtitle">Lista de rutas resueltas</string>
-    <string name="collections_editor_trakt_fallback_title">Lista de rutas %1$d</string>
-=======
-    <string name="collections_editor_trakt_resolved_subtitle">Lista de Trakt resuelta</string>
     <string name="collections_editor_trakt_fallback_title">Lista de Trakt %1$d</string>
->>>>>>> NUVIO-1.1.0-beta.3
     <string name="collections_editor_tmdb_genre_action">Acción</string>
     <string name="collections_editor_tmdb_genre_adventure">Aventura</string>
     <string name="collections_editor_tmdb_genre_animation">Animación</string>
@@ -934,15 +916,7 @@
     <string name="settings_fusion_badge_preview_count">%1$d etiquetas estilo Fusion de esta URL</string>
     <string name="settings_fusion_badge_preview_empty">No hay imágenes de etiquetas estilo Fusion en esta URL.</string>
     <string name="settings_fusion_badge_group_title">Grupo %1$d</string>
-<<<<<<< GRACIE
-    <string name="settings_fusion_badge_other_group_title">Otras insignias de Fusion</string>
-||||||| NUVIO-1.1.0-beta.2
-    <string name="settings_fusion_badge_other_group_title">Otras insignias de Fusion</string>
-    <string name="settings_debrid_key_valid">Clave API validada.</string>
-=======
     <string name="settings_fusion_badge_other_group_title">Otras etiquetas Fusion</string>
-    <string name="settings_debrid_key_valid">Clave API validada.</string>
->>>>>>> NUVIO-1.1.0-beta.3
     <string name="settings_debrid_key_invalid">No se pudo validar esta clave API.</string>
     <string name="settings_mdb_api_key_description">Obtén una clave en https://mdblist.com/preferences y pégala aquí.</string>
     <string name="settings_mdb_api_key_label">Clave API</string>
@@ -1370,44 +1344,14 @@
     <string name="trakt_library_source_dialog_subtitle">Elige el servicio que Nuvio lee para tu biblioteca. La reproducción se registra en todos los servicios conectados.</string>
     <string name="trakt_library_source_trakt">Trakt</string>
     <string name="trakt_library_source_nuvio">Biblioteca Nuvio</string>
-<<<<<<< GRACIE
-    <string name="trakt_watch_progress_title">Ver progreso</string>
-    <string name="trakt_watch_progress_subtitle">Elija qué fuente de progreso se reanudan los poderes y continúa mirando</string>
-    <string name="trakt_watch_progress_dialog_title">Ver progreso</string>
-    <string name="trakt_watch_progress_source_trakt">Tracto</string>
-    <string name="trakt_watch_progress_source_nuvio">Sincronización Nuvio</string>
-    <string name="trakt_more_like_this_source_title">Más como esta fuente</string>
-    <string name="trakt_more_like_this_source_subtitle">Elija de dónde provienen las recomendaciones en las páginas de detalles</string>
-    <string name="trakt_more_like_this_source_dialog_title">Más como esta fuente</string>
-||||||| NUVIO-1.1.0-beta.2
-    <string name="trakt_library_source_trakt_selected">Biblioteca Trakt seleccionada</string>
-    <string name="trakt_library_source_nuvio_selected">Biblioteca Nuvio seleccionada</string>
-    <string name="trakt_watch_progress_title">Ver progreso</string>
-    <string name="trakt_watch_progress_subtitle">Elija qué fuente de progreso se reanudan los poderes y continúa mirando</string>
-    <string name="trakt_watch_progress_dialog_title">Ver progreso</string>
-    <string name="trakt_watch_progress_dialog_subtitle">Elija si reanudar y continuar mirando debe usar Trakt o Nuvio Sync mientras la exploración de Trakt permanece activa.</string>
-    <string name="trakt_watch_progress_source_trakt">Tracto</string>
-    <string name="trakt_watch_progress_source_nuvio">Sincronización Nuvio</string>
-    <string name="trakt_watch_progress_trakt_selected">Ver fuente de progreso configurada en Trakt</string>
-    <string name="trakt_watch_progress_nuvio_selected">Ver fuente de progreso configurada en Nuvio Sync</string>
-    <string name="trakt_more_like_this_source_title">Más como esta fuente</string>
-    <string name="trakt_more_like_this_source_subtitle">Elija de dónde provienen las recomendaciones en las páginas de detalles</string>
-    <string name="trakt_more_like_this_source_dialog_title">Más como esta fuente</string>
-=======
-    <string name="trakt_library_source_trakt_selected">Biblioteca Trakt seleccionada</string>
-    <string name="trakt_library_source_nuvio_selected">Biblioteca Nuvio seleccionada</string>
     <string name="trakt_watch_progress_title">Progreso de reproducción</string>
     <string name="trakt_watch_progress_subtitle">Elige qué fuente de progreso se usa para reanudar y Seguir viendo</string>
     <string name="trakt_watch_progress_dialog_title">Progreso de reproducción</string>
-    <string name="trakt_watch_progress_dialog_subtitle">Elige si reanudar y Seguir viendo usan Trakt o Nuvio Sync, mientras el registro de reproducción (scrobbling) de Trakt sigue activo.</string>
     <string name="trakt_watch_progress_source_trakt">Trakt</string>
     <string name="trakt_watch_progress_source_nuvio">Nuvio Sync</string>
-    <string name="trakt_watch_progress_trakt_selected">Fuente de progreso de reproducción establecida en Trakt</string>
-    <string name="trakt_watch_progress_nuvio_selected">Fuente de progreso de reproducción establecida en Nuvio Sync</string>
     <string name="trakt_more_like_this_source_title">Fuente de «Más como esto»</string>
     <string name="trakt_more_like_this_source_subtitle">Elige de dónde vienen las recomendaciones en las páginas de detalles</string>
     <string name="trakt_more_like_this_source_dialog_title">Fuente de «Más como esto»</string>
->>>>>>> NUVIO-1.1.0-beta.3
     <string name="trakt_more_like_this_source_dialog_subtitle">Selecciona la fuente de las recomendaciones mostradas en las páginas de detalles.</string>
     <string name="trakt_more_like_this_source_trakt">Trakt</string>
     <string name="trakt_more_like_this_source_tmdb">TMDB</string>
@@ -1807,30 +1751,6 @@
     <string name="trakt_missing_auth_code">Trakt no devolvió un código de autorización</string>
     <string name="trakt_missing_credentials">Faltan credenciales de Trakt</string>
     <string name="trakt_progress_load_failed">No se pudo cargar el progreso de Trakt</string>
-<<<<<<< GRACIE
-||||||| NUVIO-1.1.0-beta.2
-    <string name="trakt_public_list">Lista pública de Trakt</string>
-    <string name="trakt_public_list_enter_valid_id_or_url">Introduce un ID o URL de lista de Trakt válido</string>
-    <string name="trakt_public_list_items_count">%1$d artículos</string>
-    <string name="trakt_public_list_likes_count">%1$d me gusta</string>
-    <string name="trakt_public_list_missing_credentials">Faltan credenciales de Trakt en local.properties (TRAKT_CLIENT_ID).</string>
-    <string name="trakt_public_list_missing_id">Falta el ID de la lista Trakt</string>
-    <string name="trakt_public_list_missing_numeric_id">La lista de Trakt no incluía una identificación numérica.</string>
-    <string name="trakt_public_list_not_found_or_not_public">Lista de canales no encontrada o no pública</string>
-    <string name="trakt_public_list_rate_limit_reached">Se alcanzó el límite de tarifa de Trakt</string>
-    <string name="trakt_public_list_request_failed">Error en la solicitud de seguimiento</string>
-=======
-    <string name="trakt_public_list">Lista pública de Trakt</string>
-    <string name="trakt_public_list_enter_valid_id_or_url">Introduce un ID o URL de lista de Trakt válido</string>
-    <string name="trakt_public_list_items_count">%1$d títulos</string>
-    <string name="trakt_public_list_likes_count">%1$d me gusta</string>
-    <string name="trakt_public_list_missing_credentials">Faltan credenciales de Trakt en local.properties (TRAKT_CLIENT_ID).</string>
-    <string name="trakt_public_list_missing_id">Falta el ID de la lista de Trakt</string>
-    <string name="trakt_public_list_missing_numeric_id">La lista de Trakt no incluía un ID numérico</string>
-    <string name="trakt_public_list_not_found_or_not_public">Lista de Trakt no encontrada o no pública</string>
-    <string name="trakt_public_list_rate_limit_reached">Se alcanzó el límite de solicitudes de Trakt</string>
-    <string name="trakt_public_list_request_failed">Falló la solicitud a Trakt</string>
->>>>>>> NUVIO-1.1.0-beta.3
     <string name="trakt_sign_in_complete_failed">No se pudo completar el inicio de sesión de Trakt</string>
     <string name="trakt_user_fallback">Usuario de Trakt</string>
     <string name="trakt_watchlist">Lista de seguimiento</string>
@@ -2175,15 +2095,7 @@
     <string name="network_please_check_connection">Por favor verifique su conexión e inténtelo nuevamente.</string>
     <string name="network_request_failed_http">La solicitud falló con HTTP %1$d</string>
     <string name="player_addon_subtitle_display_format">%1$s (%2$s)</string>
-<<<<<<< GRACIE
-    <string name="player_error_unable_to_play_stream">No se puede reproducir esta transmisión.</string>
-||||||| NUVIO-1.1.0-beta.2
-    <string name="player_error_mpv_unavailable">Motor de reproductor MPV no disponible. Reconstruya la aplicación.</string>
-    <string name="player_error_unable_to_play_stream">No se puede reproducir esta transmisión.</string>
-=======
-    <string name="player_error_mpv_unavailable">Motor de reproductor MPV no disponible. Reconstruya la aplicación.</string>
     <string name="player_error_unable_to_play_stream">No se puede reproducir este stream.</string>
->>>>>>> NUVIO-1.1.0-beta.3
     <string name="plugins_badge_disabled">Complementos deshabilitados</string>
     <string name="plugins_badge_enabled">Complementos habilitados</string>
     <string name="plugins_badge_providers">%1$d proveedores</string>
@@ -2344,69 +2256,6 @@
         <item quantity="one">%d título</item>
         <item quantity="other">%d títulos</item>
     </plurals>
-<<<<<<< GRACIE
-    <string name="settings_playback_auto_skip_segments">Omisión automática</string>
-    <string name="settings_playback_auto_skip_none">Ninguna</string>
-    <string name="settings_playback_auto_skip_intro">Intro / Apertura</string>
-    <string name="settings_playback_auto_skip_intro_description">Saltar automáticamente las intros y aperturas de anime.</string>
-    <string name="settings_playback_auto_skip_recap">Resumen</string>
-    <string name="settings_playback_auto_skip_recap_description">Saltar automáticamente los segmentos de resumen.</string>
-    <string name="settings_playback_auto_skip_outro">Outro / Final</string>
-    <string name="settings_playback_auto_skip_outro_description">Saltar automáticamente los outros y finales de anime.</string>
-    <string name="settings_playback_auto_skip_movie_credits">Créditos finales</string>
-    <string name="settings_playback_auto_skip_movie_credits_description">Saltar los créditos finales, manteniendo las escenas post-créditos.</string>
-    <string name="player_skip_movie_credits">Saltar créditos</string>
-    <string name="player_skip_to_post_credits">Saltar a la escena post-créditos</string>
-    <string name="layout_overall_ratings">Calificaciones generales</string>
-    <string name="layout_overall_ratings_sub_on">Se muestran las calificaciones estándar y de TMDB.</string>
-    <string name="layout_overall_ratings_sub_off">Las calificaciones estándar y de TMDB están ocultas. Los ajustes del proveedor MDBList tienen prioridad en las páginas de detalles.</string>
-    <string name="layout_episode_ratings">Calificaciones de episodios</string>
-    <string name="layout_episode_ratings_sub">Elige qué calificaciones de episodio son visibles.</string>
-    <string name="layout_ratings_show">Mostrar</string>
-    <string name="layout_ratings_hide">Ocultar</string>
-    <string name="layout_ratings_hide_unwatched">Ocultar no vistos</string>
-    <string name="settings_playback_legacy_layout">Diseño clásico</string>
-    <string name="settings_playback_legacy_layout_description">Usar los controles de reproductor originales.</string>
-    <string name="compose_player_more_actions">Más controles</string>
-    <string name="compose_player_fewer_actions">Menos controles</string>
-    <string name="compose_player_speed">Velocidad de reproducción</string>
-    <string name="compose_player_show_elapsed_time">Mostrar tiempo transcurrido</string>
-    <string name="compose_player_show_remaining_time">Mostrar tiempo restante</string>
-    <string name="compose_player_brightness">Brillo</string>
-    <string name="compose_player_volume">Volumen</string>
-||||||| NUVIO-1.1.0-beta.2
-    <string name="settings_playback_auto_skip_segments">Omisión automática</string>
-    <string name="settings_playback_auto_skip_none">Ninguna</string>
-    <string name="settings_playback_auto_skip_intro">Intro / Apertura</string>
-    <string name="settings_playback_auto_skip_intro_description">Saltar automáticamente las intros y aperturas de anime.</string>
-    <string name="settings_playback_auto_skip_recap">Resumen</string>
-    <string name="settings_playback_auto_skip_recap_description">Saltar automáticamente los segmentos de resumen.</string>
-    <string name="settings_playback_auto_skip_outro">Outro / Final</string>
-    <string name="settings_playback_auto_skip_outro_description">Saltar automáticamente los outros y finales de anime.</string>
-    <string name="settings_playback_auto_skip_movie_credits">Créditos finales</string>
-    <string name="settings_playback_auto_skip_movie_credits_description">Saltar los créditos finales, manteniendo las escenas post-créditos.</string>
-    <string name="player_skip_movie_credits">Saltar créditos</string>
-    <string name="player_skip_to_post_credits">Saltar a la escena post-créditos</string>
-    <string name="layout_overall_ratings">Calificaciones generales</string>
-    <string name="layout_overall_ratings_sub_on">Se muestran las calificaciones estándar y de TMDB.</string>
-    <string name="layout_overall_ratings_sub_off">Las calificaciones estándar y de TMDB están ocultas. Los ajustes del proveedor MDBList tienen prioridad en las páginas de detalles.</string>
-    <string name="layout_episode_ratings">Calificaciones de episodios</string>
-    <string name="layout_episode_ratings_sub">Elige qué calificaciones de episodio son visibles.</string>
-    <string name="layout_ratings_show">Mostrar</string>
-    <string name="layout_ratings_hide">Ocultar</string>
-    <string name="layout_ratings_hide_unwatched">Ocultar no vistos</string>
-    <string name="settings_playback_legacy_layout">Diseño clásico</string>
-    <string name="settings_playback_legacy_layout_description">Usar los controles de reproductor originales.</string>
-    <string name="compose_player_episode_code">T%1$d E%2$d</string>
-    <string name="compose_player_more_actions">Más controles</string>
-    <string name="compose_player_fewer_actions">Menos controles</string>
-    <string name="compose_player_speed">Velocidad de reproducción</string>
-    <string name="compose_player_show_elapsed_time">Mostrar tiempo transcurrido</string>
-    <string name="compose_player_show_remaining_time">Mostrar tiempo restante</string>
-    <string name="compose_player_brightness">Brillo</string>
-    <string name="compose_player_volume">Volumen</string>
-=======
->>>>>>> NUVIO-1.1.0-beta.3
     <string name="random_episode_title">Aleatorio</string>
     <string name="layout_random_episode_sub">Reproduce episodios aleatorios de cualquier serie. Al desactivarlo, se pausa esta función.</string>
     <string name="random_episode_unwatched">Episodios no vistos</string>
@@ -2521,19 +2370,16 @@
     <string name="subtitle_shadow_opacity">Opacidad de la sombra</string>
     <string name="subtitle_shadow_size">Tamaño de la sombra</string>
     <string name="subtitle_reset_appearance">Restablecer apariencia</string>
-<<<<<<< GRACIE
-    <string name="settings_playback_fallback_next_source">Pasar a la siguiente fuente si falla</string>
-    <string name="settings_playback_fallback_next_source_description">Si la fuente elegida automáticamente falla o no arranca a tiempo, se prueban en silencio las siguientes fuentes que coincidan.</string>
+    <string name="settings_playback_fallback_next_source">Probar la siguiente fuente compatible si falla</string>
+    <string name="settings_playback_fallback_next_source_description">Si la fuente elegida automáticamente falla o no empieza a tiempo, prueba sin avisar las siguientes fuentes compatibles.</string>
     <string name="settings_playback_fallback_max_sources">Fuentes a probar si falla</string>
-    <string name="settings_playback_fallback_startup_timeout">Tiempo para que arranque una fuente</string>
-    <string name="settings_playback_fallback_next_source_blocked_by_engine_switch">Desactiva el cambio automático de motor ante un error de reproducción para usar esto.</string>
-    <string name="player_error_source_startup_timeout">La fuente no arrancó en %1$d segundos.</string>
+    <string name="settings_playback_fallback_startup_timeout">Tiempo para que empiece una fuente</string>
+    <string name="settings_playback_fallback_next_source_blocked_by_engine_switch">Desactiva el cambio automático de motor ante errores de reproducción para usar esta opción.</string>
+    <string name="player_error_source_startup_timeout">La fuente no empezó en %1$d segundos.</string>
     <string name="compose_auth_restore_backup">Restaurar backup</string>
     <string name="settings_backup_restart_title">Reinicio necesario</string>
     <string name="settings_backup_restart_message">El backup se restauró. La app debe reiniciarse para aplicar bien los cambios.</string>
     <string name="settings_backup_restart_confirm">Reiniciar</string>
-||||||| NUVIO-1.1.0-beta.2
-=======
     <string name="addons_tracking_consent_body">%1$s es un complemento de seguimiento. Nuvio le enviará tu actividad: lo que reproduces, pausas y detienes junto con la posición de reproducción, lo que agregas o quitas de tu biblioteca y lo que marcas como visto o no visto. Estos datos salen de Nuvio y los maneja el desarrollador del complemento y el servicio al que se conecta.</string>
     <string name="addons_tracking_consent_checkbox">Acepto compartir mi actividad de visualización y mi biblioteca con este complemento</string>
     <string name="addons_tracking_consent_title">Complemento de seguimiento</string>
@@ -2549,7 +2395,6 @@
     <string name="library_watched_filter_all">Todos</string>
     <string name="library_watched_filter_unwatched">No vistos</string>
     <string name="library_watched_filter_watched">Vistos</string>
-    <string name="player_error_source_startup_timeout">La fuente no empezó en %1$d segundos.</string>
     <string name="settings_continue_watching_click_action_description">Qué se abre al seleccionar un elemento de Seguir viendo</string>
     <string name="settings_continue_watching_click_action_details">Abrir detalles</string>
     <string name="settings_continue_watching_click_action_details_desc">Abre la página de detalles del título</string>
@@ -2567,13 +2412,7 @@
     <string name="settings_playback_downmix_maintain_volume">Mantener el audio original al hacer downmix</string>
     <string name="settings_playback_downmix_maintain_volume_description">Si está desactivado, la normalización del downmix puede bajar el volumen general.</string>
     <string name="settings_playback_downmix_section">Downmix</string>
-    <string name="settings_playback_fallback_max_sources">Fuentes a probar si falla</string>
-    <string name="settings_playback_fallback_next_source">Probar la siguiente fuente compatible si falla</string>
-    <string name="settings_playback_fallback_next_source_blocked_by_engine_switch">Desactiva el cambio automático de motor ante errores de reproducción para usar esta opción.</string>
-    <string name="settings_playback_fallback_next_source_description">Si la fuente elegida automáticamente falla o no empieza a tiempo, prueba sin avisar las siguientes fuentes compatibles.</string>
-    <string name="settings_playback_fallback_startup_timeout">Tiempo para que empiece una fuente</string>
     <string name="settings_playback_remember_audio_delay">Recordar el retraso de audio por dispositivo</string>
     <string name="settings_playback_remember_audio_delay_description">Restaura el retraso de audio ajustado en el reproductor cada vez que vuelve a sonar la misma salida, como la bocina del teléfono, los audífonos con cable o cada dispositivo Bluetooth</string>
     <string name="subtitle_outline_width">Grosor del contorno</string>
->>>>>>> NUVIO-1.1.0-beta.3
 </resources>
