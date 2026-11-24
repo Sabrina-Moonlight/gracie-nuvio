@@ -47,7 +47,6 @@ import com.nuvio.app.features.streams.StreamItem
 import com.nuvio.app.features.streams.StreamLaunchStore
 import com.nuvio.app.features.downloads.DownloadEnqueueResult
 import com.nuvio.app.features.downloads.DownloadsRepository
-import com.nuvio.app.features.downloads.toastMessage
 import com.nuvio.app.features.streams.DownloadQueueEpisode
 import com.nuvio.app.features.streams.StreamLinkCacheRepository
 import com.nuvio.app.features.streams.StreamsRepository
