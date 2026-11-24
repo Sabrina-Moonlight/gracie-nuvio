@@ -241,6 +241,8 @@ private fun BackupSettingsSection(isTablet: Boolean) {
         )
     }
 
+    BackupRestartDialog(isVisible = importStatus == BackupImportStatus.Success)
+
     val importJson = pendingImportJson
     if (importJson != null) {
         BackupImportConfirmDialog(

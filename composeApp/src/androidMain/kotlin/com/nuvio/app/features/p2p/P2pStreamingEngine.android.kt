@@ -34,7 +34,6 @@ import kotlinx.coroutines.withContext
 private const val TAG = "P2pStreamingEngine"
 private const val DIAGNOSTIC_TAG = "NuvioP2PDiag"
 private const val DIAGNOSTIC_SAMPLE_INTERVAL_MS = 1_000L
-private const val STREAM_START_MIN_CONTIGUOUS_BYTES = 6L * 1024L * 1024L
 
 internal fun buildNuvioEngineConfig(
     stateDirectory: File,
@@ -242,14 +241,10 @@ actual object P2pStreamingEngine {
                 "start request=$requestSequence phase=${phase.get()} begin elapsedMs=${elapsedSince(startedAtMs)} " +
                     "fileIndex=${request.fileIdx ?: -1}",
             )
-            // EXPERIMENTO v06: se piden unos MB seguidos listos antes de arrancar, para esperar en
-            // "Conectando" en vez de ver una imagen quieta. Cuarto parámetro = bytes contiguos mínimos
-            // (0 a 64 MiB según la librería). Para volver a como estaba: borrar la última línea.
             val stream = resolvedEngine.prepareStream(
-                torrentId,
-                request.fileIdx,
-                request.filename,
-                STREAM_START_MIN_CONTIGUOUS_BYTES,
+                torrentId = torrentId,
+                fileIndex = request.fileIdx,
+                filenameHint = request.filename,
             )
             preparedStream = stream
             Log.i(

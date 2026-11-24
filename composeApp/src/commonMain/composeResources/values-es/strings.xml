@@ -2375,4 +2375,8 @@
     <string name="settings_playback_fallback_startup_timeout">Tiempo para que arranque una fuente</string>
     <string name="settings_playback_fallback_next_source_blocked_by_engine_switch">Desactiva el cambio automático de motor ante un error de reproducción para usar esto.</string>
     <string name="player_error_source_startup_timeout">La fuente no arrancó en %1$d segundos.</string>
+    <string name="compose_auth_restore_backup">Restaurar backup</string>
+    <string name="settings_backup_restart_title">Reinicio necesario</string>
+    <string name="settings_backup_restart_message">El backup se restauró. La app debe reiniciarse para aplicar bien los cambios.</string>
+    <string name="settings_backup_restart_confirm">Reiniciar</string>
 </resources>

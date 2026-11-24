@@ -2456,4 +2456,8 @@
     <string name="subtitle_shadow_size">Shadow size</string>
     <string name="subtitle_outline_width">Outline width</string>
     <string name="subtitle_reset_appearance">Reset appearance</string>
+    <string name="compose_auth_restore_backup">Restore backup</string>
+    <string name="settings_backup_restart_title">Restart required</string>
+    <string name="settings_backup_restart_message">The backup was restored. The app needs to restart to apply the changes correctly.</string>
+    <string name="settings_backup_restart_confirm">Restart</string>
 </resources>

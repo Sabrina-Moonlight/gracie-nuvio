@@ -824,6 +824,12 @@ private fun AuthForm(
             onClick = onContinueWithoutAccount,
         )
 
+        AuthRestoreBackupSection(
+            enabled = !isLoading,
+            height = metrics.secondaryHeight,
+            scale = scale,
+        )
+
         Spacer(modifier = Modifier.height(14.dp))
 
         Text(
