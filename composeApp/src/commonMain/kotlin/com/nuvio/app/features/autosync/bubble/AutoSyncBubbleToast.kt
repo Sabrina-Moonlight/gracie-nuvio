@@ -100,7 +100,7 @@ private val OrbSize = 30.dp
 /** Lift used until the player has shown its time text once and the real position is known. */
 private val BubbleBottomLift = 14.dp
 /** Altura extra para que la píldora no quede pegada al borde de abajo. */
-private val BubbleExtraLift = 24.dp
+private val BubbleExtraLift = 6.dp
 /** Padding the bubble adds around its orb, top plus bottom (the glass fills the padded box). */
 private val BubbleVerticalPadding = 16.dp
 

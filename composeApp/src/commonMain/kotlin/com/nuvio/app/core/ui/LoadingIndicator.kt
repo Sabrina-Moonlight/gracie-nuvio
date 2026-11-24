@@ -1,20 +1,17 @@
 package com.nuvio.app.core.ui
 
 import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -72,15 +69,28 @@ fun NuvioLoadingIndicator(
     }
 }
 
+/** One shared clock for every loading circle, so a new screen continues the spin instead of restarting it. */
+private var loadingClockOriginNanos = Long.MIN_VALUE
+private var lastLoadingFrame = 0f
+private const val LoadingCycleNanos = 2_000_000_000L
+
 @Composable
-internal fun rememberLoadingIndicatorFrame(active: Boolean): State<Float> =
-    if (active) {
-        rememberInfiniteTransition(label = "loading_indicator").animateFloat(
-            initialValue = 0f,
-            targetValue = 60f,
-            animationSpec = infiniteRepeatable(tween(durationMillis = 2000, easing = LinearEasing)),
-            label = "loading_frame",
-        )
-    } else {
-        remember { mutableFloatStateOf(0f) }
+internal fun rememberLoadingIndicatorFrame(active: Boolean): State<Float> {
+    val frame = remember { mutableFloatStateOf(if (active) lastLoadingFrame else 0f) }
+    LaunchedEffect(active) {
+        if (!active) {
+            frame.floatValue = 0f
+            return@LaunchedEffect
+        }
+        while (true) {
+            withFrameNanos { now ->
+                if (loadingClockOriginNanos == Long.MIN_VALUE) loadingClockOriginNanos = now
+                val elapsed = ((now - loadingClockOriginNanos) % LoadingCycleNanos + LoadingCycleNanos) % LoadingCycleNanos
+                val value = elapsed / LoadingCycleNanos.toFloat() * 60f
+                lastLoadingFrame = value
+                frame.floatValue = value
+            }
+        }
     }
+    return frame
+}
