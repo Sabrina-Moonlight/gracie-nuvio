@@ -1453,6 +1453,9 @@ fun MetaDetailsScreen(
                                     onEpisodeManualPlayClick(selectedEpisode)
                                 },
                                 ratingMedia = remember(meta, selectedEpisode) { meta.ratingReference(selectedEpisode) },
+                                onDownloadSeason = {
+                                    seasonForDownload = selectedEpisode.season?.coerceAtLeast(0) ?: 0
+                                },
                             )
                         }
 

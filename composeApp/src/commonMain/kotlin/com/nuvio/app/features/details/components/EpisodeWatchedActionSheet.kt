@@ -68,6 +68,7 @@ fun EpisodeWatchedActionSheet(
     showPlayManually: Boolean = false,
     onPlayManually: (() -> Unit)? = null,
     ratingMedia: TrackingMediaReference? = null,
+    onDownloadSeason: (() -> Unit)? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
@@ -168,6 +169,16 @@ fun EpisodeWatchedActionSheet(
                                     }
                                 } else {
                                     null
+                                },
+                            )
+                        }
+                        if (onDownloadSeason != null) {
+                            NuvioBottomSheetActionRow(
+                                icon = Icons.Rounded.Download,
+                                title = stringResource(Res.string.season_download_action),
+                                onClick = {
+                                    onDownloadSeason()
+                                    dismiss()
                                 },
                             )
                         }
