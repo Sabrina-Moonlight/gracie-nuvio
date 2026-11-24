@@ -8,7 +8,7 @@
     <string name="autosync_toast_failed">Auto Sync • Sync failed • subtitle timing not changed</string>
     <string name="autosync_toast_failed_no_reference">Auto Sync • No embedded subtitles to compare with • subtitle timing not changed</string>
     <string name="autosync_toast_failed_unsupported">Auto Sync • Subtitle format not supported • subtitle timing not changed</string>
-    <string name="autosync_toast_failed_audio_fallback">Auto Sync • No match found • syncing to the audio instead…</string>
+    <string name="autosync_toast_failed_audio_fallback">Auto Sync • No match found • syncing to the audio…</string>
     <string name="autosync_toast_retry_synced">Auto Sync • Synced to another reference</string>
     <string name="autosync_toast_retry_none">Auto Sync • No better reference found</string>
     <string name="autosync_toast_retry_failed">Auto Sync • Reference retry failed • current sync kept</string>

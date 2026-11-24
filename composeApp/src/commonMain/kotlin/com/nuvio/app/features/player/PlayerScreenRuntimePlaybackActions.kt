@@ -443,6 +443,25 @@ internal fun PlayerScreenRuntime.flushWatchProgress(
     )
 }
 
+/**
+ * Guarda el progreso ahora mismo cuando la app pasa a segundo plano. Primero en el teléfono (sin
+ * filtro de repetidos, para que siempre quede guardado) y luego avisa al servidor. No manda
+ * "stop" al seguimiento: si el video sigue sonando de fondo, no se corta nada.
+ */
+internal fun PlayerScreenRuntime.saveWatchProgressOnBackground() {
+    if (isShortPlaceholderDuration(playbackSnapshot.durationMs)) return
+    if (!hasReliablePlaybackSnapshot()) return
+    WatchProgressRepository.upsertPlaybackProgress(
+        session = playbackSession,
+        snapshot = playbackSnapshot,
+        syncRemote = false,
+    )
+    WatchProgressRepository.upsertPlaybackProgress(
+        session = playbackSession,
+        snapshot = playbackSnapshot,
+    )
+}
+
 internal fun PlayerScreenRuntime.scheduleProgressSyncAfterSeek() {
     val shouldRestartScrobbleAfterSeek = shouldPlay || playbackSnapshot.isPlaying
     seekProgressSyncJob?.cancel()

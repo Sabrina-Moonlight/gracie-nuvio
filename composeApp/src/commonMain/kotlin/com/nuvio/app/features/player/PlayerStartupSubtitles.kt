@@ -27,6 +27,7 @@ internal fun mergeStreamAndAddonSubtitles(
 ): List<AddonSubtitle> {
     val remoteStreamSubtitles = streamSubtitles.filterNot { it.url.isLocalSubtitleUri() }
     if (remoteStreamSubtitles.isEmpty()) return addonSubtitles
-    return (remoteStreamSubtitles.map { it.toAddonSubtitle() } + addonSubtitles)
+    // Los addons van primero; los subtítulos que trae el stream quedan después.
+    return (addonSubtitles + remoteStreamSubtitles.map { it.toAddonSubtitle() })
         .distinctBy { "${it.id}|${it.url}" }
 }

@@ -1,6 +1,6 @@
 package com.nuvio.app.features.downloads
 
-import com.nuvio.app.features.addons.httpGetTextWithHeaders
+import com.nuvio.app.features.autosync.AutoSyncSubtitleHttp
 import com.nuvio.app.features.player.PlayerSubtitleCueParser
 import com.nuvio.app.features.player.loadAddonSubtitles
 import com.nuvio.app.features.streams.StreamSubtitle
@@ -41,8 +41,14 @@ internal object DownloadSubtitles {
                     async {
                         val body = try {
                             withTimeoutOrNull(15_000L) {
-                                httpGetTextWithHeaders(subtitle.url, subtitle.headers.orEmpty())
-                            }?.takeIf { it.isNotBlank() && PlayerSubtitleCueParser.parse(it, subtitle.url).isNotEmpty() }
+                                // Se leen los bytes y se detecta la codificación (UTF-8, Latin-1...) para no romper las tildes.
+                                AutoSyncSubtitleHttp.get(
+                                    url = subtitle.url,
+                                    headers = mapOf("Accept" to "*/*") + subtitle.headers.orEmpty(),
+                                    maxResponseBodyBytes = 5 * 1024 * 1024,
+                                    languageHint = subtitle.language,
+                                )
+                            }?.takeIf { it.status in 200..299 }?.body?.takeIf { it.isNotBlank() && PlayerSubtitleCueParser.parse(it, subtitle.url).isNotEmpty() }
                         } catch (error: Exception) {
                             if (error is CancellationException) throw error
                             null

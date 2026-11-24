@@ -6,6 +6,9 @@ import com.nuvio.app.core.network.NetworkStatusRepository
 import com.nuvio.app.core.ui.LocalFold
 import com.nuvio.app.core.ui.NuvioToastController
 import com.nuvio.app.features.party.PartyRepository
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.nuvio.app.features.shuffle.EpisodeShuffleRepository
 import com.nuvio.app.features.shuffle.ShuffleSurface
@@ -453,6 +456,17 @@ internal fun PlayerScreenRuntime.BindPlayerRuntimeEffects() {
                 flushWatchProgress()
             }
         }
+    }
+
+    // Al pasar la app a segundo plano se guarda el progreso en ese momento, por si el sistema
+    // o el usuario la cierra después y el reproductor nunca llega a despedirse.
+    val progressLifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(progressLifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) saveWatchProgressOnBackground()
+        }
+        progressLifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { progressLifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     DisposableEffect(Unit) {

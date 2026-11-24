@@ -261,20 +261,24 @@ private fun PlayerScreenRuntime.tryAutoSelectPreferredSubtitleFromAvailableTrack
             trackVariant == normalizedTarget ||
                 SubtitleLanguageMatching.matchesLanguageCode(trackVariant, target)
         }
-        if (matchedTargetPosition > 0 && isLoadingAddonSubtitles) {
-            return
-        }
-        if (matchedTargetPosition > 0 && !isLoadingAddonSubtitles) {
-            val primaryAddonMatch = addonSubtitles.firstOrNull { subtitle ->
-                SubtitleLanguageMatching.matchesLanguageCode(subtitle.language, selectionPlan.targets.first())
+        // Los subtítulos de addons van primero: se espera a que carguen y, si hay uno del mismo idioma
+        // (o de uno preferido antes), se usa en vez del incluido en el video.
+        if (selectionPlan.mode != SubtitleAutoSelectionMode.FORCED_ONLY) {
+            if (isLoadingAddonSubtitles) return
+            val addonTargets = selectionPlan.targets.take(matchedTargetPosition.coerceAtLeast(0) + 1)
+            val addonFirstMatch = addonTargets.firstNotNullOfOrNull { target ->
+                addonSubtitles.firstOrNull { subtitle ->
+                    (!subtitleStyle.useForcedSubtitles || !addonSubtitleIsForced(subtitle)) &&
+                        SubtitleLanguageMatching.matchesLanguageCode(subtitle.language, target)
+                }
             }
-            if (primaryAddonMatch != null) {
+            if (addonFirstMatch != null) {
                 preferredSubtitleSelectionApplied = true
-                selectedAddonSubtitleId = primaryAddonMatch.selectionKey
+                selectedAddonSubtitleId = addonFirstMatch.selectionKey
                 selectedSubtitleIndex = -1
                 useCustomSubtitles = true
-                if (!maybeAutoSyncPreferredSubtitleAtStart(primaryAddonMatch)) { // AutoSync hook
-                    playerController?.setSubtitleUri(primaryAddonMatch.url)
+                if (!maybeAutoSyncPreferredSubtitleAtStart(addonFirstMatch)) { // AutoSync hook
+                    playerController?.setSubtitleUri(addonFirstMatch.url)
                 }
                 return
             }

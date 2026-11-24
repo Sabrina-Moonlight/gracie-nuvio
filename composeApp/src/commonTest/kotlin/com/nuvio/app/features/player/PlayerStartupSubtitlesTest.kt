@@ -45,7 +45,7 @@ class PlayerStartupSubtitlesTest {
         )
 
         assertEquals(
-            listOf("https://stream.example/en.srt", "https://addon.example/en.srt"),
+            listOf("https://addon.example/en.srt", "https://stream.example/en.srt"),
             merged.map { it.url },
         )
     }
