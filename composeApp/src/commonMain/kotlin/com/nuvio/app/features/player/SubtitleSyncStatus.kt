@@ -29,7 +29,6 @@ data class SubtitleSyncDiagnostics(
     /** Seconds of audio already analysed ahead of the playhead; 0 in live-only mode. */
     val lookAheadSec: Int = 0,
     val liveOnly: Boolean = false,
-    val speechHeardSec: Int = 0,
     val wordsHeard: Int = 0,
     val recognizer: String = "",
     val reference: String = "",

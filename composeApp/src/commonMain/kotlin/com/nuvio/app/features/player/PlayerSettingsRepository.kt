@@ -1179,14 +1179,6 @@ object PlayerSettingsRepository {
         PlayerSettingsStorage.saveUseLibass(enabled)
     }
 
-    fun setLibassRenderType(renderType: String) {
-        ensureLoaded()
-        if (libassRenderType == renderType) return
-        libassRenderType = renderType
-        publish()
-        PlayerSettingsStorage.saveLibassRenderType(renderType)
-    }
-
     fun setLibassRenderScale(scale: String) {
         ensureLoaded()
         if (libassRenderScale == scale) return

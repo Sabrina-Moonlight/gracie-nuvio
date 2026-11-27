@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import com.nuvio.app.features.autosync.AutoSyncPreferencesAndroid
 import com.nuvio.app.features.pillnav.PillNavPreferencesAndroid
+import com.nuvio.app.features.player.volumeboost.VolumeBoostPreferencesAndroid
 import android.os.Bundle
 import androidx.activity.compose.setContent
 
@@ -91,6 +92,7 @@ open class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         AutoSyncPreferencesAndroid.initialize(applicationContext) // AutoSync hook
         PillNavPreferencesAndroid.initialize(applicationContext) // Pill nav hook
+        VolumeBoostPreferencesAndroid.initialize(applicationContext) // Volume boost hook
         window.setBackgroundDrawableResource(R.color.nuvio_background)
         pipRemoteActionReceiver = PipRemoteActionReceiver.register(this)
         SyncClientIdentityStorage.initialize(applicationContext)

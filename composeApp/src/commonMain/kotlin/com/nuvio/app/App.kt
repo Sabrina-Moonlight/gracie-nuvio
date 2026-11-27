@@ -12,7 +12,6 @@ import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
 import com.nuvio.app.core.poster.CustomPosterFallbackInterceptor
-import com.nuvio.app.core.ui.NativeProfileSwitcherController
 import com.nuvio.app.core.ui.NuvioTheme
 import com.nuvio.app.core.ui.configurePlatformImageLoader
 import com.nuvio.app.core.ui.platformProvidesImageLoader
@@ -43,7 +42,6 @@ fun App(
     onActivate: ((AppScreenTab) -> Unit)? = null,
     onAppReady: ((Boolean) -> Unit)? = null,
     onTabTitles: ((home: String, search: String, library: String, profile: String, switchProfile: String, addProfile: String) -> Unit)? = null,
-    nativeProfileSwitcherController: NativeProfileSwitcherController? = null,
     appGateController: AppGateController? = null,
 ) {
     AppEnvironment {
@@ -64,7 +62,6 @@ fun App(
             onMainContentMountChanged = null,
             onMainContentVisibleChanged = null,
             onTabTitles = onTabTitles,
-            nativeProfileSwitcherController = nativeProfileSwitcherController,
             appGateController = appGateController,
         )
     }

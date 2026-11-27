@@ -10,7 +10,6 @@ import androidx.compose.runtime.remember
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import kotlin.math.pow
 import kotlin.math.roundToInt
 
 private const val TAG = "NuvioVolumeBoost"
@@ -43,15 +42,6 @@ internal fun ExoVolumeBoostEffect(player: ExoPlayer) {
         VolumeBoost.gainDb.collect { booster.setGainDb(it) }
     }
 }
-
-/**
- * mpv volume for a boost in dB. mpv's volume scale is cubic, so +10 dB is volume 147,
- * matching ExoPlayer's gain. Needs volume-max above that ([LIBMPV_VOLUME_MAX]).
- */
-internal fun libmpvVolumeForBoost(gainDb: Float): Double =
-    100.0 * 10.0.pow(gainDb.coerceIn(0f, VolumeBoost.MAX_GAIN_DB) / 60.0)
-
-internal const val LIBMPV_VOLUME_MAX = "200"
 
 private class ExoLoudnessBooster(private val player: ExoPlayer) : Player.Listener {
     private var enhancer: LoudnessEnhancer? = null

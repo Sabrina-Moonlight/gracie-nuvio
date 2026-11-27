@@ -25,7 +25,6 @@ object NuvioTokens {
         val s4 = 4.dp
         val s5 = 5.dp
         val s6 = 6.dp
-        val s7 = 7.dp
         val s8 = 8.dp
         val s10 = 10.dp
         val s12 = 12.dp
@@ -178,7 +177,6 @@ object NuvioTokens {
         const val navigation = 4f
         const val sheet = 8f
         const val dialog = 10f
-        const val playerOverlay = 12f
         const val toast = 16f
     }
 }

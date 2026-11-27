@@ -614,8 +614,6 @@ internal class AudioSubtitleSyncController(
         SubtitleSyncStatus.publishDiagnostics(null)
     }
 
-    fun activeSessionKey(): String? = session?.key
-
     fun release() {
         released = true
         SubtitleSyncStatus.publishDiagnostics(null)

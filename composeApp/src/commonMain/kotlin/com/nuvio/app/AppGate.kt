@@ -31,7 +31,6 @@ import com.nuvio.app.core.network.NetworkCondition
 import com.nuvio.app.core.network.NetworkStatusRepository
 import com.nuvio.app.core.sync.SyncManager
 import com.nuvio.app.core.ui.LocalVerticalBarPadding
-import com.nuvio.app.core.ui.NativeProfileSwitcherController
 import com.nuvio.app.core.ui.NativeTabBridge
 import com.nuvio.app.core.ui.NuvioTokens
 import com.nuvio.app.core.ui.PlatformBackHandler
@@ -72,7 +71,6 @@ internal fun AppGate(
     onMainContentMountChanged: ((Boolean) -> Unit)?,
     onMainContentVisibleChanged: ((Boolean) -> Unit)?,
     onTabTitles: ((home: String, search: String, library: String, profile: String, switchProfile: String, addProfile: String) -> Unit)?,
-    nativeProfileSwitcherController: NativeProfileSwitcherController?,
     appGateController: AppGateController?,
 ) {
     PreloadAppBrandWordmark()
@@ -197,32 +195,6 @@ internal fun AppGate(
             profileSelectionTransitionActive = false
             skipProfileSelectionEnterAnimation = true
             gateScreen = AppGateScreen.ProfileSelection.name
-        }
-    }
-
-    LaunchedEffect(nativeProfileSwitcherController, appGateController, renderMainContent) {
-        if (renderMainContent || appGateController == null) return@LaunchedEffect
-        nativeProfileSwitcherController?.requestedManageProfiles?.collect {
-            appGateController.requestProfileSelection()
-        }
-    }
-
-    LaunchedEffect(nativeProfileSwitcherController, appGateController, renderMainContent) {
-        if (renderMainContent || appGateController == null) return@LaunchedEffect
-        nativeProfileSwitcherController?.selectedProfileIndices?.collect { profileIndex ->
-            if (profileIndex == ProfileRepository.state.value.activeProfile?.profileIndex) return@collect
-            val profile = ProfileRepository.state.value.profiles
-                .firstOrNull { it.profileIndex == profileIndex }
-                ?: return@collect
-            autoSkipProfileSelection = false
-            profileSelectionLoading = true
-            profileSelectionTransitionActive = true
-            skipProfileSelectionEnterAnimation = true
-            appGateController.beginContentReload()
-            ProfileRepository.selectProfile(profile.profileIndex)
-            SyncManager.pullAllForProfile(profile.profileIndex)
-            gateScreen = AppGateScreen.Main.name
-            onActivate?.invoke(AppScreenTab.Home)
         }
     }
 
