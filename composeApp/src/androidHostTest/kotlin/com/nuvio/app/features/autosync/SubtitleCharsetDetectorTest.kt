@@ -58,6 +58,13 @@ class SubtitleCharsetDetectorTest {
         assertRoundTrip(french, "windows-1252", null)
     }
 
+    @Test
+    fun `spanish with question marks is not read as thai`() {
+        val spanish = subtitle("¿Qué haces aquí?", "¡No lo sé! ¿Y tú?", "¿Dónde estás? ¡Ven ya!")
+        assertRoundTrip(spanish, "windows-1252", null)
+        assertRoundTrip(spanish, "windows-1252", "Español")
+    }
+
     private val corpus = listOf(polish, russian, hebrew, greek, french,
         subtitle("你好，今天天气很好。", "我们明天早上去公园散步。"),
         subtitle("你好，今天天氣很好。", "我們明天早上去公園散步。"),

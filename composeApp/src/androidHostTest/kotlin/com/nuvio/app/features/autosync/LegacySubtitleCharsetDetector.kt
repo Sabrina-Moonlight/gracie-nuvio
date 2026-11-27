@@ -146,7 +146,8 @@ internal object LegacySubtitleCharsetDetector {
                 if (hasKoi8Vowels(bytes, offset, length)) CHARSET_KOI8_R else CHARSET_WIN1251
             }
             lang == "por" || lang == "pt" || lang.startsWith("portuguese") ||
-                lang == "spa" || lang == "es" || lang.startsWith("spanish") ||
+                lang == "spa" || lang == "es" || lang.startsWith("spanish") || lang.startsWith("espa") ||
+                lang.startsWith("castellano") || lang.startsWith("latino") ||
                 lang == "fra" || lang == "fre" || lang == "fr" || lang.startsWith("french") ||
                 lang == "deu" || lang == "ger" || lang == "de" || lang.startsWith("german") ||
                 lang == "ita" || lang == "it" || lang.startsWith("italian") ||
@@ -278,7 +279,7 @@ internal object LegacySubtitleCharsetDetector {
             val b = bytes[i].toInt() and 0xFF
             if (b in 0xA1..0xBF) thaiConsonantsEarly++
         }
-        if (thaiConsonantsEarly * 4 >= nonAscii && thaiConsonantsEarly >= 4) {
+        if (asciiLetters < nonAscii && thaiConsonantsEarly * 4 >= nonAscii && thaiConsonantsEarly >= 4) {
             return CHARSET_WIN874
         }
 

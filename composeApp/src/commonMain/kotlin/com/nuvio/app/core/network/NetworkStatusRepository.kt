@@ -32,9 +32,6 @@ enum class NetworkCondition {
 data class NetworkStatusUiState(
     val condition: NetworkCondition = NetworkCondition.Unknown,
 ) {
-    val isOnline: Boolean
-        get() = condition == NetworkCondition.Online
-
     val isOfflineLike: Boolean
         get() = condition == NetworkCondition.NoInternet || condition == NetworkCondition.ServersUnreachable
 }

@@ -540,7 +540,6 @@ internal object AutomaticSubtitleSync {
 
             var referenceTracks: List<ReferenceTrack> = emptyList()
             var forcedFallbackTracks: List<ReferenceTrack> = emptyList()
-            var referenceSource: AutoSyncReferenceSource? = null
 
             AutoSyncDebugLog.section { "INDEXED EMBEDDED REFERENCE" }
             if (indexedTimeline != null) {
@@ -585,9 +584,6 @@ internal object AutomaticSubtitleSync {
                         }
                     }
                 }
-                if (referenceTracks.isNotEmpty()) {
-                    referenceSource = AutoSyncReferenceSource.INDEXED
-                }
             } else {
                 AutoSyncDebugLog.info {
                     "indexed timeline unavailable; checking Media3 for a near-complete embedded timeline"
@@ -607,9 +603,6 @@ internal object AutomaticSubtitleSync {
                 )
                 referenceTracks = liveSelection.primary
                 forcedFallbackTracks = liveSelection.forcedFallback
-                if (referenceTracks.isNotEmpty()) {
-                    referenceSource = AutoSyncReferenceSource.LIVE
-                }
             }
 
             if (referenceTracks.isEmpty()) {
@@ -1403,30 +1396,11 @@ internal object AutomaticSubtitleSync {
                     "alignment=${memberMatch.timeline.alignmentSource}"
             }
 
-            val winningReferenceSource = referenceSource ?: run {
-                AutoSyncDebugLog.warn { "winning reference source was unavailable" }
-                return@supervisorScope null
-            }
-            val referenceCatalog = (referenceTracks + forcedFallbackTracks)
-                .distinctBy { it.key }
-            val equivalentReferenceKeys = equivalentReferenceKeysFor(
-                referenceTracks = referenceCatalog,
-                referenceKey = memberMatch.track.key,
-            )
-
             return@supervisorScope AutoSyncResolvedTimeline(
                 subtitleUrl = winningMember.candidate.url,
                 subtitleHeaders = headersForCandidate(winningMember.candidate.url),
                 subtitleBody = winningMember.loaded.rawBody,
                 timeline = memberMatch.timeline,
-                reference = AutoSyncReferenceIdentity(
-                    key = memberMatch.track.key,
-                    language = memberMatch.track.language,
-                    label = memberMatch.track.label,
-                    source = winningReferenceSource,
-                    equivalentKeys = equivalentReferenceKeys,
-                    timingFingerprint = referenceTimingFingerprint(memberMatch.track.cues),
-                ),
             )
         }
 
@@ -2104,22 +2078,6 @@ internal object AutomaticSubtitleSync {
         }
     }
 
-    internal fun equivalentReferenceKeysFor(
-        referenceTracks: List<ReferenceTrack>,
-        referenceKey: String,
-    ): Set<String> {
-        val selected = referenceTracks.firstOrNull { it.key == referenceKey }
-            ?: return setOf(referenceKey)
-        val fingerprint = referenceTimingFingerprint(selected.cues)
-        val equivalent = referenceTracks
-            .asSequence()
-            .filter { track -> referenceTimingFingerprint(track.cues) == fingerprint }
-            .filter { track -> sameReferenceTiming(selected.cues, track.cues) }
-            .map { it.key }
-            .toSet()
-        return equivalent.ifEmpty { setOf(referenceKey) }
-    }
-
     private fun buildReferenceProfile(track: ReferenceTrack): ReferenceProfile {
         val cueCount = track.cues.size
         val spanMs = referenceSpanMs(track.cues)
@@ -2476,11 +2434,6 @@ internal enum class AutoSyncAnalysisOutcome {
     INCONCLUSIVE,
 }
 
-internal enum class AutoSyncReferenceSource {
-    INDEXED,
-    LIVE,
-}
-
 internal data class AutoSyncReferenceTimingFingerprint(
     val cueCount: Int,
     val firstStartMs: Long,
@@ -2488,21 +2441,11 @@ internal data class AutoSyncReferenceTimingFingerprint(
     val timingHash: Long,
 )
 
-internal data class AutoSyncReferenceIdentity(
-    val key: String,
-    val language: String?,
-    val label: String?,
-    val source: AutoSyncReferenceSource,
-    val equivalentKeys: Set<String>,
-    val timingFingerprint: AutoSyncReferenceTimingFingerprint,
-)
-
 internal data class AutoSyncResolvedTimeline(
     val subtitleUrl: String,
     val subtitleHeaders: Map<String, String>,
     val subtitleBody: String?,
     val timeline: AutoSyncTimelineRetimeResult,
-    val reference: AutoSyncReferenceIdentity,
 )
 
 internal data class ReferenceTrack(
