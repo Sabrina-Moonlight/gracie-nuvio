@@ -38,9 +38,6 @@ import com.nuvio.app.features.watchprogress.ContinueWatchingPreferencesRepositor
 import com.nuvio.app.features.watchprogress.WatchProgressRepository
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -67,7 +64,6 @@ private data class StoredProfilePayload(
 )
 
 object ProfileRepository {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val log = Logger.withTag("ProfileRepository")
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private fun localizedString(resource: StringResource): String = runBlocking { getString(resource) }
@@ -137,9 +133,7 @@ object ProfileRepository {
                 activeProfile = profiles.find { it.profileIndex == activeProfileIndex }
                     ?: profiles.firstOrNull(),
             )
-            if (_state.value.activeProfile != null) {
-                activeProfileIndex = _state.value.activeProfile!!.profileIndex
-            }
+            _state.value.activeProfile?.let { activeProfileIndex = it.profileIndex }
             persist()
         } catch (e: Throwable) {
             if (AuthRepository.signOutIfSessionInvalid(e, "Profile pull")) return
@@ -296,9 +290,7 @@ object ProfileRepository {
                 profiles = remaining,
                 activeProfile = if (_state.value.activeProfile?.profileIndex == profileIndex) remaining.firstOrNull() else _state.value.activeProfile,
             )
-            if (_state.value.activeProfile != null) {
-                activeProfileIndex = _state.value.activeProfile!!.profileIndex
-            }
+            _state.value.activeProfile?.let { activeProfileIndex = it.profileIndex }
             persist()
             return
         }
@@ -382,30 +374,6 @@ object ProfileRepository {
         }
     }
 
-    suspend fun clearPinWithPassword(profileIndex: Int, accountPassword: String) {
-        runCatching {
-            val params = buildJsonObject {
-                put("p_account_password", accountPassword)
-                put("p_profile_id", profileIndex)
-            }
-            SupabaseProvider.client.postgrest.rpc("clear_profile_pin_with_account_password", params)
-            pullProfiles()
-            ProfilePinCacheStorage.removePayload(profileIndex)
-        }.onFailure { e ->
-            log.e(e) { "Failed to clear pin with password" }
-        }
-    }
-
-    suspend fun pullProfileLocks(): List<ProfileLockState> {
-        return runCatching {
-            val result = SupabaseProvider.client.postgrest.rpc("sync_pull_profile_locks")
-            result.decodeList<ProfileLockState>()
-        }.getOrElse { e ->
-            log.e(e) { "Failed to pull profile locks" }
-            emptyList()
-        }
-    }
-
     private fun applyPayloadsLocally(payloads: List<ProfilePushPayload>) {
         val authState = AuthRepository.state.value as? AuthState.Authenticated ?: return
         val profiles = payloads.map { p ->
@@ -428,9 +396,7 @@ object ProfileRepository {
             isLoaded = true,
             activeProfile = profiles.find { it.profileIndex == activeProfileIndex } ?: profiles.firstOrNull(),
         )
-        if (_state.value.activeProfile != null) {
-            activeProfileIndex = _state.value.activeProfile!!.profileIndex
-        }
+        _state.value.activeProfile?.let { activeProfileIndex = it.profileIndex }
         syncPinCache(profiles)
         persist()
     }
@@ -555,10 +521,3 @@ object ProfileRepository {
         )
     }
 }
-
-@kotlinx.serialization.Serializable
-data class ProfileLockState(
-    @kotlinx.serialization.SerialName("profile_index") val profileIndex: Int,
-    @kotlinx.serialization.SerialName("pin_enabled") val pinEnabled: Boolean = false,
-    @kotlinx.serialization.SerialName("pin_locked_until") val pinLockedUntil: String? = null,
-)

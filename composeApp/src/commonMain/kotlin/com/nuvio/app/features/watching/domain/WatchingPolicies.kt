@@ -112,8 +112,6 @@ internal fun daysUntilExplicitRelease(
     return daysUntilEpisodeRelease(todayIsoDate, releasedDate)
 }
 
-internal fun isoCalendarDateOrNull(value: String?): String? = parseEpisodeReleaseLocalDate(value)
-
 internal fun isoEpochDay(date: String): Long = coreIsoEpochDay(date)
 
 fun releasedEpisodes(

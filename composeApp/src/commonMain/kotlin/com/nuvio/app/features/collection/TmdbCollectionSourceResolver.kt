@@ -139,22 +139,6 @@ object TmdbCollectionSourceResolver {
         )?.results.orEmpty()
     }
 
-    suspend fun searchKeywords(query: String): Map<Int, String> = withContext(Dispatchers.Default) {
-        val trimmed = query.trim()
-        if (trimmed.isBlank()) return@withContext emptyMap()
-        val apiKey = TmdbSettingsRepository.effectiveApiKey()
-        fetch<TmdbKeywordSearchResponse>(
-            endpoint = "search/keyword",
-            apiKey = apiKey,
-            query = mapOf("query" to trimmed),
-        )?.results.orEmpty()
-            .mapNotNull { result ->
-                val name = result.name?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                result.id to name
-            }
-            .toMap()
-    }
-
     suspend fun genres(mediaType: TmdbCollectionMediaType): Map<Int, String> = withContext(Dispatchers.Default) {
         val settings = TmdbSettingsRepository.snapshot()
         val apiKey = TmdbSettingsRepository.effectiveApiKey()
@@ -621,17 +605,6 @@ data class TmdbCollectionSearchResult(
 @Serializable
 private data class TmdbCollectionSearchResponse(
     val results: List<TmdbCollectionSearchResult>? = null,
-)
-
-@Serializable
-private data class TmdbKeywordSearchResponse(
-    val results: List<TmdbKeywordSearchResult>? = null,
-)
-
-@Serializable
-private data class TmdbKeywordSearchResult(
-    val id: Int,
-    val name: String? = null,
 )
 
 @Serializable

@@ -179,14 +179,6 @@ object CollectionEditorRepository {
         )
     }
 
-    fun moveFolderUp(index: Int) {
-        moveFolderByIndex(index, index - 1)
-    }
-
-    fun moveFolderDown(index: Int) {
-        moveFolderByIndex(index, index + 1)
-    }
-
     fun moveFolderByIndex(fromIndex: Int, toIndex: Int) {
         if (fromIndex == toIndex) return
         val list = _uiState.value.folders.toMutableList()

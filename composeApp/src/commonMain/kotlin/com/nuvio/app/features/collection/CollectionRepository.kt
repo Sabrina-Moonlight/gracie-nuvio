@@ -29,8 +29,6 @@ import nuvio.composeapp.generated.resources.collections_import_error_invalid_jso
 import nuvio.composeapp.generated.resources.collections_import_error_source_blank_fields
 import nuvio.composeapp.generated.resources.collections_import_error_trakt_list_id
 import org.jetbrains.compose.resources.getString
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 object CollectionRepository {
     private val log = Logger.withTag("CollectionRepository")
@@ -175,9 +173,6 @@ object CollectionRepository {
             )
         }
     }
-
-    @OptIn(ExperimentalUuidApi::class)
-    fun generateId(): String = Uuid.random().toString()
 
     fun getAvailableCatalogs(): List<AvailableCatalog> {
         val addons = AddonRepository.uiState.value.addons.enabledAddons()

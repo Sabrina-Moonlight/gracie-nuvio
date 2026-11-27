@@ -150,14 +150,6 @@ object TraktAuthRepository : TrackingAuthProvider {
         publish(statusMessage = null, errorMessage = null)
     }
 
-    fun onCancelDeviceFlow(profileId: Int = ProfileRepository.activeProfileId) {
-        onCancelAuthorization(profileId)
-    }
-
-    fun onAuthLaunchFailed(reason: String) {
-        publish(errorMessage = reason)
-    }
-
     fun onAuthCallbackReceived(callbackUrl: String) {
         val profileId = ProfileRepository.activeProfileId
         ensureLoaded(profileId)

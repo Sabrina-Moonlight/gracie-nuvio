@@ -1,5 +1,6 @@
 package com.nuvio.app.features.watching.domain
 
+import com.nuvio.app.core.time.parseEpisodeReleaseLocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -262,14 +263,14 @@ class WatchingPoliciesTest {
     }
 
     @Test
-    fun `isoCalendarDateOrNull parses various date formats`() {
-        assertEquals("2026-05-23", isoCalendarDateOrNull("2026-05-23T12:00:00Z"))
-        assertEquals("2026-05-23", isoCalendarDateOrNull(" 2026-05-23 "))
-        assertEquals(null, isoCalendarDateOrNull("2026-5-23"))
-        assertEquals(null, isoCalendarDateOrNull("2026-5-9"))
-        assertEquals(null, isoCalendarDateOrNull("2026-05"))
-        assertEquals(null, isoCalendarDateOrNull("invalid"))
-        assertEquals(null, isoCalendarDateOrNull(null))
+    fun `parseEpisodeReleaseLocalDate parses various date formats`() {
+        assertEquals("2026-05-23", parseEpisodeReleaseLocalDate("2026-05-23T12:00:00Z"))
+        assertEquals("2026-05-23", parseEpisodeReleaseLocalDate(" 2026-05-23 "))
+        assertEquals(null, parseEpisodeReleaseLocalDate("2026-5-23"))
+        assertEquals(null, parseEpisodeReleaseLocalDate("2026-5-9"))
+        assertEquals(null, parseEpisodeReleaseLocalDate("2026-05"))
+        assertEquals(null, parseEpisodeReleaseLocalDate("invalid"))
+        assertEquals(null, parseEpisodeReleaseLocalDate(null))
     }
 
     @Test

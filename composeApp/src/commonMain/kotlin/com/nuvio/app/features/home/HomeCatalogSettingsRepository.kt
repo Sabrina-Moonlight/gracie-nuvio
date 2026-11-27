@@ -363,7 +363,6 @@ object HomeCatalogSettingsRepository {
     }
 
     private fun publish() {
-        val collectionMap = collectionDefinitions.associateBy { it.key }
         val catalogItems = definitions
             .map { definition ->
                 val preference = preferences[definition.key]

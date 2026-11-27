@@ -219,28 +219,6 @@ class WatchedRepositoryTest {
     }
 
     @Test
-    fun playbackCompletionWatchedMarks_doNotMirrorToTrackerHistory() {
-        assertFalse(
-            shouldMirrorWatchedMarkToTrackers(
-                sync = WatchedTrackerHistorySync.Skip,
-                hasConnectedTracker = true,
-            ),
-        )
-        assertTrue(
-            shouldMirrorWatchedMarkToTrackers(
-                sync = WatchedTrackerHistorySync.Mirror,
-                hasConnectedTracker = true,
-            ),
-        )
-        assertFalse(
-            shouldMirrorWatchedMarkToTrackers(
-                sync = WatchedTrackerHistorySync.Mirror,
-                hasConnectedTracker = false,
-            ),
-        )
-    }
-
-    @Test
     fun watchedItemsForSource_keepsProviderSnapshotsIsolated() {
         val nuvioItem = watchedItem(id = "nuvio", markedAtEpochMs = 1_000L)
         val traktItem = watchedItem(id = "trakt", markedAtEpochMs = 2_000L)

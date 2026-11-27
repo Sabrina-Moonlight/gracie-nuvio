@@ -10,7 +10,6 @@ import com.nuvio.app.features.plugins.runtime.js.JsBindings
 import com.nuvio.app.features.plugins.runtime.js.JsRuntime
 import com.nuvio.app.features.plugins.runtime.network.FetchBridge
 import com.nuvio.app.features.plugins.runtime.network.UrlBridge
-import com.nuvio.app.features.plugins.runtime.wasm.WasmBridge
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.coroutineScope
@@ -155,7 +154,6 @@ internal object PluginRuntime {
             addModule(FetchBridge())
             addModule(UrlBridge())
             addModule(CryptoBridge())
-            addModule(WasmBridge())
             addModule(domBridge)
         }
 

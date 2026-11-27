@@ -6,12 +6,8 @@ import com.nuvio.app.features.details.MetaDetailsRepository
 import com.nuvio.app.features.details.MetaVideo
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -88,36 +84,6 @@ object TraktEpisodeMappingService {
     }
 
     // ── Public API ────────────────────────────────────────────────────────
-
-    /**
-     * Pre-fetches both addon and Trakt episode data for [contentIds] in parallel so that
-     * subsequent mapping calls hit caches. Limits concurrency to [concurrency].
-     */
-    suspend fun prefetchEpisodes(
-        contentIds: List<String>,
-        concurrency: Int = 8
-    ) {
-        val unique = contentIds.distinct()
-        if (unique.isEmpty()) return
-        val semaphore = Semaphore(concurrency)
-        coroutineScope {
-            unique.forEach { contentId ->
-                launch {
-                    semaphore.withPermit {
-                        getAddonEpisodes(contentId, "series")
-                    }
-                }
-                val showLookupId = resolveShowLookupId(contentId, null)
-                if (showLookupId != null) {
-                    launch {
-                        semaphore.withPermit {
-                            getTraktEpisodes(showLookupId)
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * Resolves the Trakt-side season/episode for a given addon season/episode.
@@ -237,27 +203,6 @@ object TraktEpisodeMappingService {
         } finally {
             resolveAddonTimeMs += startTime.elapsedNow().inWholeMilliseconds
         }
-    }
-
-    suspend fun getCachedEpisodeMapping(
-        contentId: String?,
-        contentType: String?,
-        videoId: String?,
-        season: Int?,
-        episode: Int?,
-    ): EpisodeMappingEntry? {
-        val key = cacheKey(contentId, contentType, videoId, season, episode) ?: return null
-        return cacheMutex.withLock { mappingCache[key] }
-    }
-
-    suspend fun prefetchEpisodeMapping(
-        contentId: String?,
-        contentType: String?,
-        videoId: String?,
-        season: Int?,
-        episode: Int?,
-    ): EpisodeMappingEntry? {
-        return resolveEpisodeMapping(contentId, contentType, videoId, season, episode)
     }
 
     fun clearCache() {

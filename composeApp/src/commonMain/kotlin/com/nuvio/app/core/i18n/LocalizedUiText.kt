@@ -1,7 +1,6 @@
 package com.nuvio.app.core.i18n
 
 import kotlinx.coroutines.runBlocking
-import nuvio.composeapp.generated.resources.player_picture_in_picture
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.action_play
 import nuvio.composeapp.generated.resources.action_play_episode
@@ -40,7 +39,6 @@ import nuvio.composeapp.generated.resources.date_month_short_oct
 import nuvio.composeapp.generated.resources.date_month_short_sep
 import nuvio.composeapp.generated.resources.media_anime
 import nuvio.composeapp.generated.resources.media_channels
-import nuvio.composeapp.generated.resources.media_movie
 import nuvio.composeapp.generated.resources.media_movies
 import nuvio.composeapp.generated.resources.media_series
 import nuvio.composeapp.generated.resources.media_tv
@@ -66,8 +64,6 @@ fun localizedMediaTypeLabel(type: String): String {
         else -> fallback
     }
 }
-
-fun localizedMovieTypeLabel(): String = resourceString("Movie") { getString(Res.string.media_movie) }
 
 
 private val genericEpisodeTitleRegex = Regex("""(?i)^Episode\s+(\d+)$""")
@@ -184,9 +180,6 @@ fun localizedByteUnit(unit: String): String =
         "KB" -> resourceString("KB") { getString(Res.string.unit_bytes_kb) }
         else -> resourceString("B") { getString(Res.string.unit_bytes_b) }
     }
-
-fun localizedPlayerPictureInPicture(): String =
-    resourceString("Nuvio is playing in Picture in Picture mode") { getString(Res.string.player_picture_in_picture) }
 
 private fun resourceString(
     fallback: String,

@@ -13,16 +13,6 @@ internal object HomeCatalogParser {
         ignoreUnknownKeys = true
     }
 
-    fun parseCatalog(
-        payload: String,
-        maxItems: Int? = null,
-    ): List<MetaPreview> {
-        return parseCatalogResponse(
-            payload = payload,
-            maxItems = maxItems,
-        ).items
-    }
-
     fun parseCatalogResponse(
         payload: String,
         maxItems: Int? = null,

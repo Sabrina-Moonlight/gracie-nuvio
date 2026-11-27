@@ -50,20 +50,6 @@ object WatchingState {
         return false
     }
 
-    fun areEpisodesWatched(
-        watchedKeys: Set<String>,
-        metaType: String,
-        metaId: String,
-        episodes: Collection<MetaVideo>,
-    ): Boolean = episodes.isNotEmpty() && episodes.all { episode ->
-        isEpisodeWatched(
-            watchedKeys = watchedKeys,
-            metaType = metaType,
-            metaId = metaId,
-            episode = episode,
-        )
-    }
-
     fun latestCompletedBySeries(
         progressEntries: List<WatchProgressEntry>,
         watchedItems: List<WatchedItem>,

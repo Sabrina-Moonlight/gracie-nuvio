@@ -121,14 +121,6 @@ internal object TraktScrobbleRepository : TrackingScrobbler {
         )
     }
 
-    suspend fun scrobbleStart(profileId: Int, item: TraktScrobbleItem, progressPercent: Float) {
-        sendScrobble(profileId = profileId, action = "start", item = item, progressPercent = progressPercent)
-    }
-
-    suspend fun scrobbleStop(profileId: Int, item: TraktScrobbleItem, progressPercent: Float) {
-        sendScrobble(profileId = profileId, action = "stop", item = item, progressPercent = progressPercent)
-    }
-
     suspend fun buildItem(
         contentType: String,
         parentMetaId: String,

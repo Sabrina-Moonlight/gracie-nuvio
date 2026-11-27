@@ -87,18 +87,6 @@ object DebridSettingsRepository {
         DebridSettingsStorage.saveProviderApiKey(provider.id, normalized)
     }
 
-    fun setTorboxApiKey(value: String) {
-        setProviderApiKey(DebridProviders.TORBOX_ID, value)
-    }
-
-    fun setRealDebridApiKey(value: String) {
-        setProviderApiKey(DebridProviders.REAL_DEBRID_ID, value)
-    }
-
-    fun setPremiumizeApiKey(value: String) {
-        setProviderApiKey(DebridProviders.PREMIUMIZE_ID, value)
-    }
-
     fun setPreferredResolverProviderId(providerId: String) {
         ensureLoaded()
         val normalized = DebridProviders.byId(providerId)?.id.orEmpty()
@@ -118,67 +106,6 @@ object DebridSettingsRepository {
         instantPlaybackPreparationLimit = normalized
         publish()
         DebridSettingsStorage.saveInstantPlaybackPreparationLimit(normalized)
-    }
-
-    fun setStreamMaxResults(value: Int) {
-        ensureLoaded()
-        val normalized = normalizeDebridStreamMaxResults(value)
-        if (streamMaxResults == normalized && streamPreferences.maxResults == normalized) return
-        streamMaxResults = normalized
-        streamPreferences = streamPreferences.copy(maxResults = normalized).normalized()
-        publish()
-        DebridSettingsStorage.saveStreamMaxResults(normalized)
-        saveStreamPreferences()
-    }
-
-    fun setStreamSortMode(value: DebridStreamSortMode) {
-        ensureLoaded()
-        if (streamSortMode == value && streamPreferences.sortCriteria == sortCriteriaForLegacyMode(value)) return
-        streamSortMode = value
-        streamPreferences = streamPreferences.copy(sortCriteria = sortCriteriaForLegacyMode(value)).normalized()
-        publish()
-        DebridSettingsStorage.saveStreamSortMode(value.name)
-        saveStreamPreferences()
-    }
-
-    fun setStreamMinimumQuality(value: DebridStreamMinimumQuality) {
-        ensureLoaded()
-        if (streamMinimumQuality == value && streamPreferences.requiredResolutions == resolutionsForMinimumQuality(value)) return
-        streamMinimumQuality = value
-        streamPreferences = streamPreferences.copy(requiredResolutions = resolutionsForMinimumQuality(value)).normalized()
-        publish()
-        DebridSettingsStorage.saveStreamMinimumQuality(value.name)
-        saveStreamPreferences()
-    }
-
-    fun setStreamDolbyVisionFilter(value: DebridStreamFeatureFilter) {
-        ensureLoaded()
-        if (streamDolbyVisionFilter == value) return
-        streamDolbyVisionFilter = value
-        streamPreferences = streamPreferences.applyDolbyVisionFilter(value).normalized()
-        publish()
-        DebridSettingsStorage.saveStreamDolbyVisionFilter(value.name)
-        saveStreamPreferences()
-    }
-
-    fun setStreamHdrFilter(value: DebridStreamFeatureFilter) {
-        ensureLoaded()
-        if (streamHdrFilter == value) return
-        streamHdrFilter = value
-        streamPreferences = streamPreferences.applyHdrFilter(value).normalized()
-        publish()
-        DebridSettingsStorage.saveStreamHdrFilter(value.name)
-        saveStreamPreferences()
-    }
-
-    fun setStreamCodecFilter(value: DebridStreamCodecFilter) {
-        ensureLoaded()
-        if (streamCodecFilter == value) return
-        streamCodecFilter = value
-        streamPreferences = streamPreferences.applyCodecFilter(value).normalized()
-        publish()
-        DebridSettingsStorage.saveStreamCodecFilter(value.name)
-        saveStreamPreferences()
     }
 
     fun setStreamPreferences(value: DebridStreamPreferences) {

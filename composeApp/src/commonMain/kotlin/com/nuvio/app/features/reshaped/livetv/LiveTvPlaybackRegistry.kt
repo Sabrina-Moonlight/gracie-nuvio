@@ -20,8 +20,4 @@ object LiveTvPlaybackRegistry {
     }
 
     fun isLiveTv(url: String?): Boolean = url != null && entries.any { it.first == url }
-
-    /** The list entry's URL for a URL the player is playing (itself when unknown). */
-    fun listUrlFor(playbackUrl: String): String =
-        entries.lastOrNull { it.first == playbackUrl }?.second ?: playbackUrl
 }

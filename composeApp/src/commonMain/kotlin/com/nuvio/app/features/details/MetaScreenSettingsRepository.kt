@@ -266,10 +266,6 @@ object MetaScreenSettingsRepository {
         ensureLoaded()
     }
 
-    fun setCinematicBackground(enabled: Boolean) {
-        setBackgroundMode(MetaScreenBackgroundMode.fromLegacyCinematic(enabled))
-    }
-
     fun setBackgroundMode(mode: MetaScreenBackgroundMode) {
         ensureLoaded()
         backgroundMode = mode

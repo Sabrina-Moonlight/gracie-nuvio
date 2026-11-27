@@ -57,7 +57,6 @@ import com.nuvio.app.core.ui.nuvioSafeBottomPadding
 import com.nuvio.app.core.ui.withDuplicateSafeLazyKeys
 import com.nuvio.app.features.home.HomeCatalogSection
 import com.nuvio.app.features.home.MetaPreview
-import com.nuvio.app.features.home.PosterShape
 import com.nuvio.app.features.home.canOpenCatalog
 import com.nuvio.app.features.home.stableKey
 import com.nuvio.app.features.home.components.HomeCatalogRowSection
@@ -431,10 +430,3 @@ private fun EmptyMessage() {
         )
     }
 }
-
-private fun PosterShape.toNuvioPosterShape(): NuvioPosterShape =
-    when (this) {
-        PosterShape.Poster -> NuvioPosterShape.Poster
-        PosterShape.Square -> NuvioPosterShape.Square
-        PosterShape.Landscape -> NuvioPosterShape.Landscape
-    }

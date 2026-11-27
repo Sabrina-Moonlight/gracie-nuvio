@@ -189,13 +189,6 @@ class TorboxCloudLibraryProviderApiTest {
     }
 
     @Test
-    fun `request download parameter names match Torbox item type`() {
-        assertEquals("torrent_id", torboxRequestIdParameterName(CloudLibraryItemType.Torrent))
-        assertEquals("usenet_id", torboxRequestIdParameterName(CloudLibraryItemType.Usenet))
-        assertEquals("web_id", torboxRequestIdParameterName(CloudLibraryItemType.WebDownload))
-    }
-
-    @Test
     fun `decodes real Torbox mylist payload and maps playable items`() {
         val items = mylistResponse(rawBody = torboxRealMylistPayload).toCloudLibraryItemsOrThrow(
             providerId = "torbox",

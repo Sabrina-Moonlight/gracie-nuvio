@@ -50,11 +50,6 @@ internal data class WatchedPushOutcome(
     val succeededTrackerProviderIds: Set<TrackingProviderId> = emptySet(),
 )
 
-internal fun shouldMirrorWatchedMarkToTrackers(
-    sync: WatchedTrackerHistorySync,
-    hasConnectedTracker: Boolean,
-): Boolean = sync == WatchedTrackerHistorySync.Mirror && hasConnectedTracker
-
 internal data class WatchedSourceOperation(
     val source: WatchProgressSource,
     val generation: Long,

@@ -24,9 +24,6 @@ data class DebridSettings(
     val realDebridApiKey: String
         get() = apiKeyFor(DebridProviders.REAL_DEBRID_ID)
 
-    val premiumizeApiKey: String
-        get() = apiKeyFor(DebridProviders.PREMIUMIZE_ID)
-
     val hasAnyApiKey: Boolean
         get() = DebridProviders.configuredServices(this).isNotEmpty()
 

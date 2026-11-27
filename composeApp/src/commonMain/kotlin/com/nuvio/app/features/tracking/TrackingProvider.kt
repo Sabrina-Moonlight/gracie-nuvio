@@ -157,14 +157,6 @@ object TrackingProviderRegistry {
             .filter { provider -> capability in provider.descriptor.capabilities }
             .sortedBy { provider -> provider.descriptor.id.ordinal }
 
-    fun listWriter(id: TrackingProviderId): TrackingListWriter? = synchronized(lock) {
-        listWriters[id]
-    }
-
-    fun historyWriter(id: TrackingProviderId): TrackingHistoryWriter? = synchronized(lock) {
-        historyWriters[id]
-    }
-
     fun scrobbler(id: TrackingProviderId): TrackingScrobbler? = synchronized(lock) {
         scrobblers[id]
     }
@@ -201,12 +193,6 @@ object TrackingProviderRegistry {
         ratingProviders.values.toList()
     }
 
-    fun connectedListWriters(): List<TrackingListWriter> =
-        connectedPorts(listWriters, TrackingCapability.LIBRARY_WRITE)
-
-    fun connectedHistoryWriters(): List<TrackingHistoryWriter> =
-        connectedPorts(historyWriters, TrackingCapability.WATCHED_WRITE)
-
     fun connectedScrobblers(): List<TrackingScrobbler> =
         connectedPorts(scrobblers, TrackingCapability.SCROBBLE)
 
@@ -215,9 +201,6 @@ object TrackingProviderRegistry {
 
     fun connectedWatchedProviders(): List<TrackingWatchedProvider> =
         connectedPorts(watchedProviders, TrackingCapability.WATCHED_READ)
-
-    fun connectedProgressProviders(): List<TrackingProgressProvider> =
-        connectedPorts(progressProviders, TrackingCapability.PROGRESS_READ)
 
     fun handleAuthCallback(url: String): Boolean =
         providersWith(TrackingCapability.AUTHENTICATION)

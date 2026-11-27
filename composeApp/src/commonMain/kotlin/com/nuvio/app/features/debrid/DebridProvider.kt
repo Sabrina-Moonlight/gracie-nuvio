@@ -80,8 +80,6 @@ object DebridProviders {
 
     fun isVisible(id: String?): Boolean = byId(id)?.visibleInUi == true
 
-    fun instantName(id: String?): String = "${displayName(id)} Instant"
-
     fun addonId(id: String?): String =
         "debrid:${byId(id)?.id ?: id?.trim().orEmpty().ifBlank { "unknown" }}"
 
@@ -111,9 +109,6 @@ object DebridProviders {
         val preferredId = byId(settings.preferredResolverProviderId)?.id
         return services.firstOrNull { it.provider.id == preferredId } ?: services.firstOrNull()
     }
-
-    fun configuredSourceNames(settings: DebridSettings): List<String> =
-        configuredServices(settings).map { instantName(it.provider.id) }
 
     private fun String?.toFallbackDisplayName(): String {
         val value = this?.trim()?.takeIf { it.isNotBlank() } ?: return "Debrid"

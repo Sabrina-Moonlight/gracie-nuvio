@@ -83,14 +83,6 @@ object P2pSettingsRepository {
         publish()
     }
 
-    fun setEnableUpload(enabled: Boolean) {
-        ensureLoaded()
-        if (enableUpload == enabled) return
-        enableUpload = enabled
-        P2pSettingsStorage.saveEnableUpload(enabled)
-        publish()
-    }
-
     fun setHideTorrentStats(enabled: Boolean) {
         ensureLoaded()
         if (hideTorrentStats == enabled) return

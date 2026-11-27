@@ -103,8 +103,6 @@ object TraktLibraryRepository {
         TraktLibraryStorage.savePayload("")
     }
 
-    fun currentListTabs(): List<TraktListTab> = _uiState.value.listTabs
-
     fun isInAnyList(itemId: String, itemType: String): Boolean {
         val key = contentKey(itemId, itemType)
         return _uiState.value.membershipByContent[key].orEmpty().isNotEmpty()

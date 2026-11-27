@@ -431,10 +431,6 @@ object WatchProgressRepository {
         )
     }
 
-    suspend fun selectWatchProgressSource(profileId: Int, source: WatchProgressSource) {
-        WatchProgressSourceCoordinator.selectSource(profileId = profileId, source = source)
-    }
-
     suspend fun clearLocalAndForceSnapshotRefreshFromServer(profileId: Int) {
         ContinueWatchingEnrichmentCache.clearAll(profileId)
         WatchProgressSourceCoordinator.refreshActiveSource(profileId = profileId, force = true)

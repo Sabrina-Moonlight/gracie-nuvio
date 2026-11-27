@@ -60,11 +60,6 @@ object CustomPosterUrlRepository {
         com.nuvio.app.features.home.HomeRepository.applyCurrentSettings()
     }
 
-    fun isScreenEnabled(screen: CustomPosterScreen): Boolean {
-        ensureLoaded()
-        return screen in _enabledScreens.value
-    }
-
     private fun loadFromDisk() {
         hasLoaded = true
         _pattern.value = CustomPosterUrlStorage.loadPattern().orEmpty().trim()

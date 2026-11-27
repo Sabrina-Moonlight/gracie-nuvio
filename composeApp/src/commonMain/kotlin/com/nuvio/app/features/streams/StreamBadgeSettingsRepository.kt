@@ -84,19 +84,9 @@ object StreamBadgeSettingsRepository {
         return _uiState.value.rules
     }
 
-    fun showFileSizeBadgesSnapshot(): Boolean {
-        ensureLoaded()
-        return _uiState.value.showFileSizeBadges
-    }
-
     fun preferConnectionFitSnapshot(): Boolean {
         ensureLoaded()
         return _uiState.value.preferConnectionFit
-    }
-
-    fun badgePlacementSnapshot(): StreamBadgePlacement {
-        ensureLoaded()
-        return _uiState.value.badgePlacement
     }
 
     suspend fun importStreamBadgeRulesFromUrl(url: String): StreamBadgeImportResult {

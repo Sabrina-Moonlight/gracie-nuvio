@@ -15,10 +15,6 @@ sealed interface AppRoute : NavKey {
     val hidesNavigationBar: Boolean
         get() = false
 
-    /** Stable enough to apply Navigation 3 launchSingleTop semantics in SwiftUI. */
-    val navigationIdentity: String
-        get() = toString()
-
     /** Lets an explicitly cross-tab route select its native SwiftUI stack. */
     val preferredTabName: String?
         get() = null
