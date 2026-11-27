@@ -90,16 +90,6 @@ internal object SubtitleCharsetDetector {
         return repairDoubleEncodedUtf8IfNeeded(decoded, languageHint)
     }
 
-    fun normalizeToUtf8(
-        bytes: ByteArray,
-        offset: Int = 0,
-        length: Int = bytes.size - offset,
-        languageHint: String? = null
-    ): ByteArray {
-        val decoded = decode(bytes, offset, length, languageHint)
-        return decoded.encodeToByteArray()
-    }
-
     fun repairDoubleEncodedUtf8IfNeeded(text: String, languageHint: String? = null): String {
         if (text.isEmpty()) return text
 

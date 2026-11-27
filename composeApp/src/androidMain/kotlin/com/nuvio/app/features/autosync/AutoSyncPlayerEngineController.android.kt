@@ -75,10 +75,6 @@ internal class AutoSyncPlayerEngineController(
     private val base: PlayerEngineController,
     private val coordinator: AutoSyncPlayerCoordinator,
 ) : PlayerEngineController by base, AutoSyncPlayerController {
-    override val autoSyncRetryState = coordinator.retryState
-
-    override fun retryWithAnotherReference() = coordinator.retryWithAnotherReference()
-
     override fun setAutoSyncSubtitleCandidates(candidates: List<AutoSyncSubtitleCandidate>) =
         coordinator.setCandidates(candidates)
 
@@ -128,10 +124,5 @@ internal class AutoSyncPlayerEngineController(
         coordinator.cancel()
         coordinator.forgetLibassCopies()
         base.clearExternalSubtitleAndSelect(trackIndex)
-    }
-
-    override fun setSubtitleDelayMs(delayMs: Int) {
-        coordinator.onManualSubtitleDelayChanged()
-        base.setSubtitleDelayMs(delayMs)
     }
 }

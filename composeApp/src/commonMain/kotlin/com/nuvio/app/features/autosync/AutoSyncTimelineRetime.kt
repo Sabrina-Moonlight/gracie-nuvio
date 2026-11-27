@@ -80,7 +80,6 @@ internal object AutoSyncTimelineRetimer {
 
     // Cheap delay-only fast path. It always APPLIES scale=1.0; the segment drift tolerance
     // merely allows near-1.0 timelines to qualify when one constant delay remains visually valid.
-    private const val DELAY_ONLY_MIN_CUES = 4
     private const val DELAY_ONLY_SCALE_TOLERANCE = 0.0015
     private const val DELAY_ONLY_MIN_SCORE = 0.78
     private const val DELAY_ONLY_MIN_MARGIN = 0.02
@@ -759,23 +758,6 @@ internal object AutoSyncTimelineRetimer {
         )
     }
 
-    internal fun findDelayOnlyAlignment(
-        reference: List<SubtitleSyncCue>,
-        target: List<SubtitleSyncCue>,
-        allowAmbiguousMargin: Boolean = false,
-    ): AutoSyncDelayOnlyAlignment? {
-        if (reference.size < DELAY_ONLY_MIN_CUES || target.size < DELAY_ONLY_MIN_CUES) return null
-        val referenceActivity = prepareUnitActivity(reference) ?: return null
-        val targetActivity = prepareUnitActivity(target) ?: return null
-        return findDelayOnlyAlignmentPrepared(
-            referenceActivity = referenceActivity,
-            targetActivity = targetActivity,
-            targetSize = target.size,
-            allowAmbiguousMargin = allowAmbiguousMargin,
-            seed = null,
-        )
-    }
-
     internal fun prepareDelayOnlySearchEvidence(
         referenceActivity: PreparedActivity,
         targetActivity: PreparedActivity,
@@ -986,41 +968,6 @@ internal object AutoSyncTimelineRetimer {
                 offsetMs = alignment.offsetMs.roundToLong(),
             ),
         )
-
-    internal fun buildDelayOnlyTimeline(
-        target: List<SubtitleSyncCue>,
-        alignment: AutoSyncDelayOnlyAlignment,
-    ): AutoSyncTimelineRetimeResult {
-        val retimed = buildUniformDelayCues(
-            target = target,
-            offsetMs = alignment.offsetMs.roundToLong(),
-        )
-
-        return AutoSyncTimelineRetimeResult(
-            cues = retimed,
-            groups = emptyList(),
-            targetCoverage = 1.0,
-            referenceCoverage = 0.0,
-            skippedTargetCues = 0,
-            skippedReferenceCues = 0,
-            longestTargetSkipRun = 0,
-            averageGroupCost = 0.0,
-            oneToOneGroups = 0,
-            oneToTwoGroups = 0,
-            twoToOneGroups = 0,
-            oneToThreeGroups = 0,
-            threeToOneGroups = 0,
-            twoToTwoGroups = 0,
-            confident = true,
-            alignmentSource = "delay-only",
-            alignmentScale = 1.0,
-            alignmentInterceptMs = alignment.offsetMs,
-            activityScore = alignment.score,
-            activityMargin = alignment.margin,
-            coverageSegmentsPassed = alignment.segmentsPassed,
-            simpleGroupRatio = 1.0,
-        )
-    }
 
     private fun targetActivityCoverageAtOffsetSegment(
         reference: ActivityTimeline,

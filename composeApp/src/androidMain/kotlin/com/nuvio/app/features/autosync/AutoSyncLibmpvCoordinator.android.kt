@@ -71,16 +71,3 @@ private class AndroidAutoSyncMpvPlatform(private val context: Context, private v
         showAutoSyncMessage(context, AutoSyncBubbleKind.Failure, text)
     }
 }
-
-/** Keeps the Android construction API used by existing callers and controller regression tests. */
-internal fun LibmpvAutoSyncCoordinator(
-    context: Context,
-    scope: CoroutineScope,
-    sourceUrl: String,
-    sourceHeaders: Map<String, String>,
-    getSubtitleHeaders: (String) -> Map<String, String>,
-    getPreferredLanguage: () -> String?,
-): AutoSyncMpvCoordinator = AutoSyncMpvCoordinator(
-    scope, sourceUrl, sourceHeaders, getSubtitleHeaders, getPreferredLanguage,
-    AndroidAutoSyncMpvPlatform(context.applicationContext, sourceUrl),
-)

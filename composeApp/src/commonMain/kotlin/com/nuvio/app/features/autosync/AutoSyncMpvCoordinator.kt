@@ -3,14 +3,11 @@ package com.nuvio.app.features.autosync
 import com.nuvio.app.features.player.PlayerEngineController
 import com.nuvio.app.features.autosync.bubble.AutoSyncBubbleKind
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nuvio.composeapp.generated.resources.Res
@@ -18,8 +15,6 @@ import nuvio.composeapp.generated.resources.autosync_toast_failed
 import nuvio.composeapp.generated.resources.autosync_toast_failed_no_reference
 import nuvio.composeapp.generated.resources.autosync_toast_analyzing
 import nuvio.composeapp.generated.resources.autosync_toast_in_sync
-import nuvio.composeapp.generated.resources.autosync_toast_retry_none
-import nuvio.composeapp.generated.resources.autosync_toast_retry_synced
 import nuvio.composeapp.generated.resources.autosync_toast_synced
 import nuvio.composeapp.generated.resources.autosync_toast_synced_replaced
 import nuvio.composeapp.generated.resources.autosync_toast_no_fit
@@ -47,19 +42,7 @@ internal class AutoSyncMpvCoordinator(
     private var operationToken = 0L
     private var candidates: List<AutoSyncSubtitleCandidate> = emptyList()
     private var appliedListener: ((subtitleUrl: String, delayMs: Int) -> Unit)? = null
-    private val _retryState = MutableStateFlow(AutoSyncRetryUiState())
-    val retryState = _retryState.asStateFlow()
-    private var retryContext: RetryContext? = null
     private var appliedDelayMs: Int? = null
-
-    private data class RetryContext(
-        val resolved: AutoSyncResolvedTimeline,
-        val originalBody: String,
-        val language: String?,
-        val base: PlayerEngineController,
-        val replaceExternalSubtitle: (String, String) -> Unit,
-        val rejectedKeys: Set<String> = emptySet(),
-    )
 
     /**
      * [replaceExternalSubtitle] loads a local file in place of the external track that was loaded
@@ -83,14 +66,12 @@ internal class AutoSyncMpvCoordinator(
         operationToken++
         job?.cancel()
         job = null
-        retryContext = null
         appliedDelayMs = null
-        _retryState.value = AutoSyncRetryUiState()
     }
 
     fun onManualSubtitleDelayChanged(delayMs: Int) {
         // The runtime echoes our applied delay back through the controller. That is not a
-        // manual adjustment and must keep the successful result available for a reference retry.
+        // manual adjustment.
         if (appliedDelayMs == delayMs) return
         cancel()
         AutoSyncSyncedSubtitle.clear()
@@ -110,22 +91,6 @@ internal class AutoSyncMpvCoordinator(
 
     private fun showFailure(token: Long, resource: StringResource) =
         showMessage(token, AutoSyncBubbleKind.Failure, resource)
-
-    fun retryWithAnotherReference() {
-        val snapshot = retryContext ?: return
-        if (_retryState.value.busy || _retryState.value.exhausted) return
-        operationToken++
-        job?.cancel()
-        val retry = snapshot.copy(rejectedKeys = mergeRejectedReferenceKeys(
-            snapshot.rejectedKeys,
-            snapshot.resolved.reference.key,
-            snapshot.resolved.reference.equivalentKeys,
-        ))
-        retryContext = retry
-        _retryState.value = AutoSyncRetryUiState(available = true, busy = true, status = AutoSyncRetryStatus.TRYING)
-        runSync(snapshot.resolved.subtitleUrl, AutoSyncCandidateScope.SELECTED_ONLY,
-            snapshot.base, snapshot.replaceExternalSubtitle, retry)
-    }
 
     fun start(
         url: String,
@@ -151,11 +116,10 @@ internal class AutoSyncMpvCoordinator(
         candidateScope: AutoSyncCandidateScope,
         base: PlayerEngineController,
         replaceExternalSubtitle: (String, String) -> Unit,
-        retry: RetryContext? = null,
     ) {
         val token = operationToken
-        val subtitleHeaders = retry?.resolved?.subtitleHeaders ?: getSubtitleHeaders(url)
-        val subtitleLanguage = retry?.language ?: candidates.firstOrNull { it.url == url }?.language
+        val subtitleHeaders = getSubtitleHeaders(url)
+        val subtitleLanguage = candidates.firstOrNull { it.url == url }?.language
             ?.takeIf { it.isNotBlank() } ?: getPreferredLanguage()
         EmbeddedSubtitleTimelineLoader.prefetch(scope, sourceUrl, sourceHeaders)
 
@@ -163,7 +127,6 @@ internal class AutoSyncMpvCoordinator(
             try {
                 showMessage(token, AutoSyncBubbleKind.Working, Res.string.autosync_toast_analyzing)
                 var outcome: AutoSyncAnalysisOutcome? = null
-                var searchOutcome: AutoSyncReferenceSearchOutcome? = null
                 suspend fun search(searchScope: AutoSyncCandidateScope) =
                     AutomaticSubtitleSync.findTimelineRetime(
                         sourceKey = sourceUrl,
@@ -176,10 +139,6 @@ internal class AutoSyncMpvCoordinator(
                             { candidates }
                         } else null,
                         onAnalysisOutcome = { outcome = it },
-                        selectedSubtitleBodyDeferred = retry?.let { CompletableDeferred(it.originalBody) },
-                        excludedReferenceKeys = retry?.rejectedKeys.orEmpty(),
-                        requiredReferenceSource = retry?.resolved?.reference?.source,
-                        onReferenceSearchOutcome = { searchOutcome = it },
                         allowLiveReference = false,
                     )
                 var resolved = search(candidateScope)
@@ -193,16 +152,6 @@ internal class AutoSyncMpvCoordinator(
                 currentCoroutineContext().ensureActive()
                 if (token != operationToken) return@launch
                 if (resolved == null) {
-                    if (retry != null) {
-                        val exhausted = searchOutcome == AutoSyncReferenceSearchOutcome.EXHAUSTED
-                        _retryState.value = AutoSyncRetryUiState(
-                            available = true,
-                            exhausted = exhausted,
-                            status = if (exhausted) AutoSyncRetryStatus.EXHAUSTED else AutoSyncRetryStatus.FAILED,
-                        )
-                        showFailure(token, Res.string.autosync_toast_retry_none)
-                        return@launch
-                    }
                     showFailure(token, when (outcome) {
                         AutoSyncAnalysisOutcome.NO_SUBTITLE_TRACKS,
                         AutoSyncAnalysisOutcome.NO_USABLE_REFERENCE -> Res.string.autosync_toast_failed_no_reference
@@ -214,10 +163,9 @@ internal class AutoSyncMpvCoordinator(
 
                 val chosenUrl = resolved.subtitleUrl
                 val tolerance = AutoSyncPreferencesRepository.syncToleranceMs.value
-                val withinTolerance = retry == null && tolerance > 0 && chosenUrl == url &&
+                val withinTolerance = tolerance > 0 && chosenUrl == url &&
                     resolved.timeline.maxAlignmentShiftMs() <= tolerance
-                // Always retain original timestamps: retries must never retime an already shifted file.
-                val originalBody = retry?.originalBody ?: resolved.subtitleBody
+                val originalBody = resolved.subtitleBody
                     ?: AutomaticSubtitleSync.downloadSubtitleBody(
                         url = chosenUrl,
                         headers = resolved.subtitleHeaders.ifEmpty { getSubtitleHeaders(chosenUrl) },
@@ -236,14 +184,9 @@ internal class AutoSyncMpvCoordinator(
                 }
                 base.setSubtitleDelayMs(0)
                 appliedDelayMs = 0
-                retryContext = RetryContext(resolved, originalBody, subtitleLanguage, base,
-                    replaceExternalSubtitle, retry?.rejectedKeys.orEmpty())
-                _retryState.value = AutoSyncRetryUiState(available = true,
-                    status = if (retry == null) AutoSyncRetryStatus.IDLE else AutoSyncRetryStatus.UPDATED)
                 appliedListener?.invoke(chosenUrl, 0)
                 AutoSyncSyncedSubtitle.mark(chosenUrl)
                 showMessage(token, AutoSyncBubbleKind.Success, when {
-                    retry != null -> Res.string.autosync_toast_retry_synced
                     chosenUrl != url -> Res.string.autosync_toast_synced_replaced
                     withinTolerance -> Res.string.autosync_toast_in_sync
                     else -> Res.string.autosync_toast_synced
@@ -253,10 +196,6 @@ internal class AutoSyncMpvCoordinator(
             } catch (_: Exception) {
                 if (token != operationToken) return@launch
                 showFailure(token, Res.string.autosync_toast_failed)
-            } finally {
-                if (token == operationToken && _retryState.value.busy) {
-                    _retryState.value = _retryState.value.copy(busy = false, status = AutoSyncRetryStatus.FAILED)
-                }
             }
         }
     }
@@ -296,10 +235,6 @@ internal open class AutoSyncMpvEngineController(
     private val coordinator: AutoSyncMpvCoordinator,
     private val replaceExternalSubtitle: (replacedUrl: String, path: String) -> Unit,
 ) : PlayerEngineController by base, AutoSyncPlayerController {
-    override val autoSyncRetryState = coordinator.retryState
-
-    override fun retryWithAnotherReference() = coordinator.retryWithAnotherReference()
-
     override fun setAutoSyncSubtitleCandidates(candidates: List<AutoSyncSubtitleCandidate>) =
         coordinator.setCandidates(candidates)
 

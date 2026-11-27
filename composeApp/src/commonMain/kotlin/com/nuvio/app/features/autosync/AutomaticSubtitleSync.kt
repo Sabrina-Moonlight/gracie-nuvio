@@ -7,7 +7,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -165,9 +164,6 @@ internal object AutomaticSubtitleSync {
         onNoSubtitleTracks: () -> Unit = {},
         onAnalysisOutcome: ((AutoSyncAnalysisOutcome) -> Unit)? = null,
         sourceHeaders: Map<String, String> = emptyMap(),
-        excludedReferenceKeys: Set<String> = emptySet(),
-        requiredReferenceSource: AutoSyncReferenceSource? = null,
-        onReferenceSearchOutcome: ((AutoSyncReferenceSearchOutcome) -> Unit)? = null,
         /** A follow-up search in another language: log into the current debug session. */
         continueDebugSession: Boolean = false,
         /** False when the player does not feed [EmbeddedSubtitleCueStore] (libmpv): indexed references only. */
@@ -190,13 +186,6 @@ internal object AutomaticSubtitleSync {
         AutoSyncDebugLog.info {
             "mode=${if (aggressiveMode) "AGGRESSIVE" else "PASSIVE"}"
         }
-        if (requiredReferenceSource != null) {
-            AutoSyncDebugLog.section { "REFERENCE RETRY" }
-            AutoSyncDebugLog.info {
-                "source=${requiredReferenceSource.name} " +
-                    "rejected=${excludedReferenceKeys.sorted().joinToString(",")}"
-            }
-        }
 
         var cleanupStartedAtMs: Long? = null
         var cleanupCanceledLoads = 0
@@ -205,14 +194,10 @@ internal object AutomaticSubtitleSync {
 
         val result = supervisorScope {
             val indexedTimelineDeferred = async {
-                if (requiredReferenceSource == AutoSyncReferenceSource.LIVE) {
-                    null
-                } else {
-                    EmbeddedSubtitleTimelineLoader.load(
-                        sourceUrl = sourceKey,
-                        sourceHeaders = sourceHeaders,
-                    )
-                }
+                EmbeddedSubtitleTimelineLoader.load(
+                    sourceUrl = sourceKey,
+                    sourceHeaders = sourceHeaders,
+                )
             }
             val selectedSubtitleDeferred = async {
                 val sharedBody = if (selectedSubtitleBodyDeferred != null) {
@@ -545,7 +530,6 @@ internal object AutomaticSubtitleSync {
                     markSubtitleLoadCancellation(selectedSubtitleUrl, source = "selected")
                 }
                 selectedSubtitleDeferred.cancel()
-                onReferenceSearchOutcome?.invoke(AutoSyncReferenceSearchOutcome.UNAVAILABLE)
                 onAnalysisOutcome?.invoke(AutoSyncAnalysisOutcome.SUBTITLE_UNAVAILABLE)
                 AutoSyncDebugLog.section { "FINAL RECOMMENDATION" }
                 AutoSyncDebugLog.warn {
@@ -557,13 +541,9 @@ internal object AutomaticSubtitleSync {
             var referenceTracks: List<ReferenceTrack> = emptyList()
             var forcedFallbackTracks: List<ReferenceTrack> = emptyList()
             var referenceSource: AutoSyncReferenceSource? = null
-            var hadEligibleReferencesBeforeExclusion = false
 
             AutoSyncDebugLog.section { "INDEXED EMBEDDED REFERENCE" }
-            if (
-                requiredReferenceSource != AutoSyncReferenceSource.LIVE &&
-                indexedTimeline != null
-            ) {
+            if (indexedTimeline != null) {
                 AutoSyncDebugLog.info {
                     "source=${indexedTimeline.source} tracks=${indexedTimeline.tracks.size} " +
                         "requests=${indexedTimeline.rangeRequests} bytes=${indexedTimeline.bytesDownloaded} " +
@@ -582,16 +562,10 @@ internal object AutomaticSubtitleSync {
                         }
                     }
                 }
-                val allEligibleProfiles = profiles.filter { profile ->
+                val eligibleProfiles = profiles.filter { profile ->
                     profile.fullDialogueCandidate &&
                         profile.cueCount >= MIN_FULL_DIALOGUE_CUES &&
                         profile.spanMs >= MIN_INDEXED_REFERENCE_SPAN_MS
-                }
-                if (requiredReferenceSource == AutoSyncReferenceSource.INDEXED) {
-                    hadEligibleReferencesBeforeExclusion = allEligibleProfiles.isNotEmpty()
-                }
-                val eligibleProfiles = allEligibleProfiles.filterNot { profile ->
-                    profile.track.key in excludedReferenceKeys
                 }
                 val preferredProfiles =
                     eligibleProfiles.filter { profile -> profile.fullDialogue }
@@ -614,25 +588,13 @@ internal object AutomaticSubtitleSync {
                 if (referenceTracks.isNotEmpty()) {
                     referenceSource = AutoSyncReferenceSource.INDEXED
                 }
-            } else if (requiredReferenceSource == AutoSyncReferenceSource.INDEXED) {
-                AutoSyncDebugLog.info {
-                    "indexed retry reference catalog is unavailable"
-                }
-            } else if (requiredReferenceSource == AutoSyncReferenceSource.LIVE) {
-                AutoSyncDebugLog.info {
-                    "retry constrained to the existing Media3 reference namespace"
-                }
             } else {
                 AutoSyncDebugLog.info {
                     "indexed timeline unavailable; checking Media3 for a near-complete embedded timeline"
                 }
             }
 
-            if (
-                referenceTracks.isEmpty() &&
-                requiredReferenceSource != AutoSyncReferenceSource.INDEXED &&
-                allowLiveReference
-            ) {
+            if (referenceTracks.isEmpty() && allowLiveReference) {
                 val liveSelection = awaitNearCompleteLiveReferences(
                     sourceKey = sourceKey,
                     preferredLanguage = preferredLanguage,
@@ -642,38 +604,15 @@ internal object AutomaticSubtitleSync {
                     } else {
                         LIVE_REFERENCE_WAIT_MS
                     },
-                    excludedReferenceKeys = excludedReferenceKeys,
                 )
                 referenceTracks = liveSelection.primary
                 forcedFallbackTracks = liveSelection.forcedFallback
-                if (requiredReferenceSource == AutoSyncReferenceSource.LIVE) {
-                    hadEligibleReferencesBeforeExclusion =
-                        liveSelection.hadEligibleBeforeExclusion
-                }
                 if (referenceTracks.isNotEmpty()) {
                     referenceSource = AutoSyncReferenceSource.LIVE
                 }
             }
 
-            if (requiredReferenceSource != null) {
-                AutoSyncDebugLog.info {
-                    "RETRY_REFERENCE_CATALOG source=${requiredReferenceSource.name} " +
-                        "remainingPrimary=${referenceTracks.size} " +
-                        "remainingForced=${forcedFallbackTracks.size} " +
-                        "excluded=${excludedReferenceKeys.size}"
-                }
-            }
-
             if (referenceTracks.isEmpty()) {
-                if (requiredReferenceSource != null) {
-                    onReferenceSearchOutcome?.invoke(
-                        if (hadEligibleReferencesBeforeExclusion) {
-                            AutoSyncReferenceSearchOutcome.EXHAUSTED
-                        } else {
-                            AutoSyncReferenceSearchOutcome.UNAVAILABLE
-                        },
-                    )
-                }
                 val noSubtitleTracks = indexedTimeline?.noSubtitleTracks == true
                 if (noSubtitleTracks) {
                     onNoSubtitleTracks()
@@ -1402,9 +1341,6 @@ internal object AutomaticSubtitleSync {
                 }
             }
             if (winningFamily == null || winningMatch == null || !winningMatch.timeline.confident) {
-                if (requiredReferenceSource != null) {
-                    onReferenceSearchOutcome?.invoke(AutoSyncReferenceSearchOutcome.EXHAUSTED)
-                }
                 // Only a selected subtitle that clearly fits none of the references it was tried
                 // against is reported as out of sync; anything less certain stays inconclusive.
                 val selectedFamily = timingFamilies.firstOrNull { family ->
@@ -2053,13 +1989,11 @@ internal object AutomaticSubtitleSync {
         preferredLanguage: String?,
         target: List<SubtitleSyncCue>,
         waitMs: Long = LIVE_REFERENCE_WAIT_MS,
-        excludedReferenceKeys: Set<String> = emptySet(),
     ): ReferenceSelection {
         val targetSpan = referenceSpanMs(target).coerceAtLeast(1L)
         val started = autoSyncElapsedRealtimeMs()
         var lastSignature = ""
         var forcedFallback: List<ReferenceProfile> = emptyList()
-        var hadEligibleBeforeExclusion = false
 
         while (true) {
             currentCoroutineContext().ensureActive()
@@ -2068,16 +2002,10 @@ internal object AutomaticSubtitleSync {
                 .map { track -> track.copy(cues = deduplicateReferenceCues(track.cues)) }
 
             val profiles = prepared.map(::buildReferenceProfile)
-            val allEligibleProfiles = profiles.filter { profile ->
+            val eligibleProfiles = profiles.filter { profile ->
                 profile.fullDialogueCandidate &&
                     profile.cueCount >= MIN_LIVE_REFERENCE_CUES &&
                     profile.spanMs.toDouble() / targetSpan.toDouble() >= MIN_LIVE_REFERENCE_SPAN_RATIO
-            }
-            if (allEligibleProfiles.isNotEmpty()) {
-                hadEligibleBeforeExclusion = true
-            }
-            val eligibleProfiles = allEligibleProfiles.filterNot { profile ->
-                profile.track.key in excludedReferenceKeys
             }
             val ready = orderReferenceProfiles(
                 eligibleProfiles.filter { profile -> profile.fullDialogue },
@@ -2106,7 +2034,6 @@ internal object AutomaticSubtitleSync {
                     forcedFallback = forcedFallback.map {
                         it.track.copy(cues = it.track.cues.toList())
                     },
-                    hadEligibleBeforeExclusion = hadEligibleBeforeExclusion,
                 )
             }
 
@@ -2121,7 +2048,6 @@ internal object AutomaticSubtitleSync {
             }
             return ReferenceSelection(
                 primary = forcedFallback.map { it.track.copy(cues = it.track.cues.toList()) },
-                hadEligibleBeforeExclusion = hadEligibleBeforeExclusion,
             )
         }
 
@@ -2134,9 +2060,7 @@ internal object AutomaticSubtitleSync {
                 "Media3 did not expose a near-complete reference within ${waitMs}ms"
             }
         }
-        return ReferenceSelection(
-            hadEligibleBeforeExclusion = hadEligibleBeforeExclusion,
-        )
+        return ReferenceSelection()
     }
 
     private fun groupEquivalentReferenceTimelines(
@@ -2466,7 +2390,6 @@ internal object AutomaticSubtitleSync {
     private data class ReferenceSelection(
         val primary: List<ReferenceTrack> = emptyList(),
         val forcedFallback: List<ReferenceTrack> = emptyList(),
-        val hadEligibleBeforeExclusion: Boolean = false,
     )
     private data class ReferenceProfile(
         val track: ReferenceTrack,
@@ -2556,11 +2479,6 @@ internal enum class AutoSyncAnalysisOutcome {
 internal enum class AutoSyncReferenceSource {
     INDEXED,
     LIVE,
-}
-
-internal enum class AutoSyncReferenceSearchOutcome {
-    EXHAUSTED,
-    UNAVAILABLE,
 }
 
 internal data class AutoSyncReferenceTimingFingerprint(
