@@ -55,7 +55,12 @@ internal val navigationSavedStateConfiguration = SavedStateConfiguration {
 internal fun disposeRouteResources(route: AppRoute) {
     when (route) {
         is StreamRoute -> {
-            StreamsRepository.clear()
+            val launch = StreamLaunchStore.get(route.launchId)
+            if (launch?.downloadQueue != null) {
+                StreamsRepository.clearUnlessServingOtherEpisode(launch.seasonNumber, launch.episodeNumber)
+            } else {
+                StreamsRepository.clear()
+            }
             StreamLaunchStore.remove(route.launchId)
         }
 

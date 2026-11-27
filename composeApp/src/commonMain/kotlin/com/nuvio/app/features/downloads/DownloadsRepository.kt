@@ -318,6 +318,22 @@ object DownloadsRepository {
         persist()
     }
 
+    fun cancelAllDownloads() {
+        ensureLoaded()
+        val items = _uiState.value.items
+        if (items.isEmpty()) return
+
+        items.forEach { item ->
+            activeHandles.remove(item.id)?.cancel()
+            DownloadsPlatformDownloader.removeFile(playableLocalFileUri(item) ?: item.localFileUri)
+            DownloadsPlatformDownloader.removePartialFile(item.fileName)
+        }
+        activeHandles.clear()
+
+        publish(emptyList())
+        persist()
+    }
+
     private fun loadFromDisk() {
         _hasUnseenCompleted.value = false
         hasLoaded = true

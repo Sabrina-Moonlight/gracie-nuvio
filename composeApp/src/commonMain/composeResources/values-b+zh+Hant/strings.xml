@@ -33,7 +33,6 @@
     <string name="action_save">儲存</string>
     <string name="action_saving">儲存中…</string>
     <string name="action_switch">切換</string>
-    <string name="action_validate">驗證</string>
     <string name="addon_installing">安裝中</string>
     <string name="addon_title">附加元件</string>
     <string name="addons_badge_active">啟用中</string>
@@ -51,8 +50,6 @@
     <string name="addons_appstore_empty_title">打造專屬於你的 Nuvio。</string>
     <string name="addons_appstore_input_placeholder">附加元件 URL</string>
     <string name="addons_appstore_install_button">新增附加元件</string>
-    <string name="store_empty_unavailable_title">這裡尚無內容</string>
-    <string name="store_empty_unavailable_message">你目前的附加元件沒有可顯示的內容。</string>
     <string name="addons_empty_subtitle">新增 manifest URL，開始將目錄、中繼資料、串流或字幕載入 Nuvio。</string>
     <string name="addons_empty_title">尚未安裝任何附加元件。</string>
     <string name="addons_error_enter_url">請輸入附加元件 URL。</string>
@@ -95,7 +92,6 @@
     <string name="collections_editor_cover_none">無</string>
     <string name="collections_editor_cover">封面</string>
     <string name="collections_editor_create_collection">建立收藏</string>
-    <string name="collections_editor_done">完成</string>
     <string name="collections_editor_edit_collection">編輯收藏</string>
     <string name="collections_editor_edit_folder">編輯資料夾</string>
     <string name="collections_editor_folder_editor_help">使用與主收藏編輯器相同的結構，設定資料夾的身分、呈現方式與目錄來源。</string>
@@ -258,11 +254,8 @@
     <string name="collections_editor_trakt_sort_popular">人氣</string>
     <string name="collections_editor_trakt_sort_percentage">百分比</string>
     <string name="collections_editor_trakt_sort_votes">投票數</string>
-    <string name="collections_editor_trakt_enter_name_url_or_id">輸入 Trakt 清單名稱、URL 或 ID</string>
-    <string name="collections_editor_trakt_enter_id_or_url">輸入 Trakt 清單 ID 或 URL</string>
     <string name="collections_editor_trakt_load_failed">無法載入 Trakt 清單</string>
     <string name="collections_editor_trakt_no_lists_found">找不到 Trakt 清單</string>
-    <string name="collections_editor_trakt_resolved_subtitle">已解析的 Trakt 清單</string>
     <string name="collections_editor_trakt_fallback_title">Trakt 清單 %1$d</string>
     <string name="collections_editor_tmdb_genre_action">動作</string>
     <string name="collections_editor_tmdb_genre_adventure">冒險</string>
@@ -346,7 +339,6 @@
     <string name="trailer_enter_fullscreen">進入全螢幕</string>
     <string name="trailer_exit_fullscreen">結束全螢幕</string>
     <string name="player_seek_position">播放位置</string>
-    <string name="compose_action_reload">重新載入</string>
     <string name="compose_auth_already_have_account">已有帳戶？</string>
     <string name="compose_auth_continue_without_account">不建立帳戶繼續</string>
     <string name="compose_auth_create_account">建立帳戶</string>
@@ -433,7 +425,6 @@
     <string name="compose_player_capture_line">擷取</string>
     <string name="compose_player_close">關閉播放器</string>
     <string name="compose_player_color">顏色</string>
-    <string name="compose_player_currently_playing">目前播放</string>
     <string name="compose_player_episode_code_episode_only">E%1$d</string>
     <string name="compose_player_episode_code_full">S%1$d E%2$d</string>
     <string name="compose_player_episode_title_format">S%1$d E%2$d • %3$s</string>
@@ -464,7 +455,6 @@
     <string name="compose_player_go_back">返回</string>
     <string name="compose_player_reload">重新載入</string>
     <string name="compose_player_reset">重設</string>
-    <string name="compose_player_reset_defaults">重設為預設值</string>
     <string name="compose_player_resize_fill">填滿</string>
     <string name="compose_player_resize_fit">符合</string>
     <string name="compose_player_resize_zoom">縮放</string>
@@ -494,8 +484,6 @@
     <string name="compose_search_discover_title">探索</string>
     <string name="compose_search_empty_failed_message">已安裝的附加元件未能傳回有效的搜尋結果。</string>
     <string name="compose_search_empty_failed_title">搜尋失敗</string>
-    <string name="compose_search_empty_no_active_addons_message">搜尋前請啟用或新增附加元件。</string>
-    <string name="compose_search_empty_no_active_addons_title">沒有啟用的附加元件</string>
     <string name="compose_search_empty_no_results_message">已安裝的可搜尋目錄未傳回任何符合此查詢的結果。</string>
     <string name="compose_search_empty_no_results_title">找不到結果</string>
     <string name="compose_search_empty_no_search_catalogs_message">你啟用的附加元件不支援目錄搜尋。</string>
@@ -504,11 +492,9 @@
     <string name="compose_search_recent_searches">最近搜尋</string>
     <string name="compose_search_remove_recent_search">移除最近搜尋</string>
     <string name="compose_settings_category_about">關於</string>
-    <string name="compose_settings_category_general">一般</string>
     <string name="compose_settings_page_account">帳戶</string>
     <string name="compose_settings_page_addons">附加元件</string>
     <string name="compose_settings_page_advanced">進階</string>
-    <string name="compose_settings_page_appearance">版面配置</string>
     <string name="compose_settings_page_content_discovery">內容與探索</string>
     <string name="compose_settings_page_continue_watching">繼續觀看</string>
     <string name="compose_settings_page_debrid">已連接的服務</string>
@@ -528,29 +514,21 @@
     <string name="settings_appearance_section_streams">串流</string>
     <string name="compose_settings_page_supporters_contributors">支持者與貢獻者</string>
     <string name="compose_settings_page_tmdb_enrichment">TMDB 資料增強</string>
-    <string name="compose_settings_page_trakt">Trakt</string>
     <string name="compose_settings_page_tracking">追蹤</string>
     <string name="compose_settings_root_about_section">關於</string>
     <string name="compose_settings_root_account_description">帳戶與同步狀態</string>
     <string name="compose_settings_root_account_section">帳戶</string>
     <string name="compose_settings_root_advanced_description">啟動與個人檔案行為。</string>
-    <string name="compose_settings_root_advanced_section">進階</string>
-    <string name="compose_settings_root_appearance_description">首頁、串流、收藏與詳細資料頁面</string>
     <string name="compose_settings_root_check_updates_description">下載最新版本</string>
     <string name="compose_settings_root_check_updates_title">檢查更新</string>
     <string name="compose_settings_root_content_discovery_description">管理附加元件與探索來源。</string>
-    <string name="compose_settings_root_content_discovery_description_appstore">管理附加元件並選擇 Nuvio 中顯示的內容。</string>
-    <string name="compose_settings_root_downloads_description">管理你已下載的電影與集數。</string>
-    <string name="compose_settings_root_downloads_description_appstore">管理你已儲存至此裝置的內容。</string>
     <string name="compose_settings_root_downloads_title">下載</string>
-    <string name="compose_settings_root_general_section">一般</string>
     <string name="compose_settings_root_integrations_description">管理可用的整合</string>
     <string name="compose_settings_root_notifications_description">管理集數上線提醒並傳送測試通知。</string>
     <string name="compose_settings_root_privacy_policy_description">瞭解 Nuvio 如何處理你的資料</string>
     <string name="compose_settings_root_streams_description">串流結果顯示與徽章 URL 規則。</string>
     <string name="compose_settings_root_switch_profile_description">切換至其他個人檔案。</string>
     <string name="compose_settings_root_switch_profile_title">切換個人檔案</string>
-    <string name="compose_settings_root_trakt_description">開啟 Trakt 連接畫面</string>
     <string name="compose_settings_root_tracking_description">連接追蹤提供者，並選擇由哪一個提供者支援你的媒體庫與繼續觀看。</string>
     <string name="settings_search_empty">找不到設定。</string>
     <string name="settings_search_placeholder">搜尋設定...</string>
@@ -610,19 +588,15 @@
     <string name="settings_licenses_attributions_exoplayer_title">AndroidX Media3 ExoPlayer 1.8.0</string>
     <string name="settings_licenses_attributions_exoplayer_body">用於 Android 版本的播放。</string>
     <string name="settings_licenses_attributions_exoplayer_license">依 Apache License, Version 2.0 授權。</string>
-    <string name="compose_trakt_list_picker_loading">正在載入你的 Trakt 清單…</string>
-    <string name="compose_trakt_list_picker_subtitle">選擇要在 Trakt 上將此標題儲存至何處</string>
     <string name="compose_tracking_list_picker_loading">正在載入清單…</string>
     <string name="compose_tracking_list_picker_subtitle">選擇要將此標題儲存至何處</string>
     <string name="action_donate">捐款</string>
-    <string name="action_support_nuvio">支持 Nuvio</string>
     <string name="cw_action_go_to_details">前往詳細資料</string>
     <string name="cw_action_remove">移除</string>
     <string name="cw_action_start_from_beginning">從頭開始</string>
     <string name="detail_btn_play">播放</string>
     <string name="detail_comments_badge_rating">%1$d/10</string>
     <string name="detail_comments_badge_review">評論</string>
-    <string name="detail_comments_badge_spoiler">劇透</string>
     <string name="detail_comments_empty">尚無 Trakt 評論。</string>
     <string name="detail_comments_likes">%1$d 個讚</string>
     <string name="detail_comments_spoiler_card">此評論包含劇透。</string>
@@ -631,16 +605,11 @@
     <string name="detail_tab_trailer">預告片</string>
     <string name="detail_trailer_category_count">%1$s（%2$d）</string>
     <string name="detail_trailers_title">預告片</string>
-    <string name="downloads_empty_episodes">沒有已完成的集數</string>
     <string name="downloads_empty_title">尚無下載</string>
-    <string name="downloads_episode_count">已下載 %1$d 集</string>
     <string name="downloads_open_directory">開啟下載資料夾</string>
     <string name="downloads_open_directory_failed">無法開啟下載資料夾</string>
     <string name="downloads_section_active">進行中</string>
-    <string name="downloads_section_movies">電影</string>
-    <string name="downloads_section_shows">節目</string>
     <string name="downloads_show_downloads">顯示下載</string>
-    <string name="downloads_status_completed">已完成 • %1$s</string>
     <string name="downloads_status_downloading">下載中 • %1$s</string>
     <string name="downloads_status_failed">失敗</string>
     <string name="downloads_status_paused">已暫停 • %1$s</string>
@@ -656,7 +625,6 @@
     <string name="home_view_all">檢視全部</string>
     <string name="play_manually">手動播放</string>
     <string name="poster_logo_content_description">%1$s 標誌</string>
-    <string name="settings_account">帳戶</string>
     <string name="settings_account_delete_account">刪除帳戶</string>
     <string name="settings_account_delete_account_description">這將永久刪除你的帳戶與所有相關資料。</string>
     <string name="settings_account_delete_confirm_message">此操作無法復原。你的所有資料、個人檔案與同步紀錄將被永久移除。</string>
@@ -688,7 +656,6 @@
     <string name="settings_appearance_app_language_restart_title">需要重新啟動</string>
     <string name="settings_appearance_app_language_restart_message">請關閉並重新開啟應用程式，以更新此語言的版面配置。</string>
     <string name="settings_appearance_nav_bar_style">導覽列</string>
-    <string name="settings_appearance_nav_bar_style_sheet_title">導覽列樣式</string>
     <string name="settings_nav_bar_glow">玻璃光暈</string>
     <string name="settings_nav_bar_glow_description">在浮動列周圍加上柔和光線。</string>
     <string name="settings_nav_bar_glow_on">光暈開啟</string>
@@ -799,7 +766,6 @@
     <string name="settings_custom_poster_description">提供外部服務的海報 URL 模式。若某個標題沒有對應的預留位置值，將改用原始海報。</string>
     <string name="settings_custom_poster_placeholder">https://example.com/poster?id={id}&amp;id_type={id_type}&amp;type={type}</string>
     <string name="settings_custom_poster_active">自訂海報來源已啟用</string>
-    <string name="settings_custom_poster_none">未設定模式</string>
     <string name="settings_custom_poster_save">儲存</string>
     <string name="settings_custom_poster_clear">清除</string>
     <!-- 自訂海報 URL - 畫面切換 -->
@@ -850,7 +816,6 @@
     <string name="settings_continue_watching_up_next_title">下一集以最遠集數為準</string>
     <string name="settings_continue_watching_use_episode_thumbnails_description">可用時優先使用集數縮圖。</string>
     <string name="settings_continue_watching_use_episode_thumbnails_title">繼續觀看優先使用集數縮圖</string>
-    <string name="settings_content_discovery_section_home">首頁</string>
     <string name="settings_content_discovery_section_sources">來源</string>
     <string name="settings_content_discovery_section_search">搜尋</string>
     <string name="settings_content_discovery_recent_searches">最近搜尋</string>
@@ -947,9 +912,7 @@
     <string name="settings_fusion_badge_preview_empty">此 URL 中沒有 Fusion 樣式徽章圖片。</string>
     <string name="settings_fusion_badge_group_title">群組 %1$d</string>
     <string name="settings_fusion_badge_other_group_title">其他 Fusion 徽章</string>
-    <string name="settings_debrid_key_valid">API 金鑰已驗證。</string>
     <string name="settings_debrid_key_invalid">無法驗證此 API 金鑰。</string>
-    <string name="settings_mdb_add_api_key_first">開啟評分前，請先在下方新增你的 MDBList API 金鑰。</string>
     <string name="settings_mdb_api_key_description">從 MDBList 取得評分所需</string>
     <string name="settings_mdb_api_key_label">API 金鑰</string>
     <string name="settings_mdb_api_key_title">API 金鑰</string>
@@ -964,8 +927,6 @@
     <string name="settings_meta_actions_description">播放與儲存控制項。</string>
     <string name="settings_meta_cast">演員</string>
     <string name="settings_meta_cast_description">主要演員名單。</string>
-    <string name="settings_meta_cinematic_background">電影感背景</string>
-    <string name="settings_meta_cinematic_background_description">內容後方的模糊背景，類似串流畫面。</string>
     <string name="settings_meta_background_mode">背景模式</string>
     <string name="settings_meta_background_mode_description">選擇中繼資料頁面後方美術圖的顯示方式。</string>
     <string name="settings_meta_poster_transition">海報轉場</string>
@@ -1021,8 +982,6 @@
     <string name="settings_notifications_test_for_title">為 %1$s 傳送本機測試通知。</string>
     <string name="settings_notifications_test_requires_saved_show">請先將節目儲存至媒體庫以測試通知。</string>
     <string name="settings_notifications_test_title">測試通知</string>
-    <string name="community_section_title">社群</string>
-    <string name="community_section_description">認識在行動版、電視版與網頁版上打造並支持 Nuvio 的人們。</string>
     <string name="community_membership_title">Nuvio 支持者會員</string>
     <string name="community_membership_description">支持 Nuvio 有助於支付基礎設施與持續開發的費用，同時讓核心體驗對所有人保持免費。</string>
     <string name="community_view_supporter_membership">查看支持者會員</string>
@@ -1046,7 +1005,6 @@
     <string name="community_tab_supporters">支持者</string>
     <string name="community_open_github">開啟 GitHub</string>
     <string name="community_github_profile_unavailable">GitHub 個人檔案無法使用</string>
-    <string name="community_no_message_attached">未附上訊息。</string>
     <string name="community_loading_contributors">正在載入貢獻者...</string>
     <string name="community_loading_supporters">正在載入支持者...</string>
     <string name="community_load_contributors_failed">無法載入貢獻者</string>
@@ -1057,7 +1015,6 @@
     <string name="community_error_unable_load_supporters">無法載入支持者。</string>
     <string name="community_error_contributors_request_failed">目前無法載入貢獻者。</string>
     <string name="community_error_supporters_request_failed">目前無法載入支持者。</string>
-    <string name="community_total_commits">共 %1$d 次提交</string>
     <string name="community_month_jan">1月</string>
     <string name="community_month_feb">2月</string>
     <string name="community_month_mar">3月</string>
@@ -1091,7 +1048,6 @@
     <string name="settings_playback_decoder_prefer_app">優先使用應用程式解碼器（FFmpeg）</string>
     <string name="settings_playback_decoder_prefer_device">優先使用裝置解碼器</string>
     <string name="settings_playback_decoder_priority">解碼器優先順序</string>
-    <string name="settings_playback_dialog_close">點按外部以關閉</string>
     <string name="settings_playback_dialog_save_close">點按外部以儲存並關閉</string>
     <string name="settings_playback_duration_day_one">%1$d 天</string>
     <string name="settings_playback_duration_days">%1$d 天</string>
@@ -1102,7 +1058,6 @@
     <string name="settings_playback_external_player">外部播放器</string>
     <string name="settings_playback_external_player_app">外部播放器應用程式</string>
     <string name="settings_playback_external_player_description_android">使用 Android 預設影片應用程式或系統選擇器開啟新的播放。</string>
-    <string name="settings_playback_external_player_description_ios">使用所選的已安裝播放器開啟新的播放。</string>
     <string name="settings_playback_external_player_forward_subtitles">將字幕轉傳至外部播放器</string>
     <string name="settings_playback_external_player_forward_subtitles_description">以你偏好的語言取得附加元件字幕，並傳遞給外部播放器。</string>
     <string name="settings_playback_external_player_send_skip_segments">傳送片頭與片尾時間戳</string>
@@ -1132,13 +1087,6 @@
     <string name="settings_playback_option_original_hint">需要啟用 TMDB 資料增強</string>
     <string name="settings_playback_option_forced">強制</string>
     <string name="settings_playback_option_none">無</string>
-    <string name="settings_playback_addon_subtitle_startup_all">所有附加元件字幕</string>
-    <string name="settings_playback_addon_subtitle_startup_all_description">播放前預先擷取並附加所有附加元件字幕。啟動最慢。</string>
-    <string name="settings_playback_addon_subtitle_startup_fast">快速啟動</string>
-    <string name="settings_playback_addon_subtitle_startup_fast_description">立即開始播放。選取附加元件字幕時可能會重新載入播放器一次。</string>
-    <string name="settings_playback_addon_subtitle_startup_mode">附加元件字幕載入</string>
-    <string name="settings_playback_addon_subtitle_startup_preferred">偏好語言</string>
-    <string name="settings_playback_addon_subtitle_startup_preferred_description">播放前預先擷取附加元件字幕，並附加偏好／次要語言軌道。</string>
     <string name="settings_playback_prefer_binge_group">優先使用 Binge 群組（下一集）</string>
     <string name="settings_playback_prefer_binge_group_description">在一般自動播放規則之前，先嘗試相同的來源設定檔（相同附加元件／畫質群組）。</string>
     <string name="settings_playback_reuse_binge_group">重複使用 Binge 群組</string>
@@ -1164,9 +1112,7 @@
     <string name="settings_playback_regex_preset_quality_4k_remux">4K / Remux</string>
     <string name="settings_playback_regex_preset_quality_720p_smaller">720p / 更小</string>
     <string name="settings_playback_regex_preset_web_sources">WEB 來源</string>
-    <string name="settings_playback_render_type">Libass 呈現模式</string>
     <string name="settings_playback_render_scale">字幕呈現解析度</string>
-    <string name="settings_playback_render_scale_description">較低解析度可提升複雜排版時的效能，但會犧牲銳利度</string>
     <string name="settings_playback_render_mode">ASS 呈現模式</string>
     <string name="settings_playback_render_mode_description">ASS/SSA 字幕繪製到視訊上的方式</string>
     <string name="settings_playback_render_mode_tunneled">隧道式播放會略過視訊效果管線。將自動使用覆蓋層。</string>
@@ -1208,11 +1154,9 @@
     <string name="settings_playback_parental_guide_description">播放開始時顯示家長指引覆蓋層。</string>
     <string name="settings_playback_subtitle_background_color">背景顏色</string>
     <string name="settings_playback_subtitle_bold">粗體</string>
-    <string name="settings_playback_subtitle_bold_description">使用較粗的字幕字型。</string>
     <string name="settings_playback_subtitle_color_transparent">透明</string>
     <string name="settings_playback_subtitle_outline">外框</string>
     <string name="settings_playback_subtitle_outline_color">外框顏色</string>
-    <string name="settings_playback_subtitle_outline_description">在字幕文字周圍繪製邊框。</string>
     <string name="settings_playback_subtitle_show_preferred_only">僅顯示偏好語言</string>
     <string name="settings_playback_subtitle_show_preferred_only_description">僅顯示符合你偏好字幕語言的字幕。</string>
     <string name="settings_playback_subtitle_size">字幕大小</string>
@@ -1248,7 +1192,6 @@
     <string name="settings_playback_fallback_startup_timeout">來源開始的時間</string>
     <string name="settings_playback_fallback_next_source_blocked_by_engine_switch">請關閉「播放錯誤時自動切換引擎」以使用此功能。</string>
     <string name="player_error_source_startup_timeout">來源未在 %1$d 秒內開始。</string>
-    <string name="settings_playback_threshold_minutes">閾值分鐘數</string>
     <string name="settings_playback_threshold_mode">下一集閾值模式</string>
     <string name="settings_playback_threshold_mode_minutes_before_end">結束前幾分鐘</string>
     <string name="settings_playback_threshold_mode_percentage">百分比</string>
@@ -1329,7 +1272,6 @@
     <string name="settings_tmdb_section_modules">模組</string>
     <string name="settings_tmdb_section_title">TMDB 資料增強</string>
     <string name="settings_trakt_approval_redirect">核准後，你將自動被重新導向回來。</string>
-    <string name="settings_trakt_authentication">驗證</string>
     <string name="settings_trakt_comments">評論</string>
     <string name="settings_trakt_comments_description">在中繼資料頁面顯示 Trakt 評論</string>
     <string name="settings_trakt_connect">連接 Trakt</string>
@@ -1337,7 +1279,6 @@
     <string name="settings_trakt_default_user">Trakt 使用者</string>
     <string name="settings_trakt_disconnect">中斷連接</string>
     <string name="settings_trakt_failed_open_browser">無法開啟瀏覽器</string>
-    <string name="settings_trakt_features">功能</string>
     <string name="settings_trakt_finish_sign_in">完成連接核准</string>
     <string name="settings_trakt_intro_description">與 Trakt 同步你的願望清單、觀看進度、繼續觀看、Scrobble 與個人清單。</string>
     <string name="settings_trakt_missing_credentials">local.properties 中缺少 TRAKT_CLIENT_ID / TRAKT_CLIENT_SECRET。</string>
@@ -1408,8 +1349,6 @@
     <string name="settings_simkl_authorization_revoked">Simkl 授權已被撤銷。請重新連接。</string>
     <string name="settings_tracking_not_connected">未連接</string>
     <string name="tracking_source_simkl">Simkl</string>
-    <string name="tracking_library_source_simkl_selected">已選取 Simkl 願望清單</string>
-    <string name="tracking_watch_progress_simkl_selected">觀看進度來源已設為 Simkl</string>
     <string name="tracking_watch_progress_dialog_subtitle">選擇 Nuvio 讀取續播與繼續觀看所用的服務。Scrobble 對所有已連接的服務仍保持啟用。</string>
     <string name="trakt_library_source_title">媒體庫來源</string>
     <string name="trakt_library_source_subtitle">選擇 Nuvio 讀取媒體庫所用的來源</string>
@@ -1417,16 +1356,11 @@
     <string name="trakt_library_source_dialog_subtitle">選擇 Nuvio 讀取媒體庫所用的服務。播放會 Scrobble 至所有已連接的服務。</string>
     <string name="trakt_library_source_trakt">Trakt</string>
     <string name="trakt_library_source_nuvio">Nuvio 媒體庫</string>
-    <string name="trakt_library_source_trakt_selected">已選取 Trakt 媒體庫</string>
-    <string name="trakt_library_source_nuvio_selected">已選取 Nuvio 媒體庫</string>
     <string name="trakt_watch_progress_title">觀看進度</string>
     <string name="trakt_watch_progress_subtitle">選擇哪個進度來源支援續播與繼續觀看</string>
     <string name="trakt_watch_progress_dialog_title">觀看進度</string>
-    <string name="trakt_watch_progress_dialog_subtitle">選擇續播與繼續觀看應使用 Trakt 或 Nuvio Sync，同時 Trakt Scrobble 保持啟用。</string>
     <string name="trakt_watch_progress_source_trakt">Trakt</string>
     <string name="trakt_watch_progress_source_nuvio">Nuvio Sync</string>
-    <string name="trakt_watch_progress_trakt_selected">觀看進度來源已設為 Trakt</string>
-    <string name="trakt_watch_progress_nuvio_selected">觀看進度來源已設為 Nuvio Sync</string>
     <string name="trakt_more_like_this_source_title">更多類似內容來源</string>
     <string name="trakt_more_like_this_source_subtitle">選擇詳細資料頁面上推薦內容的來源</string>
     <string name="trakt_more_like_this_source_dialog_title">更多類似內容來源</string>
@@ -1567,7 +1501,6 @@
     <string name="lang_zulu">祖魯語</string>
     <string name="action_clear">清除</string>
     <string name="action_continue">繼續</string>
-    <string name="action_ignore">忽略</string>
     <string name="action_install">安裝</string>
     <string name="action_later">稍後</string>
     <string name="action_no">否</string>
@@ -1607,7 +1540,6 @@
     <string name="discover_empty_no_catalogs_title">沒有探索目錄</string>
     <string name="discover_empty_no_results_message">所選目錄與篩選條件未傳回任何項目。</string>
     <string name="discover_empty_no_results_title">找不到標題</string>
-    <string name="discover_empty_no_active_addons_message">瀏覽探索前請啟用或新增附加元件。</string>
     <string name="discover_select_catalog">選擇目錄</string>
     <string name="discover_select_genre">選擇類型</string>
     <string name="discover_select_type">選擇類型</string>
@@ -1623,7 +1555,6 @@
     <string name="home_continue_watching_watched">已觀看 %1$s</string>
     <string name="home_continue_watching_hours_minutes_left">剩餘 %1$dh %2$dm</string>
     <string name="home_continue_watching_minutes_left">剩餘 %1$dm</string>
-    <string name="home_empty_no_active_addons_message">啟用或新增附加元件以在首頁查看目錄。</string>
     <string name="home_empty_no_rows_message">你啟用的附加元件未提供可在首頁顯示的目錄。</string>
     <string name="home_empty_no_rows_title">沒有可用的首頁內容</string>
     <string name="home_load_failed_title">無法載入首頁</string>
@@ -1646,8 +1577,6 @@
     <string name="meta_section_trailers_description">預告片列與播放捷徑。</string>
     <string name="network_back_online">已重新連線</string>
     <string name="network_cannot_reach_servers">無法連線到伺服器</string>
-    <string name="network_error_empty_response_body">空白回應內容</string>
-    <string name="network_error_request_failed_http">請求失敗，HTTP %1$d</string>
     <string name="network_no_internet_connection">沒有網際網路連接</string>
     <string name="person_age">（%1$d 歲）</string>
     <string name="person_born">出生於 %1$s%2$s</string>
@@ -1713,9 +1642,6 @@
     <string name="streams_empty_load_failed_title">無法載入串流</string>
     <string name="playback_unavailable">播放無法使用</string>
     <string name="playback_unavailable_message">你目前的設定無法播放此標題。</string>
-    <string name="streams_empty_no_addons_message">請先安裝附加元件，以載入此標題的串流。</string>
-    <string name="streams_empty_no_stream_addon_message">你已安裝的附加元件未提供此類型標題的串流。</string>
-    <string name="streams_empty_no_stream_addon_title">沒有可用的串流附加元件</string>
     <string name="streams_empty_no_streams_message">你已安裝的附加元件皆未傳回此標題的串流。</string>
     <string name="streams_episode_badge">S%1$d E%2$d</string>
     <string name="streams_episode_fallback_title">集數</string>
@@ -1755,7 +1681,6 @@
     <string name="trailer_close">關閉預告片</string>
     <string name="trailer_unable_to_play">無法播放預告片</string>
     <string name="trakt_lists_load_failed">無法載入 Trakt 清單</string>
-    <string name="trakt_lists_update_failed">無法更新 Trakt 清單</string>
     <string name="tracking_lists_update_failed">無法更新追蹤清單</string>
     <string name="tracking_list_status_rewritten">%1$s 將此標題放入 %2$s，而非 %3$s</string>
     <string name="tracking_remove_confirmation_title">從 %1$s 移除？</string>
@@ -1763,11 +1688,8 @@
     <string name="tracking_removal_impact_history">觀看紀錄</string>
     <string name="tracking_removal_impact_rating">評分</string>
     <string name="tracking_removal_impact_history_and_rating">觀看紀錄與評分</string>
-    <string name="updates_asset_line">%1$s • %2$s</string>
     <string name="updates_check_failed">更新檢查失敗</string>
     <string name="updates_download_failed">下載失敗</string>
-    <string name="updates_download_empty_body">空白下載內容</string>
-    <string name="updates_download_file_missing">找不到已下載的更新檔案。</string>
     <string name="updates_downloading_progress">正在下載 %1$d%</string>
     <string name="updates_debug_test_complete">橫幅測試完成</string>
     <string name="updates_debug_test_description">預覽橫幅與模擬下載進度。</string>
@@ -1775,8 +1697,6 @@
     <string name="updates_install_failed">無法開始安裝</string>
     <string name="updates_latest_version">你正在使用最新版本。</string>
     <string name="updates_message_allow_installs">啟用 Nuvio 的應用程式安裝權限，然後返回並繼續。</string>
-    <string name="updates_message_downloading">正在下載更新...</string>
-    <string name="updates_message_no_updates">找不到更新。</string>
     <string name="updates_message_ready">新版本已準備好安裝。</string>
     <string name="updates_not_available">此版本不支援應用程式內更新。</string>
     <string name="updates_no_release_notes">未提供發行說明。</string>
@@ -1784,7 +1704,6 @@
     <string name="updates_release_notes">發行說明</string>
     <string name="updates_title_allow_installs">允許安裝以繼續</string>
     <string name="updates_title_available">有可用更新</string>
-    <string name="updates_title_status">更新狀態</string>
     <string name="addon_already_installed">該附加元件已安裝。</string>
     <string name="addon_invalid_url">請輸入有效的附加元件 URL</string>
     <string name="addon_load_manifest_failed">無法載入 manifest</string>
@@ -1810,10 +1729,6 @@
     <string name="downloads_live_downloading_with_total">正在下載 %1$s • %2$s / %3$s</string>
     <string name="downloads_live_failed">下載失敗</string>
     <string name="downloads_live_paused">已暫停 %1$s</string>
-    <string name="library_remove_confirm">移除</string>
-    <string name="library_remove_from_list_message">從 %2$s 移除 %1$s？</string>
-    <string name="library_remove_message">從你的媒體庫移除 %1$s？</string>
-    <string name="library_remove_title">從媒體庫移除？</string>
     <string name="media_movie">電影</string>
     <string name="notifications_channel_episode_releases_description">已儲存節目有新集數發布時提醒。</string>
     <string name="notifications_test_preview_body">預覽集數發布提醒。</string>
@@ -1827,7 +1742,6 @@
     <string name="player_error_stream_blocked">串流來源被封鎖或限制。請嘗試其他來源。</string>
     <string name="player_error_source_invalid_content">來源錯誤：串流來源傳回無效或無法播放的內容。連結可能已過期，或伺服器傳回錯誤頁面而非影片。\n\n請嘗試其他來源。[%1$s]</string>
     <string name="player_error_unsupported_format">此串流使用的格式可能不受你的裝置支援。請嘗試其他來源。[%1$s]</string>
-    <string name="player_engine_unavailable_rebuild">MPV 播放引擎無法使用。請重新建置應用程式。</string>
     <string name="profile_pin_changed_requires_refresh">此個人檔案的 PIN 已變更。請連接一次以重新整理此裝置上的鎖定。</string>
     <string name="profile_pin_clear_failed">無法移除 PIN 鎖定。請再試一次。</string>
     <string name="profile_pin_clear_requires_internet">請連接網際網路以移除 PIN 鎖定。</string>
@@ -1836,13 +1750,10 @@
     <string name="profile_pin_set_requires_internet">請連接網際網路以設定 PIN。</string>
     <string name="profile_primary_addons_required">此個人檔案使用主要附加元件。</string>
     <string name="streams_failed_to_load_scraper">無法載入 %1$s</string>
-    <string name="stream_default_name">串流</string>
     <string name="source_embedded">內嵌</string>
     <string name="trakt_authorization_denied">授權被拒絕</string>
     <string name="trakt_authorization_expired_reconnect">你的 Trakt 授權已失效。請重新連接你的 Trakt 帳戶。</string>
     <string name="trakt_complete_sign_in_browser">請在瀏覽器中完成 Trakt 登入</string>
-    <string name="trakt_connected">已連接至 Trakt</string>
-    <string name="trakt_disconnected">已中斷與 Trakt 的連接</string>
     <string name="trakt_invalid_callback">無效的 Trakt 回呼</string>
     <string name="trakt_invalid_callback_state">無效的 Trakt 回呼狀態</string>
     <string name="trakt_invalid_token_response">無效的 Trakt 權杖回應</string>
@@ -1851,16 +1762,6 @@
     <string name="trakt_missing_auth_code">Trakt 未傳回授權碼</string>
     <string name="trakt_missing_credentials">缺少 Trakt 憑證</string>
     <string name="trakt_progress_load_failed">無法載入 Trakt 進度</string>
-    <string name="trakt_public_list">Trakt 公開清單</string>
-    <string name="trakt_public_list_enter_valid_id_or_url">請輸入有效的 Trakt 清單 ID 或 URL</string>
-    <string name="trakt_public_list_items_count">%1$d 個項目</string>
-    <string name="trakt_public_list_likes_count">%1$d 個讚</string>
-    <string name="trakt_public_list_missing_credentials">local.properties 中缺少 Trakt 憑證（TRAKT_CLIENT_ID）。</string>
-    <string name="trakt_public_list_missing_id">缺少 Trakt 清單 ID</string>
-    <string name="trakt_public_list_missing_numeric_id">Trakt 清單未包含數字 ID</string>
-    <string name="trakt_public_list_not_found_or_not_public">找不到 Trakt 清單或清單非公開</string>
-    <string name="trakt_public_list_rate_limit_reached">已達到 Trakt 速率限制</string>
-    <string name="trakt_public_list_request_failed">Trakt 請求失敗</string>
     <string name="trakt_sign_in_complete_failed">無法完成 Trakt 登入</string>
     <string name="trakt_user_fallback">Trakt 使用者</string>
     <string name="trakt_watchlist">願望清單</string>
@@ -1874,29 +1775,9 @@
     <string name="trakt_error_add_list_failed">無法新增至 Trakt 清單</string>
     <string name="trakt_error_missing_ids">缺少相容的 Trakt ID</string>
     <string name="trakt_error_empty_response">空白回應內容</string>
-    <string name="tmdb_sources_collection_fallback_title">TMDB 合集 %1$d</string>
-    <string name="tmdb_sources_collection_not_found">找不到 TMDB 合集</string>
-    <string name="tmdb_sources_company_fallback_title">TMDB 製作公司 %1$d</string>
-    <string name="tmdb_sources_company_not_found">找不到 TMDB 公司</string>
-    <string name="tmdb_sources_director_fallback_title">TMDB 導演 %1$d</string>
-    <string name="tmdb_sources_discover_no_data">TMDB 探索未傳回資料</string>
-    <string name="tmdb_sources_discover_title">TMDB 探索</string>
-    <string name="tmdb_sources_invalid_id_or_url">請輸入有效的 TMDB ID 或 URL。</string>
-    <string name="tmdb_sources_list_fallback_title">TMDB 清單 %1$d</string>
-    <string name="tmdb_sources_list_not_found">找不到 TMDB 清單</string>
-    <string name="tmdb_sources_load_failed">無法載入 TMDB 來源</string>
-    <string name="tmdb_sources_missing_collection_id">缺少 TMDB 合集 ID</string>
-    <string name="tmdb_sources_missing_list_id">缺少 TMDB 清單 ID</string>
-    <string name="tmdb_sources_missing_person_id">缺少 TMDB 人物 ID</string>
-    <string name="tmdb_sources_network_fallback_title">TMDB 串流媒體 %1$d</string>
-    <string name="tmdb_sources_network_not_found">找不到 TMDB 串流媒體</string>
-    <string name="tmdb_sources_person_credits_not_found">找不到 TMDB 人物作品</string>
-    <string name="tmdb_sources_person_fallback_title">TMDB 人物 %1$d</string>
-    <string name="tmdb_sources_person_not_found">找不到 TMDB 人物</string>
     <string name="generic_trailer">預告片</string>
     <string name="generic_unknown">未知</string>
     <string name="generic_addon">附加元件</string>
-    <string name="action_saved">已儲存</string>
     <string name="action_play_episode">播放 %1$s</string>
     <string name="action_resume_episode">繼續 %1$s</string>
     <string name="collections_import_error_empty_json">JSON 為空。</string>
@@ -1959,14 +1840,6 @@
     <string name="downloads_enqueue_replaced">已取代先前的下載</string>
     <string name="downloads_enqueue_started">下載已開始</string>
     <string name="downloads_enqueue_unsupported_format">不支援下載的串流格式</string>
-    <string name="downloads_error_empty_body">空白回應內容</string>
-    <string name="downloads_error_finalize_failed">無法完成下載檔案</string>
-    <string name="downloads_error_http_failed">請求失敗，HTTP %1$d</string>
-    <string name="downloads_error_not_initialized">下載系統未初始化</string>
-    <string name="downloads_error_open_partial_failed">無法開啟部分下載檔案</string>
-    <string name="downloads_error_partial_not_open">部分下載檔案未開啟</string>
-    <string name="downloads_error_request_failed">下載請求失敗</string>
-    <string name="downloads_error_write_partial_failed">無法寫入部分下載檔案</string>
     <string name="home_catalog_default_title">%1$s - %2$s</string>
     <string name="library_empty_message">在詳細資料畫面點按「儲存」後，已儲存的標題將顯示於此。</string>
     <string name="library_empty_title">你的媒體庫是空的</string>
@@ -2070,7 +1943,6 @@
     <string name="unit_bytes_mb">MB</string>
     <string name="unit_bytes_gb">GB</string>
     <!-- PlayerControls 無障礙 -->
-    <string name="player_action_submit_intro">提交片頭</string>
     <string name="player_action_video_settings">視訊設定</string>
     <!-- CloudLibrary -->
     <string name="cloud_library_provider_unavailable">%1$s 的雲端媒體庫無法使用。</string>
@@ -2204,14 +2076,9 @@
     <string name="settings_debrid_rule_excluded_release_groups_desc">隱藏所選發布群組。</string>
     <!-- 提交片頭／前情提要／片尾對話框 -->
     <string name="submit_intro_title">提交時間戳</string>
-    <string name="submit_intro_segment_type">區段類型</string>
     <string name="submit_intro_segment_intro">片頭</string>
     <string name="submit_intro_segment_recap">前情提要</string>
     <string name="submit_intro_segment_outro">片尾</string>
-    <string name="submit_intro_start_time">開始時間（MM:SS）</string>
-    <string name="submit_intro_end_time">結束時間（MM:SS）</string>
-    <string name="submit_intro_submit">提交</string>
-    <string name="submit_intro_capture">擷取</string>
     <!-- iOS 進階播放 -->
     <string name="settings_playback_ios_hw_decoder_dialog">硬體解碼器</string>
     <string name="settings_playback_ios_audio_output_dialog">音訊輸出</string>
@@ -2220,7 +2087,6 @@
     <!-- 收藏編輯器 -->
     <string name="collections_editor_resolved_trakt_list">已解析的 Trakt 清單</string>
     <string name="collections_editor_tmdb_discover">TMDB 探索</string>
-    <string name="collections_editor_watch_region_placeholder">US, KR, JP, IN</string>
     <!-- 收藏編輯器錯誤訊息 -->
     <string name="collections_editor_trakt_input_required">請輸入 Trakt 清單名稱、URL 或 ID</string>
     <string name="collections_editor_tmdb_invalid_id_error">請輸入有效的 TMDB ID 或 URL。</string>
@@ -2237,17 +2103,13 @@
     <!-- 雲端媒體庫 -->
     <string name="cloud_library_playback_disabled">雲端媒體庫已停用。</string>
     <!-- IntroDB 設定 -->
-    <string name="settings_playback_introdb_invalid_api_key">API 金鑰無效或連接失敗</string>
     <string name="addons_manifest_missing_field">Manifest 缺少「%1$s」</string>
     <string name="collections_editor_tmdb_collection_title_format">TMDB 合集 %1$s</string>
     <string name="collections_editor_tmdb_director_title_format">TMDB 導演 %1$s</string>
-    <string name="collections_editor_tmdb_discover_title">TMDB 探索</string>
-    <string name="collections_editor_tmdb_invalid_id_or_url">請輸入有效的 TMDB ID 或 URL。</string>
     <string name="collections_editor_tmdb_list_title_format">TMDB 清單 %1$s</string>
     <string name="collections_editor_tmdb_network_title_format">TMDB 串流媒體 %1$s</string>
     <string name="collections_editor_tmdb_person_title_format">TMDB 人物 %1$s</string>
     <string name="collections_editor_tmdb_production_title_format">TMDB 製作公司 %1$s</string>
-    <string name="collections_editor_tmdb_source_load_failed">無法載入 TMDB 來源</string>
     <string name="collections_editor_trakt_list_id_format">ID %1$s</string>
     <string name="collections_tmdb_collection_not_found">找不到 TMDB 合集</string>
     <string name="collections_tmdb_company_not_found">找不到 TMDB 公司</string>
@@ -2274,17 +2136,12 @@
     <string name="details_runtime_hours_minutes">%1$dh %2$dm</string>
     <string name="details_runtime_hours_only">%1$dh</string>
     <string name="details_runtime_minutes_only">%1$dm</string>
-    <string name="downloads_error_finalize_file_failed">無法完成下載檔案</string>
-    <string name="downloads_error_open_partial_file_failed">無法開啟部分下載檔案</string>
-    <string name="downloads_error_partial_file_not_open">部分下載檔案未開啟</string>
-    <string name="downloads_error_write_partial_file_failed">無法寫入部分下載檔案</string>
     <string name="library_local_tab_title">Nuvio 媒體庫</string>
     <string name="network_connection_issue">連接問題</string>
     <string name="network_empty_response_body">空白回應內容</string>
     <string name="network_please_check_connection">請檢查你的連接並再試一次。</string>
     <string name="network_request_failed_http">請求失敗，HTTP %1$d</string>
     <string name="player_addon_subtitle_display_format">%1$s（%2$s）</string>
-    <string name="player_error_mpv_unavailable">MPV 播放引擎無法使用。請重新建置應用程式。</string>
     <string name="player_error_unable_to_play_stream">無法播放此串流。</string>
     <string name="plugins_badge_disabled">外掛已停用</string>
     <string name="plugins_badge_enabled">外掛已啟用</string>
@@ -2302,19 +2159,13 @@
     <string name="plugins_empty_repos_title">尚未安裝任何外掛儲存庫。</string>
     <string name="plugins_enable_globally_desc">在串流探索期間使用外掛提供者。</string>
     <string name="plugins_enable_globally_title">全域啟用外掛提供者</string>
-    <string name="plugins_error_already_installed">該外掛儲存庫已安裝。</string>
     <string name="plugins_error_enter_repo_url">請輸入外掛儲存庫 URL。</string>
     <string name="plugins_error_enter_valid_url">請輸入有效的外掛 URL。</string>
-    <string name="plugins_error_install_failed">無法安裝外掛儲存庫</string>
     <string name="plugins_error_provider_not_found">找不到提供者</string>
-    <string name="plugins_error_refresh_failed">無法重新整理儲存庫</string>
     <string name="plugins_error_unavailable_build">此版本不支援外掛。</string>
     <string name="plugins_group_by_repo_desc">在串流中，每個儲存庫顯示一個提供者，而非每個來源一個。</string>
     <string name="plugins_group_by_repo_title">依儲存庫群組外掛提供者</string>
     <string name="plugins_input_manifest_placeholder">外掛 manifest URL</string>
-    <string name="plugins_manifest_error_name_missing">Manifest 名稱為空白。</string>
-    <string name="plugins_manifest_error_no_providers">Manifest 沒有提供者。</string>
-    <string name="plugins_manifest_error_version_missing">Manifest 版本為空白。</string>
     <string name="plugins_manifest_name_missing">Manifest 名稱為空白。</string>
     <string name="plugins_manifest_no_providers">Manifest 沒有提供者。</string>
     <string name="plugins_manifest_version_missing">Manifest 版本為空白。</string>
@@ -2346,12 +2197,10 @@
     <string name="trakt_connected_status">已連接至 Trakt</string>
     <string name="trakt_disconnected_status">已中斷與 Trakt 的連接</string>
     <string name="unit_bytes_tb">TB</string>
-    <string name="updates_apk_asset_missing">發行版本中找不到 APK 資產</string>
     <string name="updates_download_failed_http">下載失敗，HTTP %1$d</string>
     <string name="updates_downloaded_file_missing">找不到已下載的更新檔案。</string>
     <string name="updates_empty_download_body">空白下載內容</string>
     <string name="updates_github_api_error">GitHub 發行版本 API 錯誤：%1$d</string>
-    <string name="updates_no_channel_release">尚未發布任何更新。</string>
     <string name="updates_channel_title">更新頻道</string>
     <string name="updates_channel_description">選擇要接收的應用程式更新類型</string>
     <string name="updates_channel_stable">穩定版</string>
@@ -2359,7 +2208,6 @@
     <string name="updates_channel_stable_description">適合日常使用。</string>
     <string name="updates_channel_beta_description">早期更新，可能包含錯誤、導致功能故障或出現非預期行為。</string>
     <string name="updates_waiting_for_stable">下一個穩定版本發布時你將會收到</string>
-    <string name="updates_release_missing_title">發行版本沒有標籤或名稱</string>
     <!-- 繼續觀看播出日期顯示 -->
     <string name="cw_airs_date">%1$s 播出</string>
     <string name="cw_airs_today">今日播出</string>
@@ -2367,13 +2215,6 @@
     <plurals name="cw_airs_in_days">
         <item quantity="one">%1$d 天後播出</item>
         <item quantity="other">%1$d 天後播出</item>
-    </plurals>
-    <string name="cw_airs_date_short">%1$s</string>
-    <string name="cw_airs_today_short">今天</string>
-    <string name="cw_airs_tomorrow_short">明天</string>
-    <plurals name="cw_airs_in_days_short">
-        <item quantity="one">%1$d 天後</item>
-        <item quantity="other">%1$d 天後</item>
     </plurals>
     <string name="cw_new_episode">新集數</string>
     <string name="cw_new_season">新一季</string>
@@ -2410,10 +2251,6 @@
     <string name="settings_p2p_clear_cache_done">已清除 %1$s 的非作用中 torrent 資料</string>
     <string name="settings_p2p_clear_cache_failed">無法清除 torrent 快取</string>
     <string name="player_torrent_peer_info">%1$d 個種子 · %2$d 個對等節點</string>
-    <string name="player_torrent_buffered_status">已緩衝 %1$s · %2$s · %3$s</string>
-    <string name="player_torrent_status">%1$s · %2$s</string>
-    <string name="player_torrent_stats">%1$d 個對等節點 · %2$d 個種子 · %3$d%%</string>
-    <string name="player_torrent_connecting_peers">正在連接對等節點…</string>
     <string name="player_torrent_starting_engine">正在啟動 P2P 引擎…</string>
     <string name="player_torrent_fetching_metadata">正在取得 torrent 中繼資料…</string>
     <string name="player_torrent_preparing_stream">正在準備 torrent 串流…</string>
@@ -2458,7 +2295,6 @@
     <string name="layout_ratings_hide_unwatched">隱藏未觀看</string>
     <string name="settings_playback_legacy_layout">舊版版面配置</string>
     <string name="settings_playback_legacy_layout_description">使用原始播放器控制項。</string>
-    <string name="compose_player_episode_code">S%1$d E%2$d</string>
     <string name="compose_player_more_actions">更多控制項</string>
     <string name="compose_player_fewer_actions">較少控制項</string>
     <string name="compose_player_speed">播放速度</string>

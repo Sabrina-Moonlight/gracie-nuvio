@@ -595,6 +595,15 @@ object StreamsRepository {
         _uiState.value = StreamsUiState()
     }
 
+    // Gracie: al pasar al siguiente capitulo en "Descargar temporada", la pantalla vieja se cierra
+    // DESPUES de que la nueva ya empezo su busqueda. Si limpiaramos sin mirar, se borrarian los
+    // resultados del capitulo nuevo. Solo limpia si la busqueda actual no es de otro capitulo.
+    fun clearUnlessServingOtherEpisode(season: Int?, episode: Int?) {
+        val token = _uiState.value.requestToken
+        if (token != null && !token.contains("::$season::$episode::")) return
+        clear()
+    }
+
     fun setOverlayVisible(visible: Boolean, message: String? = null) {
         _uiState.update { it.copy(showDirectAutoPlayOverlay = visible, overlayMessage = message) }
     }

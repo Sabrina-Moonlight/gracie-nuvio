@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -57,6 +58,9 @@ import nuvio.composeapp.generated.resources.downloads_pause_all
 import nuvio.composeapp.generated.resources.downloads_resume_all
 import nuvio.composeapp.generated.resources.downloads_section_active
 import nuvio.composeapp.generated.resources.downloads_section_downloaded
+import nuvio.composeapp.generated.resources.downloads_delete_all
+import nuvio.composeapp.generated.resources.downloads_delete_all_message
+import nuvio.composeapp.generated.resources.downloads_delete_all_title
 import nuvio.composeapp.generated.resources.downloads_show_downloads
 import nuvio.composeapp.generated.resources.downloads_titles
 import nuvio.composeapp.generated.resources.downloads_watched_count
@@ -93,6 +97,7 @@ fun DownloadsScreen(
     var selectedShowId by rememberSaveable(initialShowId) { mutableStateOf(initialShowId) }
     var actionsItemId by rememberSaveable { mutableStateOf<String?>(null) }
     var deleteItemId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showDeleteAll by rememberSaveable { mutableStateOf(false) }
     val speeds = rememberDownloadSpeeds(uiState.items)
     val watchStatusOf = remember(watchProgressState, watchedState) {
         { item: DownloadItem -> item.watchStatus(watchProgressState) }
@@ -125,6 +130,14 @@ fun DownloadsScreen(
                     }
                 },
                 actions = {
+                    if (selectedShowId == null && uiState.items.isNotEmpty()) {
+                        IconButton(onClick = { showDeleteAll = true }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Delete,
+                                contentDescription = stringResource(Res.string.downloads_delete_all),
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = {
                             if (!DownloadsPlatformDownloader.openDownloadsDirectory()) {
@@ -186,6 +199,24 @@ fun DownloadsScreen(
                 deleteItemId = null
             },
             onDismiss = { deleteItemId = null },
+        )
+    }
+
+    if (showDeleteAll) {
+        NuvioStatusModal(
+            title = stringResource(Res.string.downloads_delete_all_title),
+            message = stringResource(Res.string.downloads_delete_all_message),
+            isVisible = true,
+            destructive = true,
+            confirmText = stringResource(Res.string.action_delete),
+            dismissText = stringResource(Res.string.action_cancel),
+            onConfirm = {
+                DownloadsRepository.cancelAllDownloads()
+                actionsItemId = null
+                deleteItemId = null
+                showDeleteAll = false
+            },
+            onDismiss = { showDeleteAll = false },
         )
     }
 }

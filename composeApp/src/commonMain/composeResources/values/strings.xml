@@ -619,6 +619,9 @@
     <string name="detail_trailer_category_count">%1$s (%2$d)</string>
     <string name="detail_trailers_title">Trailers</string>
     <string name="downloads_delete_message">This frees %1$s on this device.</string>
+    <string name="downloads_delete_all">Delete all downloads</string>
+    <string name="downloads_delete_all_message">All downloads, including those in progress, will be removed from this device. This cannot be undone.</string>
+    <string name="downloads_delete_all_title">Delete all downloads?</string>
     <string name="downloads_delete_title">Delete %1$s?</string>
     <string name="downloads_downloading_count">%1$d downloading</string>
     <string name="downloads_empty_message">Long-press a stream and choose Download file to watch it offline.</string>
