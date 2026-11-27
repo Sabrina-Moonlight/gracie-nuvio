@@ -190,6 +190,33 @@ jobs:
                       with open(p, errors="ignore") as fh:
                           if "showHorizontalSeekPreview" in fh.read(): seek.append(os.path.relpath(p, REPO))
 
+          # --- Lo que Gracie quitó en la limpieza y volvió (gracie-nuvio/ELIMINADO-GRACIE.txt) ---
+          vueltos = []
+          try:
+              lst = os.path.join(REPO, "gracie-nuvio", "ELIMINADO-GRACIE.txt")
+              if os.path.exists(lst):
+                  nombres, archivos = [], []
+                  for ln in open(lst, errors="ignore").read().splitlines():
+                      ln = ln.strip()
+                      if ln.startswith("nombre:"): nombres.append(ln[7:].strip())
+                      elif ln.startswith("archivo:"): archivos.append(ln[8:].strip())
+                  for dp, dn, fn in os.walk(os.path.join(REPO, "composeApp")):
+                      for f in fn:
+                          if f in archivos:
+                              vueltos.append((os.path.relpath(os.path.join(dp, f), REPO), 0, "archivo entero"))
+                  tocados = list(R["C"]) + list(R["G"]) + list(R["auto"]) + [k for k, m in R["choque"]]
+                  pats = [(n, re.compile(r"\b" + re.escape(n) + r"\b")) for n in nombres if n]
+                  for rel in tocados:
+                      if not rel.endswith((".kt", ".xml")): continue
+                      fp = os.path.join(REPO, rel)
+                      if not os.path.isfile(fp): continue
+                      with open(fp, errors="ignore") as fh:
+                          for i, linea in enumerate(fh, 1):
+                              for n, pt in pats:
+                                  if pt.search(linea): vueltos.append((rel, i, n))
+          except Exception as e:
+              vueltos.append(("(no se pudo revisar la lista)", 0, str(e)))
+
           # --- resumen ---
           L = []; w = L.append
           nch = len(R["choque"])
@@ -220,6 +247,11 @@ jobs:
           else: w("- Ninguno encontrado.")
           w("\n## Seek Preview\n")
           w("- ⚠️ Sigue apareciendo `showHorizontalSeekPreview` en: " + ", ".join(f"`{os.path.basename(x)}`" for x in seek) if seek else "- No se encontró.")
+          w("\n## Volvió algo que quitaste en la limpieza\n")
+          if vueltos:
+              w("Si Nuvio no lo usa, es viejo: quítalo otra vez (ver `gracie-nuvio/ELIMINADO-GRACIE.md`).\n")
+              for rel, i, n in vueltos[:80]: w(f"- `{n}` en `{rel}`" + (f" (línea {i})" if i else ""))
+          else: w("- Nada de la lista volvió.")
           w("\n## Archivos actualizados por Nuvio\n")
           for k in R["C"] + R["G"]: w(f"- `{k}`")
           text = "\n".join(L) + "\n"
