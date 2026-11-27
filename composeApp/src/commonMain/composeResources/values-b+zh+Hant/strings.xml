@@ -17,7 +17,6 @@
     <string name="action_expand">展開</string>
     <string name="action_delete">刪除</string>
     <string name="action_delete_confirm_message">確定要刪除嗎？</string>
-    <string name="action_delete_confirm_title">刪除？</string>
     <string name="action_done">完成</string>
     <string name="action_edit">編輯</string>
     <string name="action_import">匯入</string>
@@ -470,8 +469,6 @@
     <string name="compose_player_resize_fit">符合</string>
     <string name="compose_player_resize_zoom">縮放</string>
     <string name="compose_player_seek_back_10">倒退 10 秒</string>
-    <string name="compose_player_seek_delta_backward">-%1$ds</string>
-    <string name="compose_player_seek_delta_forward">+%1$ds</string>
     <string name="compose_player_seek_feedback_backward">-%1$ds</string>
     <string name="compose_player_seek_feedback_forward">+%1$ds</string>
     <string name="compose_player_seek_forward_10">前進 10 秒</string>
@@ -1755,7 +1752,6 @@
     <string name="debrid_resolve_failed">無法開啟此連結。</string>
     <string name="external_player_failed">無法開啟外部播放器</string>
     <string name="external_player_not_configured">請先在設定中選擇外部播放器</string>
-    <string name="external_player_unavailable">沒有可用的外部播放器</string>
     <string name="trailer_close">關閉預告片</string>
     <string name="trailer_unable_to_play">無法播放預告片</string>
     <string name="trakt_lists_load_failed">無法載入 Trakt 清單</string>

@@ -17,7 +17,6 @@
     <string name="action_expand">Expandir</string>
     <string name="action_delete">Eliminar</string>
     <string name="action_delete_confirm_message">¿Seguro que quieres eliminarlo?</string>
-    <string name="action_delete_confirm_title">¿Eliminar?</string>
     <string name="action_done">Listo</string>
     <string name="action_edit">Editar</string>
     <string name="action_import">Importar</string>
@@ -453,8 +452,6 @@
     <string name="compose_player_resize_fit">Ajustar</string>
     <string name="compose_player_resize_zoom">Zoom</string>
     <string name="compose_player_seek_back_10">Retroceder 10 segundos</string>
-    <string name="compose_player_seek_delta_backward">-%1$ds</string>
-    <string name="compose_player_seek_delta_forward">+%1$ds</string>
     <string name="compose_player_seek_feedback_backward">-%1$ds</string>
     <string name="compose_player_seek_feedback_forward">+%1$ds</string>
     <string name="compose_player_seek_forward_10">Avanzar 10 segundos</string>
@@ -562,7 +559,6 @@
     <string name="settings_advanced_backup_import_description">Restaura la configuración del perfil desde un archivo JSON exportado previamente</string>
     <string name="settings_advanced_backup_import_dialog_title">Importar configuración</string>
     <string name="settings_advanced_backup_import_confirm">Esto reemplaza la configuración actual del perfil, incluidas las API keys. Guarda un backup antes si no estás seguro.</string>
-    <string name="settings_advanced_backup_import_hint">Pega aquí el JSON del backup</string>
     <string name="settings_advanced_backup_import_success">Configuración restaurada</string>
     <string name="settings_advanced_backup_import_failed">No se pudo importar la configuración. Revisa el JSON e inténtalo de nuevo.</string>
     <string name="settings_advanced_backup_warning">Los backups incluyen API keys y tokens. Guárdalos en un lugar seguro.</string>
@@ -1667,7 +1663,6 @@
     <string name="debrid_resolve_failed">No se pudo abrir este enlace.</string>
     <string name="external_player_failed">No se pudo abrir el reproductor externo</string>
     <string name="external_player_not_configured">Elija primero un reproductor externo en la configuración</string>
-    <string name="external_player_unavailable">No hay ningún reproductor externo disponible</string>
     <string name="trailer_close">Cerrar tráiler</string>
     <string name="trailer_unable_to_play">No se puede reproducir el tráiler</string>
     <string name="trakt_lists_load_failed">No se pudieron cargar las listas de Trakt</string>

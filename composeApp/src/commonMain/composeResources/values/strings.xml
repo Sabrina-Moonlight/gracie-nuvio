@@ -17,7 +17,6 @@
     <string name="action_expand">Expand</string>
     <string name="action_delete">Delete</string>
     <string name="action_delete_confirm_message">Are you sure you want to delete it?</string>
-    <string name="action_delete_confirm_title">Delete?</string>
     <string name="action_done">Done</string>
     <string name="action_edit">Edit</string>
     <string name="action_import">Import</string>
@@ -460,8 +459,6 @@
     <string name="compose_player_resize_fit">Fit</string>
     <string name="compose_player_resize_zoom">Zoom</string>
     <string name="compose_player_seek_back_10">Seek backward 10 seconds</string>
-    <string name="compose_player_seek_delta_backward">-%1$ds</string>
-    <string name="compose_player_seek_delta_forward">+%1$ds</string>
     <string name="compose_player_seek_feedback_backward">-%1$ds</string>
     <string name="compose_player_seek_feedback_forward">+%1$ds</string>
     <string name="compose_player_seek_forward_10">Seek forward 10 seconds</string>
@@ -569,7 +566,6 @@
     <string name="settings_advanced_backup_import_description">Restore profile settings from a previously exported JSON file</string>
     <string name="settings_advanced_backup_import_dialog_title">Import settings</string>
     <string name="settings_advanced_backup_import_confirm">This replaces the current profile settings, including API keys. Save a backup first if you are unsure.</string>
-    <string name="settings_advanced_backup_import_hint">Paste JSON backup here</string>
     <string name="settings_advanced_backup_import_success">Settings restored</string>
     <string name="settings_advanced_backup_import_failed">Could not import settings. Check the JSON and try again.</string>
     <string name="settings_advanced_backup_warning">Backups include API keys and tokens. Store them in a safe place.</string>
@@ -1713,7 +1709,6 @@
     <string name="debrid_resolve_failed">Could not open this link.</string>
     <string name="external_player_failed">Couldn&apos;t open external player</string>
     <string name="external_player_not_configured">Choose an external player in settings first</string>
-    <string name="external_player_unavailable">No external player is available</string>
     <string name="trailer_close">Close trailer</string>
     <string name="trailer_unable_to_play">Unable to play trailer</string>
     <string name="trakt_lists_load_failed">Failed to load Trakt lists</string>

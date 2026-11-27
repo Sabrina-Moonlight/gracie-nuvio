@@ -22,7 +22,6 @@ Therefore, duplicate the values-he directory as values-iw. Keep both directories
     <string name="action_expand">הרחבה</string>
     <string name="action_delete">מחיקה</string>
     <string name="action_delete_confirm_message">האם למחוק את הפריט?</string>
-    <string name="action_delete_confirm_title">למחוק?</string>
     <string name="action_done">סיום</string>
     <string name="action_edit">עריכה</string>
     <string name="action_import">ייבוא</string>
@@ -472,8 +471,6 @@ Therefore, duplicate the values-he directory as values-iw. Keep both directories
     <string name="compose_player_resize_fit">התאמה</string>
     <string name="compose_player_resize_zoom">זום</string>
     <string name="compose_player_seek_back_10">דילוג אחורה 10 שניות</string>
-    <string name="compose_player_seek_delta_backward">-%1$ds</string>
-    <string name="compose_player_seek_delta_forward">+%1$ds</string>
     <string name="compose_player_seek_feedback_backward">-%1$ds</string>
     <string name="compose_player_seek_feedback_forward">+%1$ds</string>
     <string name="compose_player_seek_forward_10">דילוג קדימה 10 שניות</string>
@@ -1749,7 +1746,6 @@ Therefore, duplicate the values-he directory as values-iw. Keep both directories
     <string name="debrid_resolve_failed">לא ניתן לפתוח קישור זה.</string>
     <string name="external_player_failed">לא ניתן לפתוח נגן חיצוני</string>
     <string name="external_player_not_configured">יש לבחור נגן חיצוני בהגדרות תחילה</string>
-    <string name="external_player_unavailable">אין נגן חיצוני זמין</string>
     <string name="trailer_close">סגירת הטריילר</string>
     <string name="trailer_unable_to_play">לא ניתן להפעיל את הטריילר</string>
     <string name="trakt_lists_load_failed">טעינת רשימות Trakt נכשלה</string>

@@ -6,16 +6,13 @@
     <string name="library_calendar_loading">Cargando estrenos guardados...</string>
     <string name="library_calendar_agenda">Agenda de estrenos</string>
     <string name="library_calendar_available">Disponible ahora</string>
-    <string name="library_calendar_month_events">Este mes</string>
     <string name="library_calendar_next_month">Mes siguiente</string>
     <string name="library_calendar_no_day_events_message">Elige una fecha marcada para ver qué llega.</string>
     <string name="library_calendar_no_day_events_title">Nada programado este día</string>
-    <string name="library_calendar_no_month_events">No hay estrenos en este mes.</string>
     <string name="library_calendar_open">Abrir calendario</string>
     <string name="library_calendar_previous_month">Mes anterior</string>
     <string name="library_calendar_release_count">%1$d estrenos</string>
     <string name="library_calendar_release_count_single">1 estreno</string>
-    <string name="library_calendar_selected_day">Estrenos del %1$s</string>
     <string name="library_calendar_today">Hoy</string>
     <string name="library_calendar_title">Calendario</string>
     <string name="library_calendar_upcoming">Próximamente</string>
