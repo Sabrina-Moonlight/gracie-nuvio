@@ -26,6 +26,10 @@ object DownloadsRepository {
     val hasUnseenCompleted: StateFlow<Boolean> = _hasUnseenCompleted.asStateFlow()
 
     private val activeHandles = mutableMapOf<String, DownloadsTaskHandle>()
+
+    // Cola: solo MAX_PARALLEL_DOWNLOADS descargas corren a la vez; el resto espera aqui.
+    private const val MAX_PARALLEL_DOWNLOADS = 2
+    private val pendingStarts = ArrayDeque<String>()
     private var hasLoaded = false
     private var nextDownloadOrdinal = 0L
 
@@ -45,6 +49,7 @@ object DownloadsRepository {
     fun clearLocalState() {
         activeHandles.values.forEach(DownloadsTaskHandle::cancel)
         activeHandles.clear()
+        pendingStarts.clear()
         hasLoaded = false
         _hasUnseenCompleted.value = false
         _uiState.value = DownloadsUiState()
@@ -171,6 +176,7 @@ object DownloadsRepository {
         if (existing != null) {
             replacedExisting = true
             activeHandles.remove(existing.id)?.cancel()
+            pendingStarts.remove(existing.id)
             DownloadsPlatformDownloader.removeFile(playableLocalFileUri(existing) ?: existing.localFileUri)
             DownloadsPlatformDownloader.removePartialFile(existing.fileName)
             currentItems.removeAll { it.id == existing.id }
@@ -250,6 +256,7 @@ object DownloadsRepository {
         if (item.status != DownloadStatus.Downloading) return
 
         activeHandles.remove(downloadId)?.cancel()
+        pendingStarts.remove(downloadId)
         mutateItem(downloadId) { current ->
             current.copy(
                 status = DownloadStatus.Paused,
@@ -257,6 +264,7 @@ object DownloadsRepository {
                 errorMessage = null,
             )
         }
+        startPendingDownloads()
     }
 
     fun pauseActiveDownloads() {
@@ -300,6 +308,7 @@ object DownloadsRepository {
         if (!hasLoaded) return
         val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
         activeHandles.remove(downloadId)?.cancel()
+        pendingStarts.remove(downloadId)
         val restored = DownloadsPlatformDownloader.restoreItem(item)
         replaceItem(restored)
         persist()
@@ -311,11 +320,13 @@ object DownloadsRepository {
         val item = _uiState.value.items.firstOrNull { it.id == downloadId } ?: return
 
         activeHandles.remove(downloadId)?.cancel()
+        pendingStarts.remove(downloadId)
         DownloadsPlatformDownloader.removeFile(playableLocalFileUri(item) ?: item.localFileUri)
         DownloadsPlatformDownloader.removePartialFile(item.fileName)
 
         publish(_uiState.value.items.filterNot { it.id == downloadId })
         persist()
+        startPendingDownloads()
     }
 
     fun cancelAllDownloads() {
@@ -329,6 +340,7 @@ object DownloadsRepository {
             DownloadsPlatformDownloader.removePartialFile(item.fileName)
         }
         activeHandles.clear()
+        pendingStarts.clear()
 
         publish(emptyList())
         persist()
@@ -366,6 +378,25 @@ object DownloadsRepository {
     }
 
     private fun startDownload(item: DownloadItem) {
+        if (item.id in activeHandles) return
+        if (activeHandles.size >= MAX_PARALLEL_DOWNLOADS) {
+            if (item.id !in pendingStarts) pendingStarts.addLast(item.id)
+            return
+        }
+        launchDownload(item)
+    }
+
+    private fun startPendingDownloads() {
+        while (activeHandles.size < MAX_PARALLEL_DOWNLOADS && pendingStarts.isNotEmpty()) {
+            val id = pendingStarts.removeFirst()
+            if (id in activeHandles) continue
+            val next = _uiState.value.items.firstOrNull { it.id == id && it.status == DownloadStatus.Downloading }
+                ?: continue
+            launchDownload(next)
+        }
+    }
+
+    private fun launchDownload(item: DownloadItem) {
         val request = DownloadPlatformRequest(item)
 
         val handle = DownloadsPlatformDownloader.start(
@@ -401,6 +432,7 @@ object DownloadsRepository {
                         updatedAtEpochMs = DownloadsClock.nowEpochMs(),
                     )
                 }
+                startPendingDownloads()
             },
             onFailure = { message ->
                 activeHandles.remove(item.id)
@@ -415,6 +447,7 @@ object DownloadsRepository {
                         )
                     }
                 }
+                startPendingDownloads()
             },
             onPaused = {
                 activeHandles.remove(item.id)
@@ -422,6 +455,7 @@ object DownloadsRepository {
                     if (current.status != DownloadStatus.Downloading) return@mutateItem current
                     current.copy(status = DownloadStatus.Paused, errorMessage = null)
                 }
+                startPendingDownloads()
             },
         )
 

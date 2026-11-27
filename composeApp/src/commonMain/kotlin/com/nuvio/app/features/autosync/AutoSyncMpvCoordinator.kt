@@ -104,7 +104,7 @@ internal class AutoSyncMpvCoordinator(
         if (decideAutoSyncStart(AutoSyncPreferencesRepository.preferredSubtitleAutoSyncOnStart.value) ==
             AutoSyncStartAction.ATTACH_ORIGINAL ||
             platform.isLiveTv ||
-            !(sourceUrl.startsWith("https://", true) || sourceUrl.startsWith("http://", true))) {
+            !(sourceUrl.startsWith("https://", true) || sourceUrl.startsWith("http://", true) || sourceUrl.startsWith("file:", true))) {
             return
         }
 

@@ -36,6 +36,13 @@ Después de cada actualización comprueba que siguen y que Nuvio no los devolvi�
 - Archivos de Nuvio que Gracie usa y cambiaron sin choque (revisa firmas y llamadas): `AuthStorage` (+ `.android`) y `AuthRepository` ← `MainActivity.kt` y `HomeScreen.kt`; `HomeHeroSection` ← `HomeScreen.kt`; `AutoSyncPreferencesRepository` y `AutoSyncMpvCoordinator` ← archivos de AutoSync. Nuvio añadió archivos nuevos que otros necesitan (`AuthSessionErrors.kt`, `BackdropFocus*.kt`, `MdbListRemapCache.kt`).
 - Revisión antes de entregar un arreglo: sin marcas de choque, llaves y paréntesis balanceados, todos los `Res.string` usados definidos. Aquí no se compila: la prueba real es el release.
 
+## Limpieza (lo que Gracie quitó a propósito)
+- Antes de resolver choques, lee `gracie-nuvio/ELIMINADO-GRACIE.md`: lista todo lo quitado en la limpieza (archivos, funciones, strings) y lo que NO se debe tocar.
+- Regla: si algo de esa lista reaparece, NO es novedad de Nuvio: es viejo y el workflow lo trajo de vuelta. Se quita otra vez. Solo se devuelve la pieza mínima si el código NUEVO de Nuvio la necesita para compilar (error "Unresolved reference"); eso se anota en la sección "Devueltos" del registro.
+- Si Nuvio edita justo la zona donde Gracie quitó algo, saldrá un choque `<<<<<<<`: resuélvelo dejando lo quitado fuera.
+- Paso final, antes de entregar: por cada nombre de `ELIMINADO-GRACIE.md`, `grep -w NOMBRE` en la rama nueva. Si aparece y nadie lo usa, bórralo. Los archivos enteros de la tabla no deben existir.
+- Si quitas algo nuevo en una actualización, añádelo al registro (mismo formato: nombre · archivo · versión).
+
 ## Cómo trabajar sobre la rama (no main)
 - **Sort Uploads solo corre solo en `main`.** Para la rama: sube el ZIP a `0-sort-uploads/` de la rama, y lanza a mano Actions → Sort Uploads → elige la rama. Luego se lanza solo el release de esa rama.
 - Un ZIP con **una sola carpeta en la raíz que no existe en el repo** (ej. `gracie-nuvio/`) pierde esa carpeta (cree que es un envoltorio). Solución: un `ROUTES.txt` suelto en la raíz del ZIP.

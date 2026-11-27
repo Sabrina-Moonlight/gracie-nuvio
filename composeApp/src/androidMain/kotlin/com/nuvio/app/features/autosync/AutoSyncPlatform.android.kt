@@ -1,8 +1,11 @@
 package com.nuvio.app.features.autosync
 
 import com.nuvio.app.features.addons.AddonHttpClientProvider
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.io.RandomAccessFile
+import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.charset.CodingErrorAction
@@ -37,6 +40,10 @@ internal actual suspend fun <T> autoSyncHttpGet(
     timeoutMs: Long?,
     block: suspend (AutoSyncHttpResponse) -> T,
 ): T {
+    // Videos de Descargas: archivo local, se lee con el mismo formato de respuesta que HTTP.
+    if (url.startsWith("file:", ignoreCase = true)) {
+        return withContext(Dispatchers.IO) { withLocalFileRange(url, headers, block) }
+    }
     val requestBuilder = Request.Builder().url(url).get()
     headers.forEach { (name, value) -> requestBuilder.header(name, value) }
 
@@ -97,6 +104,56 @@ internal actual suspend fun <T> autoSyncHttpGet(
     } finally {
         cancelHandle.dispose()
     }
+}
+
+/** Answers a "Range: bytes=a-b" request from a local file, like a server would (206 + Content-Range). */
+private suspend fun <T> withLocalFileRange(
+    url: String,
+    headers: Map<String, String>,
+    block: suspend (AutoSyncHttpResponse) -> T,
+): T {
+    val file = File(URI(url))
+    if (!file.isFile) {
+        return block(AutoSyncHttpResponse(404, "Not Found", url, emptyMap(), emptyLocalBody))
+    }
+    val total = file.length()
+    val range = headers.entries.firstOrNull { it.key.equals("Range", ignoreCase = true) }?.value
+        ?.let { Regex("""bytes=(\d+)-(\d*)""").find(it) }
+    val start = range?.groupValues?.get(1)?.toLongOrNull() ?: 0L
+    val requestedEnd = range?.groupValues?.get(2)?.toLongOrNull() ?: (total - 1L)
+    if (start >= total) {
+        return block(
+            AutoSyncHttpResponse(416, "Range Not Satisfiable", url, mapOf("content-range" to "bytes */$total"), emptyLocalBody),
+        )
+    }
+    val end = minOf(requestedEnd, total - 1L)
+    return RandomAccessFile(file, "r").use { raf ->
+        raf.seek(start)
+        var remaining = end - start + 1L
+        val body = object : AutoSyncHttpBody {
+            override suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+                if (remaining <= 0L) return -1
+                val n = raf.read(buffer, offset, minOf(length.toLong(), remaining).toInt())
+                if (n < 0) return -1
+                remaining -= n
+                return n
+            }
+        }
+        val response = if (range != null) {
+            AutoSyncHttpResponse(
+                206, "Partial Content", url,
+                mapOf("content-range" to "bytes $start-$end/$total", "content-length" to (end - start + 1L).toString()),
+                body,
+            )
+        } else {
+            AutoSyncHttpResponse(200, "OK", url, mapOf("content-length" to total.toString()), body)
+        }
+        block(response)
+    }
+}
+
+private val emptyLocalBody = object : AutoSyncHttpBody {
+    override suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int = -1
 }
 
 private fun cancellationIfCanceled(call: Call, error: Throwable): Throwable =

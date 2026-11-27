@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -135,6 +136,7 @@ fun DownloadsScreen(
                             Icon(
                                 imageVector = Icons.Rounded.Delete,
                                 contentDescription = stringResource(Res.string.downloads_delete_all),
+                                tint = Color.White,
                             )
                         }
                     }
@@ -148,6 +150,7 @@ fun DownloadsScreen(
                         Icon(
                             imageVector = Icons.Rounded.Folder,
                             contentDescription = stringResource(Res.string.downloads_open_directory),
+                            tint = Color.White,
                         )
                     }
                 },

@@ -158,7 +158,7 @@ internal class AutoSyncPlayerCoordinator(
         cancel()
         forgetLibassCopies()
         if (LiveTvPlaybackRegistry.isLiveTv(sourceUrl) ||
-            !(sourceUrl.startsWith("https://", true) || sourceUrl.startsWith("http://", true))) {
+            !(sourceUrl.startsWith("https://", true) || sourceUrl.startsWith("http://", true) || sourceUrl.startsWith("file:", true))) {
             fallbackAttach(url)
             return
         }

@@ -120,7 +120,8 @@ internal object EmbeddedSubtitleTimelineLoader {
         sourceHeaders: Map<String, String> = emptyMap(),
     ): IndexedEmbeddedTimeline? {
         if (!sourceUrl.startsWith("http://", ignoreCase = true) &&
-            !sourceUrl.startsWith("https://", ignoreCase = true)
+            !sourceUrl.startsWith("https://", ignoreCase = true) &&
+            !sourceUrl.startsWith("file:", ignoreCase = true)
         ) {
             return null
         }
